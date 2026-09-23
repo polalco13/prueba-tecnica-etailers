@@ -309,7 +309,7 @@ def select_catalog_candidates(
                     Action.REJECT_ROW,
                     "Precio final inválido",
                     candidate.raw_cells,
-                    "precio_coste",
+                    "precio_coste" if reason == candidate.cost_problem else None,
                 )
             )
             continue
