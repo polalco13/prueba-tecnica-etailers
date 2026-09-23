@@ -168,11 +168,13 @@ def _parse_general(
         )
     else:
         target[key] = DiscountRule(key, ratio, keyed_ref)
+    volume_index = 0
     for child in children:
         if child.tag == "PorVolumen":
+            volume_index += 1
             issues.append(
                 _issue(
-                    keyed_ref,
+                    _ref(f"{ref.locator}/PorVolumen[{volume_index}]", keyed_ref.entity_key),
                     ReasonCode.UNAPPLIED_TARIFF_TERM,
                     Action.WARN,
                     "Descuento por volumen no aplicado sin compra conocida",
