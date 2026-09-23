@@ -2,7 +2,7 @@
 
 Estado: contrato **propuesto**, pendiente de comprobar durante la implementación. R = requisito del [README](README.md); D = decisión para esta prueba; S = supuesto por validar. La arquitectura está en [TECH_SPEC](TECH_SPEC.md) y las tareas en [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md). No cambiar una regla en código sin actualizar este documento y sus tests.
 
-Durante la planificación se inspeccionaron cabeceras y algunos registros de CSV, XML y stock; solo se recorrieron los valores distintos de estado/canal. F2 añadió la lectura completa del catálogo y F3 el cruce en memoria con las tarifas XML; su evidencia parcial consta en SOLUCION. No se ha ejecutado el ETL completo ni cargado productos en BD. El catálogo tiene 11 columnas (`sku, ean, nombre, marca, categoria, precio_coste, pvp_recomendado, iva, peso_kg, fecha_alta, descripcion`); pedidos tiene 9 (`id_pedido, fecha_pedido, cliente, canal, estado, sku, cantidad, precio_unitario, descuento_linea`).
+Durante la planificación se inspeccionaron cabeceras y algunos registros de CSV, XML y stock; solo se recorrieron los valores distintos de estado/canal. F2 añadió la lectura completa del catálogo, F3 el cruce en memoria con las tarifas XML y F4 la carga de ese resultado en MySQL aislado; su evidencia parcial consta en SOLUCION. No se ha ejecutado el ETL completo de cuatro fuentes. El catálogo tiene 11 columnas (`sku, ean, nombre, marca, categoria, precio_coste, pvp_recomendado, iva, peso_kg, fecha_alta, descripcion`); pedidos tiene 9 (`id_pedido, fecha_pedido, cliente, canal, estado, sku, cantidad, precio_unitario, descuento_linea`).
 
 ## Principios y acciones
 
@@ -12,6 +12,8 @@ Durante la planificación se inspeccionaron cabeceras y algunos registros de CSV
 - Una decisión que descarta una fila o campo deja fuente, localizador y motivo.
 
 **Normalizar** conserva el significado; **rechazar fila** excluye la entidad; **descartar campo** conserva la entidad con ese campo `NULL`; **deduplicar** conserva una ocurrencia; **avisar** conserva el dato con incidencia; **fallar ejecución** impide publicar el lote. El mínimo operativo es: cabecera/archivo ilegible → falla ejecución; fila incorrecta → rechazo; API incompleta tras reintentos → falla ejecución. Un fallo de MySQL revierte la carga. No se diseña aquí una recuperación automática adicional.
+
+En F4, `EMPTY_CATALOG` impide reconciliar una instantánea sin productos válidos; `SOURCE_CHANGED` impide publicar si los bytes de CSV o XML cambian durante la lectura; `DATABASE_ERROR` y `UNEXPECTED_ERROR` identifican fallos de carga sin registrar detalles potencialmente sensibles. Estos motivos dejan el run `failed` cuando ya existe un registro de ejecución.
 
 ## Matriz de decisiones
 
