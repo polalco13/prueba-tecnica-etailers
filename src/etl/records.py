@@ -1,6 +1,6 @@
 """Contratos pequeños para conservar procedencia e incidencias."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Generic, TypeVar
 
@@ -21,6 +21,11 @@ class Severity(StrEnum):
 
 
 class ReasonCode(StrEnum):
+    INVALID_ENCODING = "INVALID_ENCODING"
+    INVALID_CSV = "INVALID_CSV"
+    INVALID_HEADER = "INVALID_HEADER"
+    INVALID_COLUMN_COUNT = "INVALID_COLUMN_COUNT"
+    SOURCE_READ_FAILED = "SOURCE_READ_FAILED"
     MISSING_REQUIRED_FIELD = "MISSING_REQUIRED_FIELD"
     INVALID_IDENTIFIER = "INVALID_IDENTIFIER"
     INVALID_DECIMAL = "INVALID_DECIMAL"
@@ -33,6 +38,10 @@ class ReasonCode(StrEnum):
     INVALID_DATE = "INVALID_DATE"
     INVALID_EAN = "INVALID_EAN"
     UNSAFE_SCIENTIFIC_EAN = "UNSAFE_SCIENTIFIC_EAN"
+    INVALID_TAX = "INVALID_TAX"
+    INVALID_WEIGHT = "INVALID_WEIGHT"
+    EXACT_DUPLICATE = "EXACT_DUPLICATE"
+    CONFLICTING_PRODUCT_SKU = "CONFLICTING_PRODUCT_SKU"
     UNKNOWN_ORDER_STATUS = "UNKNOWN_ORDER_STATUS"
     UNKNOWN_CHANNEL = "UNKNOWN_CHANNEL"
 
@@ -61,6 +70,7 @@ class Issue:
     severity: Severity
     detail: str
     field_name: str | None = None
+    raw_excerpt: str | None = field(default=None, repr=False)
 
 
 class NormalizationError(ValueError):
