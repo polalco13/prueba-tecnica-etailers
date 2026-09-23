@@ -32,7 +32,7 @@ Tecnologías propuestas, a fijar y probar en F0:
 
 | Elección | Justificación y alternativa |
 | --- | --- |
-| Python 3.12, `csv`, `xml.etree.ElementTree`, `decimal`, `datetime`, `logging` | Biblioteca estándar para el volumen local; evitar pandas y conversiones implícitas a float. Versión propuesta, no comprobada aún en el host. |
+| Python 3.13, `csv`, `xml.etree.ElementTree`, `decimal`, `datetime`, `logging` | Biblioteca estándar para el volumen local; evitar pandas y conversiones implícitas a float. F0 validó Python 3.13.13 en el host; 3.12 no está instalado aquí. |
 | MySQL 8 y Compose existentes | Requisito y entorno del ejercicio. No sustituir por SQLite para verificar restricciones. |
 | FastAPI + Uvicorn + Jinja2 | Una ruta HTML, validación de filtros y posible JSON; Flask sería igualmente suficiente y requiere menos piezas de tipado. Se elige FastAPI por validación explícita y facilidad de pruebas. |
 | HTML simple + Chart.js | Un gráfico y tablas sin SPA, bundler ni frontend Node. Fijar versión del recurso y documentar acceso a CDN o incluir copia local. |
