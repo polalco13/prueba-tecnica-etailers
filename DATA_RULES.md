@@ -2,7 +2,7 @@
 
 Estado: contrato **propuesto**, pendiente de comprobar durante la implementación. R = requisito del [README](README.md); D = decisión para esta prueba; S = supuesto por validar. La arquitectura está en [TECH_SPEC](TECH_SPEC.md) y las tareas en [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md). No cambiar una regla en código sin actualizar este documento y sus tests.
 
-Se inspeccionaron cabeceras y algunos registros de CSV, XML y stock; solo se recorrieron los valores distintos de estado/canal. No se ha ejecutado el ETL ni obtenido conteos de resultados. El catálogo tiene 11 columnas (`sku, ean, nombre, marca, categoria, precio_coste, pvp_recomendado, iva, peso_kg, fecha_alta, descripcion`); pedidos tiene 9 (`id_pedido, fecha_pedido, cliente, canal, estado, sku, cantidad, precio_unitario, descuento_linea`).
+Durante la planificación se inspeccionaron cabeceras y algunos registros de CSV, XML y stock; solo se recorrieron los valores distintos de estado/canal. F2 añadió la lectura completa del catálogo, sin tarifas ni carga en BD; su evidencia parcial consta en SOLUCION. No se ha ejecutado el ETL completo ni obtenido conteos finales de productos. El catálogo tiene 11 columnas (`sku, ean, nombre, marca, categoria, precio_coste, pvp_recomendado, iva, peso_kg, fecha_alta, descripcion`); pedidos tiene 9 (`id_pedido, fecha_pedido, cliente, canal, estado, sku, cantidad, precio_unitario, descuento_linea`).
 
 ## Principios y acciones
 
@@ -40,6 +40,8 @@ Se inspeccionaron cabeceras y algunos registros de CSV, XML y stock; solo se rec
 | Stock por almacén | Sumar `quantity` de observaciones válidas por almacén; conservar `reserved` separado. `quantity`/`reserved` negativos o fecha inválida → rechazar observación. `reserved > quantity` **no se rechaza por defecto**: avisar y revisar significado. | `INVALID_STOCK`/`INVALID_DATE` o aviso `RESERVED_EXCEEDS_QUANTITY`. La métrica inicial es stock físico, no disponibilidad. |
 | Registros repetidos de stock | Para mismo SKU/almacén, usar el `updated_at` más reciente; conflicto de mismo instante → aviso y total del SKU desconocido. | `CONFLICTING_STOCK`; no sumar dos versiones del mismo almacén. |
 | API 500/429/timeout | Reintentos acotados; respetar `Retry-After` cuando exista. Autenticación 401 no se reintenta. Recorrer todas las páginas. | Si no se completa la extracción, fallar ejecución (`STOCK_FETCH_FAILED`); no publicar stock parcial. |
+
+**Concreción F2 del catálogo (D).** Se exigen SKU, nombre, marca, categoría y PVP positivo para crear un candidato. Marca y categoría son necesarias para aplicar las tarifas generales; una ausencia no se inventa. El coste CSV se conserva como `Decimal` o como problema pendiente: una fila con coste ausente/inválido solo podrá ganar si F3 confirma una excepción XML válida para ese SKU y un precio final positivo. F2 no la cuenta aún como producto aceptado. IVA opcional se expresa como ratio (`21`, `21%` o `0,21` → `0.21`); peso opcional admite cero explícito, pero no negativos. La identidad de un duplicado *exacto* compara las 11 celdas originales; diferencias de texto que se normalicen igual siguen siendo un conflicto trazado, no se eliminan silenciosamente. La primera fila válida se determina **después** de validar el precio final de cada candidato en F3.
 
 ## Convenciones que afectan a las métricas
 
