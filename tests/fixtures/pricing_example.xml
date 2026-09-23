@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Fixture sintética: importes calculados manualmente, no datos del proveedor. -->
+<TarifasProveedor>
+  <Descuentos>
+    <Descuento tipo="categoria" valor="Ejemplo">
+      <PorcentajeBase>10%</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Marca Prueba">
+      <PorcentajeBase>5</PorcentajeBase>
+    </Descuento>
+  </Descuentos>
+  <Excepciones>
+    <Producto sku="EX-001">
+      <PrecioNetoAcordado>42.22</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+  </Excepciones>
+</TarifasProveedor>
