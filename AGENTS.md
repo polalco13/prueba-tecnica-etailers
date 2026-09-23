@@ -52,6 +52,6 @@ El plan de Make no autoriza por sí solo enviar mensajes: preparar destinatario/
 
 Antes de un cambio sustancial identificar archivos afectados, razón y criterio de aceptación; esto no obliga a pedir aprobación adicional para una tarea ya autorizada. Tras el cambio resumir qué se modificó, tests realmente ejecutados, decisiones y pendientes.
 
-Seguir ramas/PR por fases de IMPLEMENTATION_PLAN, usar nombres descriptivos con prefijo `codex/` por defecto y commits pequeños. No mezclar cambios ajenos ni fabricar historial. Mantener main funcional para el incremento integrado y no declarar ejercicio completo mientras falten requisitos obligatorios.
+Seguir ramas/PR por fases de IMPLEMENTATION_PLAN, con nombres funcionales `feature/` y commits pequeños. No mezclar cambios ajenos ni fabricar historial. Mantener main funcional para el incremento integrado y no declarar ejercicio completo mientras falten requisitos obligatorios.
 
 Actualizar SOLUCION con evidencia real cuando exista; dejar TBD cuando falte. Terminar al cumplir la tarea solicitada y recomendar el siguiente paso sin ejecutarlo automáticamente.

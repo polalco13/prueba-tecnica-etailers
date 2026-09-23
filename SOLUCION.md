@@ -105,14 +105,14 @@ Esta tabla no contiene resultados previstos ni números simulados.
 | Productos históricos | TBD |
 | Pedidos/líneas aceptados y pedidos parciales | TBD |
 | Stock por almacén y productos con stock desconocido/inválido | TBD |
-| Filas descartadas/deduplicadas y campos descartados | TBD |
+| Filas leídas/aceptadas/rechazadas/deduplicadas por fuente; avisos y campos descartados aparte | TBD |
 | Facturación, unidades, ticket y margen/cobertura | TBD |
 | Duraciones y estado Make | TBD |
 | Comparación de datos de negocio entre runs | TBD |
 
 ## Rechazos
 
-Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. Distribución real por reason_code: **TBD**. Separar filas rechazadas únicas de número de incidencias; duplicados se cuentan como descartes, un campo inválido no implica descartar todo el producto. Reconciliación de contadores: **TBD**.
+Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. Distribución real por reason_code y acción: **TBD**. Verificar `rows_read = rows_accepted + rows_rejected + rows_deduplicated` por fuente completa; los duplicados no cuentan como rechazos. Avisos y campos descartados se informan aparte. Una fila con varios motivos cuenta una vez como rechazada, pero puede aportar varios motivos. Reconciliación real de contadores: **TBD**.
 
 ## Pruebas realizadas
 
