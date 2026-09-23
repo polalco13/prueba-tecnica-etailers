@@ -1,13 +1,13 @@
 # Solución — documento vivo
 
-**Estado: plantilla de entrega. Solo se ha realizado planificación documental.** No existen todavía resultados de ETL, tests funcionales, dashboard o Make aportados por esta tarea. `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado: plantilla de entrega. F0 de entorno comprobada; ETL, tests de negocio, dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
 
 Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
 
 ## Resumen
 
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
-- Funcionalidad realmente implementada: **TBD**.
+- Funcionalidad realmente implementada: bootstrap de dependencias, configuración de pytest/Ruff y comprobación local de servicios (F0). Lógica de integración: **TBD**.
 - Versión/commit entregado y enlace GitHub: **TBD**.
 - Estado de requisitos obligatorios y extras: **TBD**.
 
@@ -17,26 +17,39 @@ TBD: incluir diagrama real y tecnologías/versiones verificadas. Propuesta inici
 
 ## Requisitos de entorno
 
-- Docker/Compose: necesarios según README; versiones verificadas **TBD**.
-- Python y dependencias fijadas: **TBD** (3.12 es propuesta).
-- Puertos/servicios del entorno provisto: MySQL host 3307, API stock 3001; disponibilidad real **TBD**.
-- Acceso a Make y cuentas de destino: **TBD**, sin incluir tokens/credenciales.
+- Entorno local comprobado en F0 (23/09/2026): Python 3.13.13, Docker 29.2.1 y Compose 2.38.2. MySQL respondió como 8.0.46. Se usa 3.13 porque la versión 3.12 propuesta no está disponible en este equipo; compatibilidad con otros Python **TBD**.
+- Dependencias resueltas y fijadas en `requirements.txt`; configuración de pytest y Ruff en `pyproject.toml`. La justificación de dependencias está más abajo. Instalación en otro equipo **TBD**.
+- Puertos/servicios del entorno provisto: MySQL host 3307 y API stock 3001; ambos estaban `healthy` en F0. Esta observación local no sustituye la comprobación desde cero de F12.
+- Make y los dos destinos: no hay `MAKE_WEBHOOK_URL` ni destinatario de alerta en `.env` local; acceso/conexiones reales **TBD** para F10. El token local se usó en memoria para la comprobación autenticada; no se mostró ni publicó.
+- GitHub: `origin` está configurado y un `git push --dry-run` a `feature/etl-products` terminó correctamente; no se publicó esa rama por esta comprobación. La accesibilidad final del repositorio entregado se verificará en F12.
 - Configuración de zona horaria, moneda y base fiscal: **TBD**.
 
 ## Cómo levantar desde cero
 
-Checklist que debe convertirse en procedimiento probado en F12:
+Pasos de bootstrap comprobados en F0, que F12 debe repetir desde un clon limpio:
 
 1. Clonar repositorio y seleccionar versión de entrega: URL/commit **TBD**.
-2. Preparar `.env` a partir de `.env.example` solo si no existe. Mantenerlo local. Variables nuevas y valores no secretos: **TBD**. No mostrar claves reales en ejemplos.
-3. Comprobar que variables de la aplicación coinciden con servicios: Compose tiene valores demo literales y no interpola automáticamente todo `.env`.
-4. El README proporciona `docker compose up -d` para MySQL/API; ejecución verificada aquí **TBD**. Comprobar healthchecks y `/health`, luego una página de stock autenticada con token desde entorno sin imprimirlo. Salida real saneada **TBD**.
-5. Crear entorno Python e instalar dependencias fijadas: comandos reales **TBD**.
+2. Preparar `.env` a partir de `.env.example` solo si no existe. En F0 ya existía y se conservó. Mantenerlo local; no mostrar claves reales en ejemplos. Variables nuevas para la aplicación futura: **TBD**.
+3. Comprobar que variables de la aplicación coinciden con servicios: Compose tiene valores demo literales y no interpola automáticamente todo `.env`. La conexión local de F0 confirmó que los valores actuales coinciden.
+4. El README proporciona `docker compose up -d` para MySQL/API. Después, comprobar `docker compose ps` y `curl --fail http://localhost:3001/health`. En F0 los servicios ya estaban en marcha: se comprobó `docker compose ps`, `/health` y una página autenticada, sin reiniciarlos ni imprimir el token. Se observó `/health` 200, 401 sin token y 200 con token (`data`: 5 elementos, `meta`: `page`, `per_page`, `total_records`, `total_pages`, `has_next`). El token se leyó desde `.env` mediante `python-dotenv` en memoria, no se pasó como literal de línea de comandos.
+5. Crear el entorno Python e instalar dependencias fijadas:
+
+   ```bash
+   python3.13 -m venv .venv
+   .venv/bin/python -m pip install -r requirements.txt
+   .venv/bin/python -m pip check
+   ```
+
+   En F0 se creó `.venv` local y se instalaron las versiones fijadas. La verificación de instalación desde `requirements.txt` y `pip check` consta en las pruebas realizadas. `.venv` y las cachés de herramientas están ignoradas por Git.
 6. Aplicar scripts versionados de BD: comando y orden **TBD**. `db/init` solo se ejecuta al inicializar volumen; no borrar volúmenes existentes para aplicar actualizaciones.
 7. Arrancar web: comando, host/puerto y URL local **TBD**.
 8. Registrar validación desde clon/BD de pruebas nuevos, fecha y commit: **TBD**. No ejecutar pruebas destructivas sobre el volumen del usuario.
 
-No se ofrece todavía una secuencia completa ejecutable: falta implementar la aplicación y verificarla. En F12 no pueden quedar pasos críticos implícitos.
+El entorno base responde, pero aún no hay ETL, esquema ni web: no se ofrece todavía una secuencia completa ejecutable. En F12 no pueden quedar pasos críticos implícitos.
+
+### Dependencias elegidas en F0
+
+`PyMySQL` proporciona el driver de MySQL que falta en la biblioteca estándar; `httpx` sirve tanto para la API como para el webhook y permite simular transporte en tests. `FastAPI`, `Uvicorn` y `Jinja2` sostendrán la página HTML propuesta, sin SPA ni ORM. `python-dotenv` permite cargar `.env` local sin ejecutarlo como shell ni sobrescribir variables; `pytest` verifica reglas futuras y `Ruff` configura un lint ligero. No se añade pandas, un segundo cliente HTTP ni un framework de migraciones. El uso de estas dependencias por módulos de aplicación queda pendiente de sus fases; F0 solo valida instalación/importación.
 
 ## Cómo ejecutar el ETL
 
@@ -49,7 +62,7 @@ No se ofrece todavía una secuencia completa ejecutable: falta implementar la ap
 
 ## Cómo ejecutar tests
 
-Comandos unitarios, integración MySQL y lint/format configurados: **TBD**. pytest es propuesta, no resultado ejecutado. Documentar creación de BD de pruebas aislada y variables requeridas sin secretos. No usar la BD del usuario para tests que eliminen datos.
+pytest y Ruff quedaron instalados y configurados en F0; todavía no existe código de negocio ni tests del proyecto que ejecutar. Comandos concretos de unitarias e integración MySQL: **TBD** en sus fases. Documentar creación de BD de pruebas aislada y variables requeridas sin secretos. No usar la BD del usuario para tests que eliminen datos.
 
 ## Esquema de base de datos
 
@@ -118,6 +131,9 @@ Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. D
 
 | Verificación | Comando / evidencia | Resultado |
 | --- | --- | --- |
+| F0: versiones y dependencias | `python3.13 --version`, `docker --version`, `docker compose version`, `pip install -r requirements.txt`, `pip check`, importación de 8 dependencias directas | Python 3.13.13; Docker 29.2.1; Compose 2.38.2; instalación/importaciones correctas; `pip check`: sin incompatibilidades. |
+| F0: servicios y credenciales locales | `docker compose ps`; `/health`; GET stock sin/con Bearer leído de `.env`; conexión MySQL con PyMySQL | Ambos contenedores healthy; health 200; stock 401 sin token y 200 con token, 5 registros; MySQL 8.0.46/base `catalogo`, 0 tablas. |
+| F0: remoto Git | `git push --dry-run origin HEAD:refs/heads/feature/etl-products` | Éxito; no se subieron cambios. |
 | Unitarias de normalización y pricing | TBD | TBD |
 | API mock, paginación y errores | TBD | TBD |
 | MySQL, FKs y rollback | TBD | TBD |
