@@ -1,13 +1,13 @@
 # Solución — documento vivo
 
-**Estado: plantilla de entrega. F0 de entorno comprobada; ETL, tests de negocio, dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado: plantilla de entrega. F0 de entorno comprobada y F1 de fundamentos implementada; extracción, carga, dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
 
 Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
 
 ## Resumen
 
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
-- Funcionalidad realmente implementada: bootstrap de dependencias, configuración de pytest/Ruff y comprobación local de servicios (F0). Lógica de integración: **TBD**.
+- Funcionalidad realmente implementada: bootstrap de dependencias, configuración de pytest/Ruff y comprobación local de servicios (F0); configuración tipada, logging con contexto de ejecución, contratos de procedencia/incidencia y normalizadores puros con tests (F1). Lógica de integración: **TBD**.
 - Versión/commit entregado y enlace GitHub: **TBD**.
 - Estado de requisitos obligatorios y extras: **TBD**.
 
@@ -22,14 +22,14 @@ TBD: incluir diagrama real y tecnologías/versiones verificadas. Propuesta inici
 - Puertos/servicios del entorno provisto: MySQL host 3307 y API stock 3001; ambos estaban `healthy` en F0. Esta observación local no sustituye la comprobación desde cero de F12.
 - Make y los dos destinos: no hay `MAKE_WEBHOOK_URL` ni destinatario de alerta en `.env` local; acceso/conexiones reales **TBD** para F10. El token local se usó en memoria para la comprobación autenticada; no se mostró ni publicó.
 - GitHub: `origin` está configurado y un `git push --dry-run` a `feature/etl-products` terminó correctamente; no se publicó esa rama por esta comprobación. La accesibilidad final del repositorio entregado se verificará en F12.
-- Configuración de zona horaria, moneda y base fiscal: **TBD**.
+- Zona horaria propuesta en F1: `Europe/Madrid` por defecto, configurable mediante `BUSINESS_TIMEZONE` y pendiente de confirmación comercial. Moneda y base fiscal: **TBD**.
 
 ## Cómo levantar desde cero
 
 Pasos de bootstrap comprobados en F0, que F12 debe repetir desde un clon limpio:
 
 1. Clonar repositorio y seleccionar versión de entrega: URL/commit **TBD**.
-2. Preparar `.env` a partir de `.env.example` solo si no existe. En F0 ya existía y se conservó. Mantenerlo local; no mostrar claves reales en ejemplos. Variables nuevas para la aplicación futura: **TBD**.
+2. Preparar `.env` a partir de `.env.example` solo si no existe. En F0 ya existía y se conservó. Mantenerlo local; no mostrar claves reales en ejemplos. F1 acepta opcionalmente `ORDERS_CSV_PATH` (por defecto `data/pedidos_historico.csv`), `BUSINESS_TIMEZONE` (por defecto `Europe/Madrid`) y `LOG_LEVEL` (por defecto `INFO`). Variables de fases posteriores: **TBD**.
 3. Comprobar que variables de la aplicación coinciden con servicios: Compose tiene valores demo literales y no interpola automáticamente todo `.env`. La conexión local de F0 confirmó que los valores actuales coinciden.
 4. El README proporciona `docker compose up -d` para MySQL/API. Después, comprobar `docker compose ps` y `curl --fail http://localhost:3001/health`. En F0 los servicios ya estaban en marcha: se comprobó `docker compose ps`, `/health` y una página autenticada, sin reiniciarlos ni imprimir el token. Se observó `/health` 200, 401 sin token y 200 con token (`data`: 5 elementos, `meta`: `page`, `per_page`, `total_records`, `total_pages`, `has_next`). El token se leyó desde `.env` mediante `python-dotenv` en memoria, no se pasó como literal de línea de comandos.
 5. Crear el entorno Python e instalar dependencias fijadas:
@@ -62,7 +62,15 @@ El entorno base responde, pero aún no hay ETL, esquema ni web: no se ofrece tod
 
 ## Cómo ejecutar tests
 
-pytest y Ruff quedaron instalados y configurados en F0; todavía no existe código de negocio ni tests del proyecto que ejecutar. Comandos concretos de unitarias e integración MySQL: **TBD** en sus fases. Documentar creación de BD de pruebas aislada y variables requeridas sin secretos. No usar la BD del usuario para tests que eliminen datos.
+Las pruebas puras de F1 se ejecutan sin BD, API ni `.env` real:
+
+```bash
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check src tests
+.venv/bin/ruff format --check src tests
+```
+
+En F1 pasaron 123 casos unitarios y los dos controles de Ruff. Las pruebas de lectores con sus codificaciones reales corresponden a F2 (catálogo) y F6 (pedidos); las de integración MySQL/API y la ejecución completa siguen **TBD**. Documentar creación de BD de pruebas aislada y variables requeridas sin secretos. No usar la BD del usuario para tests que eliminen datos.
 
 ## Esquema de base de datos
 
@@ -70,7 +78,7 @@ DDL aplicado y diagrama final: **TBD**. Propuesta conceptual: products, orders, 
 
 ## Decisiones sobre calidad de datos
 
-Reglas propuestas en [DATA_RULES](DATA_RULES.md): encoding por fuente, nulos, precios Decimal, EAN conservador, selección determinista de duplicados, descuentos, fechas, estados/canales y stock desconocido. Reglas realmente implantadas y diferencias justificadas: **TBD**. Descartes observados e impacto: **TBD**.
+Reglas propuestas en [DATA_RULES](DATA_RULES.md): encoding por fuente, nulos, precios Decimal, EAN conservador, selección determinista de duplicados, descuentos, fechas, estados/canales y stock desconocido. En F1 se implantaron normalizadores puros para centinelas y texto, SKU/ID, decimales y dinero, descuentos, cantidades exactas, fechas y timestamps con zona, estados/canales observados, EAN y redondeo `ROUND_HALF_UP`. Un descuento sin `%` igual a `1` se interpreta como 1 %, según la decisión documentada. Los normalizadores informan códigos estables; la decisión contextual de rechazar fila, descartar campo o avisar será de cada extractor. Todavía no se han leído fuentes ni observado descartes reales. Lectores, selección de duplicados y política de stock: **TBD**.
 
 ## Definición de facturación y margen
 
@@ -134,7 +142,8 @@ Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. D
 | F0: versiones y dependencias | `python3.13 --version`, `docker --version`, `docker compose version`, `pip install -r requirements.txt`, `pip check`, importación de 8 dependencias directas | Python 3.13.13; Docker 29.2.1; Compose 2.38.2; instalación/importaciones correctas; `pip check`: sin incompatibilidades. |
 | F0: servicios y credenciales locales | `docker compose ps`; `/health`; GET stock sin/con Bearer leído de `.env`; conexión MySQL con PyMySQL | Ambos contenedores healthy; health 200; stock 401 sin token y 200 con token, 5 registros; MySQL 8.0.46/base `catalogo`, 0 tablas. |
 | F0: remoto Git | `git push --dry-run origin HEAD:refs/heads/feature/etl-products` | Éxito; no se subieron cambios. |
-| Unitarias de normalización y pricing | TBD | TBD |
+| F1: normalización y configuración | `.venv/bin/python -m pytest -q`; `.venv/bin/ruff check src tests`; `.venv/bin/ruff format --check src tests` | 123 tests pasan; lint y formato correctos. Casos sintéticos sin BD/API. |
+| Pricing de tarifas y producto | TBD | TBD |
 | API mock, paginación y errores | TBD | TBD |
 | MySQL, FKs y rollback | TBD | TBD |
 | ETL completo y segunda ejecución | TBD | TBD |
@@ -143,7 +152,7 @@ Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. D
 | Make con ejecución real y destinos | TBD | TBD |
 | Arranque desde cero y secretos | TBD | TBD |
 
-La revisión de planificación no equivale a ejecutar estas pruebas funcionales. No registrar «todos los tests pasan» hasta disponer de comandos y resultados reales.
+Los 123 tests de F1 cubren solo configuración y normalizadores; no acreditan aún extracción, pricing, persistencia ni ETL completo.
 
 ## Qué cambiaría con cinco millones de líneas
 
@@ -161,7 +170,7 @@ Por validar: ausencia de ID de línea y coste histórico; base fiscal/zona de ne
 
 ## Uso de IA
 
-Se usó Codex para inspeccionar el repositorio y redactar esta planificación. No se implementó el ETL ni se ejecutaron pruebas funcionales en esa tarea. El responsable deberá revisar y poder explicar las decisiones propuestas.
+Se usó Codex para inspeccionar el repositorio y redactar la planificación; después, para implementar F0 y los fundamentos de F1. En F1 se ejecutaron tests unitarios sintéticos y Ruff; no se ha implementado ni ejecutado el ETL completo. El responsable deberá revisar y poder explicar las decisiones y resultados.
 
 Uso durante implementación, tareas asistidas, decisiones revisadas personalmente, validación y errores detectados: **TBD**. No atribuir aprobaciones o verificaciones humanas que no han ocurrido.
 
