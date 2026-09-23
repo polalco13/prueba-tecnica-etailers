@@ -1,0 +1,72 @@
+"""Contratos pequeños para conservar procedencia e incidencias."""
+
+from dataclasses import dataclass
+from enum import StrEnum
+from typing import Generic, TypeVar
+
+
+class Action(StrEnum):
+    NORMALIZE = "normalize"
+    REJECT_ROW = "reject_row"
+    DROP_FIELD = "drop_field"
+    DEDUPLICATE = "deduplicate"
+    WARN = "warn"
+    FAIL_RUN = "fail_run"
+
+
+class Severity(StrEnum):
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+
+
+class ReasonCode(StrEnum):
+    MISSING_REQUIRED_FIELD = "MISSING_REQUIRED_FIELD"
+    INVALID_IDENTIFIER = "INVALID_IDENTIFIER"
+    INVALID_DECIMAL = "INVALID_DECIMAL"
+    INVALID_PRICE = "INVALID_PRICE"
+    AMBIGUOUS_NUMBER = "AMBIGUOUS_NUMBER"
+    NON_POSITIVE_PRICE = "NON_POSITIVE_PRICE"
+    NUMERIC_OUT_OF_RANGE = "NUMERIC_OUT_OF_RANGE"
+    INVALID_DISCOUNT = "INVALID_DISCOUNT"
+    INVALID_QUANTITY = "INVALID_QUANTITY"
+    INVALID_DATE = "INVALID_DATE"
+    INVALID_EAN = "INVALID_EAN"
+    UNSAFE_SCIENTIFIC_EAN = "UNSAFE_SCIENTIFIC_EAN"
+    UNKNOWN_ORDER_STATUS = "UNKNOWN_ORDER_STATUS"
+    UNKNOWN_CHANNEL = "UNKNOWN_CHANNEL"
+
+
+@dataclass(frozen=True, slots=True)
+class SourceRef:
+    source: str
+    locator: str
+    entity_key: str | None = None
+
+
+Payload = TypeVar("Payload")
+
+
+@dataclass(frozen=True, slots=True)
+class SourceRecord(Generic[Payload]):
+    ref: SourceRef
+    payload: Payload
+
+
+@dataclass(frozen=True, slots=True)
+class Issue:
+    ref: SourceRef
+    reason_code: ReasonCode | str
+    action: Action
+    severity: Severity
+    detail: str
+    field_name: str | None = None
+
+
+class NormalizationError(ValueError):
+    """Error seguro: no incluye el valor de entrada en el mensaje."""
+
+    def __init__(self, code: ReasonCode, field_name: str | None = None) -> None:
+        self.code = code
+        self.field_name = field_name
+        super().__init__(code.value if field_name is None else f"{code.value}: {field_name}")
