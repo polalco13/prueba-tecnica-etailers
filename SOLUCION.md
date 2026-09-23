@@ -1,13 +1,13 @@
 # Solución — documento vivo
 
-**Estado: plantilla de entrega. F0–F2 comprobadas dentro de su alcance; tarifas, carga, dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado: plantilla de entrega. F0–F3 comprobadas dentro de su alcance; carga, dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
 
 Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
 
 ## Resumen
 
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
-- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo con incidencias y candidatos pendientes de precio final (F2). Integración de fuentes y carga: **TBD**.
+- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto calculado con selección definitiva por SKU en memoria (F3). Integración de cuatro fuentes y carga: **TBD**.
 - Versión/commit entregado y enlace GitHub: **TBD**.
 - Estado de requisitos obligatorios y extras: **TBD**.
 
@@ -62,7 +62,7 @@ El entorno base responde, pero aún no hay ETL, esquema ni web: no se ofrece tod
 
 ## Cómo ejecutar tests
 
-Las pruebas unitarias de F1/F2 se ejecutan sin BD, API ni `.env` real:
+Las pruebas unitarias de F1–F3 se ejecutan sin BD, API ni `.env` real:
 
 ```bash
 .venv/bin/python -m pytest -q
@@ -70,7 +70,7 @@ Las pruebas unitarias de F1/F2 se ejecutan sin BD, API ni `.env` real:
 .venv/bin/ruff format --check src tests
 ```
 
-En F1 pasaron 123 casos unitarios. F2 añadió tests de CSV Latin-1, quoting, filas y procedencia; el total actual de la suite y Ruff se registra en «Pruebas realizadas». La lectura de pedidos UTF-8 BOM corresponde a F6; las pruebas de integración MySQL/API y la ejecución completa siguen **TBD**. Documentar creación de BD de pruebas aislada y variables requeridas sin secretos. No usar la BD del usuario para tests que eliminen datos.
+En F1 pasaron 123 casos unitarios. F2 añadió tests de CSV Latin-1, quoting, filas y procedencia; F3 cubre tarifas y el cálculo económico. El total actual de la suite y Ruff se registra en «Pruebas realizadas». La lectura de pedidos UTF-8 BOM corresponde a F6; las pruebas de integración MySQL/API y la ejecución completa siguen **TBD**. Documentar creación de BD de pruebas aislada y variables requeridas sin secretos. No usar la BD del usuario para tests que eliminen datos.
 
 ## Esquema de base de datos
 
@@ -78,9 +78,11 @@ DDL aplicado y diagrama final: **TBD**. Propuesta conceptual: products, orders, 
 
 ## Decisiones sobre calidad de datos
 
-Reglas propuestas en [DATA_RULES](DATA_RULES.md): encoding por fuente, nulos, precios Decimal, EAN conservador, selección determinista de duplicados, descuentos, fechas, estados/canales y stock desconocido. En F1 se implantaron normalizadores puros para centinelas y texto, SKU/ID, decimales y dinero, descuentos, cantidades exactas, fechas y timestamps con zona, estados/canales observados, EAN y redondeo `ROUND_HALF_UP`. Un descuento sin `%` igual a `1` se interpreta como 1 %, según la decisión documentada. F2 lee el catálogo Latin-1 con `csv`, rechaza filas con columnas o campos obligatorios inválidos y descarta solo campos opcionales incorrectos. Conserva el coste CSV inválido como candidato condicionado a una excepción válida; la selección final de primera fila válida por SKU espera F3. Pedidos, tarifas y política de stock: **TBD**.
+Reglas propuestas en [DATA_RULES](DATA_RULES.md): encoding por fuente, nulos, precios Decimal, EAN conservador, selección determinista de duplicados, descuentos, fechas, estados/canales y stock desconocido. En F1 se implantaron normalizadores puros para centinelas y texto, SKU/ID, decimales y dinero, descuentos, cantidades exactas, fechas y timestamps con zona, estados/canales observados, EAN y redondeo `ROUND_HALF_UP`. Un descuento sin `%` igual a `1` se interpreta como 1 %, según la decisión documentada. F2 lee el catálogo Latin-1 con `csv`, rechaza filas con columnas o campos obligatorios inválidos y descarta solo campos opcionales incorrectos. Conserva el coste CSV inválido como candidato condicionado a una excepción válida. F3 resuelve las tarifas, calcula el precio neto y entonces escoge la primera fila válida por SKU; los conflictos de tarifa general abortan el cálculo. Pedidos, stock y persistencia: **TBD**.
 
-La lectura aislada del catálogo original en F2 (sin tarifas ni MySQL) observó **133 registros de origen, 130 candidatos antes de precio final, 10 con coste CSV pendiente de validar por excepción y 13 incidencias preliminares**: 2 de columnas, 5 de campo obligatorio y 6 de EAN. Varios motivos pueden pertenecer a una sola fila. Estos números no son productos cargados ni conteos finales de rechazos/deduplicados; la selección económica aún falta. Los ficheros de `data/` no se modificaron.
+La lectura aislada del catálogo original en F2 (sin tarifas ni MySQL) observó **133 registros de origen, 130 candidatos antes de precio final, 10 con coste CSV pendiente de validar por excepción y 13 incidencias preliminares**: 2 de columnas, 5 de campo obligatorio y 6 de EAN. Varios motivos pueden pertenecer a una sola fila. Eran cifras provisionales, antes de la selección económica de F3. Los ficheros de `data/` no se modificaron.
+
+F3 cruza ese catálogo con el XML real **solo en memoria**. El parser reconoció 6 reglas de categoría, 10 de marca y 14 excepciones; registró 5 términos de volumen/condiciones no aplicados. El resultado seleccionó 115 productos con coste neto calculado (103 desde coste CSV y descuentos, 12 por excepción). Las 133 filas se reconcilian como **115 aceptadas + 15 rechazadas + 3 deduplicadas**. Hay 19 incidencias de acción «rechazar» porque una fila puede tener varios motivos; además hay 7 campos descartados y 7 avisos, incluidos 2 por excepciones sin candidato. Ninguna cifra representa aún filas de MySQL ni una ejecución ETL completa. EUR y base fiscal comparable siguen sin confirmar.
 
 ## Definición de facturación y margen
 
@@ -135,7 +137,7 @@ Esta tabla no contiene resultados previstos ni números simulados.
 
 ## Rechazos
 
-Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. Distribución real por reason_code y acción: **TBD**. Verificar `rows_read = rows_accepted + rows_rejected + rows_deduplicated` por fuente completa; los duplicados no cuentan como rechazos. Avisos y campos descartados se informan aparte. Una fila con varios motivos cuenta una vez como rechazada, pero puede aportar varios motivos. Reconciliación real de contadores: **TBD**.
+Consultas de BD para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. La distribución de incidencias del cruce en memoria F3 se resume arriba; la persistida por run sigue **TBD**. Verificar `rows_read = rows_accepted + rows_rejected + rows_deduplicated` por fuente completa; los duplicados no cuentan como rechazos. Avisos y campos descartados se informan aparte. Una fila con varios motivos cuenta una vez como rechazada, pero puede aportar varios motivos. La reconciliación en memoria del catálogo pasó; su prueba contra BD y las otras fuentes sigue **TBD**.
 
 ## Pruebas realizadas
 
@@ -146,7 +148,7 @@ Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. D
 | F0: remoto Git | `git push --dry-run origin HEAD:refs/heads/feature/etl-products` | Éxito; no se subieron cambios. |
 | F1: normalización y configuración | `.venv/bin/python -m pytest -q`; `.venv/bin/ruff check src tests`; `.venv/bin/ruff format --check src tests` | 123 tests pasan; lint y formato correctos. Casos sintéticos sin BD/API. |
 | F2: lector y selección diferida del catálogo | `.venv/bin/python -m pytest -q`; `.venv/bin/ruff check src tests`; `.venv/bin/ruff format --check src tests`; lectura aislada de `data/proveedor_productos.csv` | 155 tests en total; lint y formato correctos. Lectura real sin escribir fuentes ni BD. |
-| Pricing de tarifas y producto | TBD | TBD |
+| F3: XML y coste neto | `.venv/bin/python -m pytest -q`; `.venv/bin/ruff check src tests`; `.venv/bin/ruff format --check src tests`; cruce en memoria de CSV/XML originales | 194 tests en total; lint y formato correctos. Ejemplo sintético 100 − 10 % − 5 % = 85; 115 productos seleccionados en memoria, sin BD. |
 | API mock, paginación y errores | TBD | TBD |
 | MySQL, FKs y rollback | TBD | TBD |
 | ETL completo y segunda ejecución | TBD | TBD |
@@ -155,7 +157,7 @@ Consultas para revisar fuente/localizador/motivo y ejemplos saneados: **TBD**. D
 | Make con ejecución real y destinos | TBD | TBD |
 | Arranque desde cero y secretos | TBD | TBD |
 
-Los tests de F1/F2 no acreditan todavía pricing XML, persistencia ni ETL completo.
+Los tests de F1–F3 no acreditan todavía persistencia, integridad MySQL ni ETL completo.
 
 ## Qué cambiaría con cinco millones de líneas
 
@@ -173,7 +175,7 @@ Por validar: ausencia de ID de línea y coste histórico; base fiscal/zona de ne
 
 ## Uso de IA
 
-Se usó Codex para inspeccionar el repositorio y redactar la planificación; después, para implementar F0–F2. En F1/F2 se ejecutaron tests unitarios sintéticos y Ruff; en F2 también se leyó el CSV real del catálogo sin modificarlo. No se ha implementado ni ejecutado el ETL completo. El responsable deberá revisar y poder explicar las decisiones y resultados.
+Se usó Codex para inspeccionar el repositorio y redactar la planificación; después, para implementar F0–F3. En F1–F3 se ejecutaron tests unitarios sintéticos y Ruff; en F2/F3 también se leyeron y cruzaron los CSV/XML reales sin modificarlos. No se ha implementado ni ejecutado el ETL completo. El responsable deberá revisar y poder explicar las decisiones y resultados.
 
 Uso durante implementación, tareas asistidas, decisiones revisadas personalmente, validación y errores detectados: **TBD**. No atribuir aprobaciones o verificaciones humanas que no han ocurrido.
 
