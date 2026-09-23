@@ -1,0 +1,1612 @@
+[
+ {
+  "sku": "PRV-2104",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-01-14T18:48:00Z"
+ },
+ {
+  "sku": "PRV-2101",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-03-22T01:06:00Z"
+ },
+ {
+  "sku": "PRV-2078",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 2,
+  "updated_at": "2026-09-21T22:11:00Z"
+ },
+ {
+  "sku": "PRV-2121",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-04-18T11:05:00Z"
+ },
+ {
+  "sku": "PRV-2031",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-05-23T23:15:00Z"
+ },
+ {
+  "sku": "PRV-7104",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-09-01T08:00:00Z"
+ },
+ {
+  "sku": "PRV-2116",
+  "warehouse": "VLC-03",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-06-28T15:42:00Z"
+ },
+ {
+  "sku": "PRV-7105",
+  "warehouse": "MAD-01",
+  "quantity": 13,
+  "reserved": 0,
+  "updated_at": "2026-09-01T08:00:00Z"
+ },
+ {
+  "sku": "PRV-2119",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 5,
+  "updated_at": "2026-09-23T22:15:00Z"
+ },
+ {
+  "sku": "PRV-2119",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-06-24T13:53:00Z"
+ },
+ {
+  "sku": "PRV-2027",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-03-10T13:39:00Z"
+ },
+ {
+  "sku": "PRV-2036",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-07-14T05:25:00Z"
+ },
+ {
+  "sku": "PRV-2013",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-05-19T18:35:00Z"
+ },
+ {
+  "sku": "PRV-2094",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-05-26T00:31:00Z"
+ },
+ {
+  "sku": "PRV-2016",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-09-10T18:52:00Z"
+ },
+ {
+  "sku": "PRV-2107",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-04-15T06:31:00Z"
+ },
+ {
+  "sku": "PRV-2093",
+  "warehouse": "VLC-03",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-04-27T09:01:00Z"
+ },
+ {
+  "sku": "PRV-2077",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 5,
+  "updated_at": "2026-02-26T11:39:00Z"
+ },
+ {
+  "sku": "PRV-2077",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 2,
+  "updated_at": "2026-03-21T05:23:00Z"
+ },
+ {
+  "sku": "PRV-2056",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-02-16T08:20:00Z"
+ },
+ {
+  "sku": "PRV-2084",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-01-26T10:23:00Z"
+ },
+ {
+  "sku": "PRV-2034",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 2,
+  "updated_at": "2026-04-12T10:59:00Z"
+ },
+ {
+  "sku": "PRV-2092",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 5,
+  "updated_at": "2026-06-10T08:10:00Z"
+ },
+ {
+  "sku": "PRV-2070",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-09-26T22:35:00Z"
+ },
+ {
+  "sku": "PRV-2112",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-06-20T13:21:00Z"
+ },
+ {
+  "sku": "PRV-2044",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-01-28T01:32:00Z"
+ },
+ {
+  "sku": "PRV-2090",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-02-11T19:40:00Z"
+ },
+ {
+  "sku": "PRV-2014",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-02-18T18:00:00Z"
+ },
+ {
+  "sku": "PRV-2083",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-03-18T21:33:00Z"
+ },
+ {
+  "sku": "PRV-2102",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 5,
+  "updated_at": "2026-01-26T02:34:00Z"
+ },
+ {
+  "sku": "PRV-2018",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-01-13T19:53:00Z"
+ },
+ {
+  "sku": "PRV-2052",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-04-10T07:51:00Z"
+ },
+ {
+  "sku": "PRV-2047",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-08-24T16:23:00Z"
+ },
+ {
+  "sku": "PRV-2105",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 5,
+  "updated_at": "2026-01-15T03:52:00Z"
+ },
+ {
+  "sku": "PRV-2068",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-04-21T14:39:00Z"
+ },
+ {
+  "sku": "PRV-2023",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-07-17T22:32:00Z"
+ },
+ {
+  "sku": "PRV-2033",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-07-22T12:42:00Z"
+ },
+ {
+  "sku": "PRV-2050",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 2,
+  "updated_at": "2026-09-17T09:56:00Z"
+ },
+ {
+  "sku": "PRV-2107",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-06-24T15:34:00Z"
+ },
+ {
+  "sku": "PRV-2036",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-02-24T07:24:00Z"
+ },
+ {
+  "sku": "PRV-2052",
+  "warehouse": "BCN-02",
+  "quantity": 900,
+  "reserved": 5,
+  "updated_at": "2026-09-18T09:29:00Z"
+ },
+ {
+  "sku": "PRV-2037",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-07-28T07:30:00Z"
+ },
+ {
+  "sku": "PRV-2032",
+  "warehouse": "VLC-03",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-01-23T11:47:00Z"
+ },
+ {
+  "sku": "PRV-2067",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 5,
+  "updated_at": "2026-06-24T14:28:00Z"
+ },
+ {
+  "sku": "PRV-2047",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-05-23T19:14:00Z"
+ },
+ {
+  "sku": "PRV-2005",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-01-19T08:36:00Z"
+ },
+ {
+  "sku": "PRV-2112",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 2,
+  "updated_at": "2026-06-14T07:39:00Z"
+ },
+ {
+  "sku": "PRV-2003",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-06-15T03:08:00Z"
+ },
+ {
+  "sku": "PRV-2083",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-07-13T08:30:00Z"
+ },
+ {
+  "sku": "PRV-2048",
+  "warehouse": "VLC-03",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-08-14T13:06:00Z"
+ },
+ {
+  "sku": "PRV-2023",
+  "warehouse": "BCN-02",
+  "quantity": 900,
+  "reserved": 5,
+  "updated_at": "2026-04-25T08:40:00Z"
+ },
+ {
+  "sku": "PRV-2006",
+  "warehouse": "MAD-01",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-06-11T20:37:00Z"
+ },
+ {
+  "sku": "PRV-2040",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-08-13T05:58:00Z"
+ },
+ {
+  "sku": "PRV-2055",
+  "warehouse": "VLC-03",
+  "quantity": 3,
+  "reserved": 5,
+  "updated_at": "2026-07-11T20:07:00Z"
+ },
+ {
+  "sku": "PRV-2078",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 2,
+  "updated_at": "2026-01-18T12:09:00Z"
+ },
+ {
+  "sku": "PRV-2036",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-04-18T03:23:00Z"
+ },
+ {
+  "sku": "PRV-2021",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 5,
+  "updated_at": "2026-04-25T09:31:00Z"
+ },
+ {
+  "sku": "PRV-2031",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-05-13T06:51:00Z"
+ },
+ {
+  "sku": "PRV-2122",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-05-20T13:46:00Z"
+ },
+ {
+  "sku": "PRV-2069",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-02-21T22:03:00Z"
+ },
+ {
+  "sku": "PRV-2025",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-05-14T22:37:00Z"
+ },
+ {
+  "sku": "PRV-2042",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 2,
+  "updated_at": "2026-04-15T16:47:00Z"
+ },
+ {
+  "sku": "PRV-2010",
+  "warehouse": "MAD-01",
+  "quantity": 900,
+  "reserved": 5,
+  "updated_at": "2026-02-10T15:00:00Z"
+ },
+ {
+  "sku": "PRV-2117",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-08-25T05:13:00Z"
+ },
+ {
+  "sku": "PRV-2016",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-09-12T13:06:00Z"
+ },
+ {
+  "sku": "PRV-2043",
+  "warehouse": "VLC-03",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-07-23T13:37:00Z"
+ },
+ {
+  "sku": "PRV-2090",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-07-28T18:30:00Z"
+ },
+ {
+  "sku": "PRV-2004",
+  "warehouse": "BCN-02",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-02-14T12:46:00Z"
+ },
+ {
+  "sku": "PRV-2013",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-07-20T16:07:00Z"
+ },
+ {
+  "sku": "PRV-2021",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-03-12T04:17:00Z"
+ },
+ {
+  "sku": "PRV-2113",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-06-28T19:43:00Z"
+ },
+ {
+  "sku": "PRV-2060",
+  "warehouse": "BCN-02",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-07-24T19:15:00Z"
+ },
+ {
+  "sku": "PRV-2109",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-03-14T23:58:00Z"
+ },
+ {
+  "sku": "PRV-2104",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-01-23T00:21:00Z"
+ },
+ {
+  "sku": "PRV-2061",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 2,
+  "updated_at": "2026-09-14T00:32:00Z"
+ },
+ {
+  "sku": "PRV-2062",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-05-11T13:32:00Z"
+ },
+ {
+  "sku": "PRV-2084",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 2,
+  "updated_at": "2026-04-12T12:42:00Z"
+ },
+ {
+  "sku": "PRV-2079",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 2,
+  "updated_at": "2026-06-11T08:11:00Z"
+ },
+ {
+  "sku": "PRV-2039",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-09-18T07:38:00Z"
+ },
+ {
+  "sku": "PRV-2092",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 5,
+  "updated_at": "2026-02-23T14:27:00Z"
+ },
+ {
+  "sku": "PRV-2114",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-03-24T01:46:00Z"
+ },
+ {
+  "sku": "PRV-7101",
+  "warehouse": "MAD-01",
+  "quantity": 32,
+  "reserved": 0,
+  "updated_at": "2026-09-01T08:00:00Z"
+ },
+ {
+  "sku": "PRV-2086",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-07-19T14:54:00Z"
+ },
+ {
+  "sku": "PRV-2032",
+  "warehouse": "BCN-02",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-01-20T03:06:00Z"
+ },
+ {
+  "sku": "PRV-2005",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-06-11T07:46:00Z"
+ },
+ {
+  "sku": "PRV-2111",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 5,
+  "updated_at": "2026-06-11T15:32:00Z"
+ },
+ {
+  "sku": "PRV-2048",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-03-10T02:39:00Z"
+ },
+ {
+  "sku": "PRV-2059",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-03-10T09:58:00Z"
+ },
+ {
+  "sku": "PRV-2030",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 5,
+  "updated_at": "2026-03-17T21:48:00Z"
+ },
+ {
+  "sku": "PRV-2051",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-06-18T12:24:00Z"
+ },
+ {
+  "sku": "PRV-2037",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-08-13T22:21:00Z"
+ },
+ {
+  "sku": "PRV-2059",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-01-22T05:46:00Z"
+ },
+ {
+  "sku": "PRV-2070",
+  "warehouse": "VLC-03",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-08-28T10:45:00Z"
+ },
+ {
+  "sku": "PRV-2105",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-05-20T09:34:00Z"
+ },
+ {
+  "sku": "PRV-2106",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-03-19T08:14:00Z"
+ },
+ {
+  "sku": "PRV-2104",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-05-23T00:27:00Z"
+ },
+ {
+  "sku": "PRV-2098",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 2,
+  "updated_at": "2026-07-19T04:14:00Z"
+ },
+ {
+  "sku": "PRV-2064",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-05-13T07:28:00Z"
+ },
+ {
+  "sku": "PRV-2004",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 5,
+  "updated_at": "2026-08-26T20:06:00Z"
+ },
+ {
+  "sku": "PRV-2080",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 5,
+  "updated_at": "2026-05-15T10:05:00Z"
+ },
+ {
+  "sku": "PRV-2026",
+  "warehouse": "BCN-02",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-07-14T12:41:00Z"
+ },
+ {
+  "sku": "PRV-2054",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-03-20T08:09:00Z"
+ },
+ {
+  "sku": "PRV-2082",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 2,
+  "updated_at": "2026-06-20T20:34:00Z"
+ },
+ {
+  "sku": "PRV-2122",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-07-13T01:31:00Z"
+ },
+ {
+  "sku": "PRV-2079",
+  "warehouse": "VLC-03",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-03-23T12:26:00Z"
+ },
+ {
+  "sku": "PRV-2096",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 2,
+  "updated_at": "2026-01-21T15:35:00Z"
+ },
+ {
+  "sku": "PRV-2116",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-09-22T02:15:00Z"
+ },
+ {
+  "sku": "PRV-2019",
+  "warehouse": "BCN-02",
+  "quantity": 900,
+  "reserved": 2,
+  "updated_at": "2026-01-21T10:05:00Z"
+ },
+ {
+  "sku": "PRV-2082",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 5,
+  "updated_at": "2026-02-25T05:25:00Z"
+ },
+ {
+  "sku": "PRV-2011",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-05-17T13:29:00Z"
+ },
+ {
+  "sku": "PRV-2039",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-08-23T23:45:00Z"
+ },
+ {
+  "sku": "PRV-2008",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 2,
+  "updated_at": "2026-06-13T14:27:00Z"
+ },
+ {
+  "sku": "PRV-2082",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-07-28T02:13:00Z"
+ },
+ {
+  "sku": "PRV-2035",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-02-28T22:45:00Z"
+ },
+ {
+  "sku": "PRV-2012",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-08-22T16:55:00Z"
+ },
+ {
+  "sku": "PRV-2052",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-06-15T04:07:00Z"
+ },
+ {
+  "sku": "PRV-2124",
+  "warehouse": "BCN-02",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-03-24T12:39:00Z"
+ },
+ {
+  "sku": "PRV-2023",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-03-19T06:36:00Z"
+ },
+ {
+  "sku": "PRV-2034",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 2,
+  "updated_at": "2026-01-25T11:02:00Z"
+ },
+ {
+  "sku": "PRV-2067",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-05-11T00:24:00Z"
+ },
+ {
+  "sku": "PRV-2037",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-09-19T04:48:00Z"
+ },
+ {
+  "sku": "PRV-2121",
+  "warehouse": "BCN-02",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-02-17T08:06:00Z"
+ },
+ {
+  "sku": "PRV-2088",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-06-15T21:53:00Z"
+ },
+ {
+  "sku": "PRV-2119",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-08-25T16:18:00Z"
+ },
+ {
+  "sku": "PRV-2106",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-06-11T16:20:00Z"
+ },
+ {
+  "sku": "PRV-2053",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-09-10T04:51:00Z"
+ },
+ {
+  "sku": "PRV-2026",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-09-15T13:33:00Z"
+ },
+ {
+  "sku": "PRV-2093",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 5,
+  "updated_at": "2026-02-20T06:14:00Z"
+ },
+ {
+  "sku": "PRV-2005",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-02-27T08:49:00Z"
+ },
+ {
+  "sku": "PRV-2012",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-08-10T16:57:00Z"
+ },
+ {
+  "sku": "PRV-2097",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-09-23T01:26:00Z"
+ },
+ {
+  "sku": "PRV-2075",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-01-28T18:14:00Z"
+ },
+ {
+  "sku": "PRV-2015",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 5,
+  "updated_at": "2026-09-25T17:21:00Z"
+ },
+ {
+  "sku": "PRV-2046",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 5,
+  "updated_at": "2026-05-19T21:40:00Z"
+ },
+ {
+  "sku": "PRV-2098",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 5,
+  "updated_at": "2026-03-15T00:00:00Z"
+ },
+ {
+  "sku": "PRV-2060",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-07-18T22:39:00Z"
+ },
+ {
+  "sku": "PRV-2019",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-05-23T11:20:00Z"
+ },
+ {
+  "sku": "PRV-2081",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-09-16T14:57:00Z"
+ },
+ {
+  "sku": "PRV-2076",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 5,
+  "updated_at": "2026-01-24T00:44:00Z"
+ },
+ {
+  "sku": "PRV-2028",
+  "warehouse": "BCN-02",
+  "quantity": 1,
+  "reserved": 5,
+  "updated_at": "2026-03-27T05:03:00Z"
+ },
+ {
+  "sku": "PRV-2013",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-09-27T07:38:00Z"
+ },
+ {
+  "sku": "PRV-2018",
+  "warehouse": "BCN-02",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-01-14T23:23:00Z"
+ },
+ {
+  "sku": "PRV-2091",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-09-27T00:28:00Z"
+ },
+ {
+  "sku": "PRV-2086",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-06-10T17:42:00Z"
+ },
+ {
+  "sku": "PRV-2034",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-09-14T21:15:00Z"
+ },
+ {
+  "sku": "PRV-2020",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-09-22T04:39:00Z"
+ },
+ {
+  "sku": "PRV-2016",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-04-27T13:55:00Z"
+ },
+ {
+  "sku": "PRV-2024",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 5,
+  "updated_at": "2026-07-11T01:14:00Z"
+ },
+ {
+  "sku": "PRV-2086",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 5,
+  "updated_at": "2026-06-15T01:47:00Z"
+ },
+ {
+  "sku": "PRV-2123",
+  "warehouse": "VLC-03",
+  "quantity": 3,
+  "reserved": 5,
+  "updated_at": "2026-09-10T13:56:00Z"
+ },
+ {
+  "sku": "PRV-2123",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-02-28T16:36:00Z"
+ },
+ {
+  "sku": "PRV-2040",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-04-20T13:26:00Z"
+ },
+ {
+  "sku": "PRV-2079",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 5,
+  "updated_at": "2026-05-13T09:04:00Z"
+ },
+ {
+  "sku": "PRV-2101",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-08-13T14:06:00Z"
+ },
+ {
+  "sku": "PRV-2033",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-09-18T10:18:00Z"
+ },
+ {
+  "sku": "PRV-2017",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-04-23T23:13:00Z"
+ },
+ {
+  "sku": "PRV-2035",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 2,
+  "updated_at": "2026-09-28T00:47:00Z"
+ },
+ {
+  "sku": "PRV-2017",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-09-12T18:56:00Z"
+ },
+ {
+  "sku": "PRV-2033",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-05-13T10:52:00Z"
+ },
+ {
+  "sku": "PRV-2049",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-02-12T06:49:00Z"
+ },
+ {
+  "sku": "PRV-2011",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-06-12T02:23:00Z"
+ },
+ {
+  "sku": "PRV-2035",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-07-28T10:37:00Z"
+ },
+ {
+  "sku": "PRV-2014",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-03-28T20:24:00Z"
+ },
+ {
+  "sku": "PRV-2110",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-03-14T06:34:00Z"
+ },
+ {
+  "sku": "PRV-2063",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-05-14T15:57:00Z"
+ },
+ {
+  "sku": "PRV-7102",
+  "warehouse": "MAD-01",
+  "quantity": 29,
+  "reserved": 0,
+  "updated_at": "2026-09-01T08:00:00Z"
+ },
+ {
+  "sku": "PRV-2058",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 2,
+  "updated_at": "2026-04-21T06:22:00Z"
+ },
+ {
+  "sku": "PRV-2090",
+  "warehouse": "BCN-02",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-03-10T14:16:00Z"
+ },
+ {
+  "sku": "PRV-2118",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-05-16T23:51:00Z"
+ },
+ {
+  "sku": "PRV-2109",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-03-15T06:16:00Z"
+ },
+ {
+  "sku": "PRV-2062",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-08-20T00:27:00Z"
+ },
+ {
+  "sku": "PRV-2105",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-09-19T13:52:00Z"
+ },
+ {
+  "sku": "PRV-2092",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 5,
+  "updated_at": "2026-04-10T01:26:00Z"
+ },
+ {
+  "sku": "PRV-2067",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-05-19T11:50:00Z"
+ },
+ {
+  "sku": "PRV-2075",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-08-27T03:43:00Z"
+ },
+ {
+  "sku": "PRV-2059",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-07-23T08:34:00Z"
+ },
+ {
+  "sku": "PRV-7103",
+  "warehouse": "MAD-01",
+  "quantity": 14,
+  "reserved": 0,
+  "updated_at": "2026-09-01T08:00:00Z"
+ },
+ {
+  "sku": "PRV-2097",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-07-20T04:50:00Z"
+ },
+ {
+  "sku": "PRV-2085",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 2,
+  "updated_at": "2026-01-19T18:25:00Z"
+ },
+ {
+  "sku": "PRV-2055",
+  "warehouse": "MAD-01",
+  "quantity": 900,
+  "reserved": 2,
+  "updated_at": "2026-06-24T19:01:00Z"
+ },
+ {
+  "sku": "PRV-2115",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 2,
+  "updated_at": "2026-08-22T11:40:00Z"
+ },
+ {
+  "sku": "PRV-7100",
+  "warehouse": "MAD-01",
+  "quantity": 26,
+  "reserved": 0,
+  "updated_at": "2026-09-01T08:00:00Z"
+ },
+ {
+  "sku": "PRV-2038",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-01-14T16:11:00Z"
+ },
+ {
+  "sku": "PRV-2099",
+  "warehouse": "BCN-02",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-08-22T18:05:00Z"
+ },
+ {
+  "sku": "PRV-2009",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 2,
+  "updated_at": "2026-05-17T07:13:00Z"
+ },
+ {
+  "sku": "PRV-2091",
+  "warehouse": "VLC-03",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-08-15T13:17:00Z"
+ },
+ {
+  "sku": "PRV-2087",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-08-16T14:18:00Z"
+ },
+ {
+  "sku": "PRV-2001",
+  "warehouse": "MAD-01",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-05-26T07:20:00Z"
+ },
+ {
+  "sku": "PRV-2045",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 2,
+  "updated_at": "2026-05-20T07:08:00Z"
+ },
+ {
+  "sku": "PRV-2044",
+  "warehouse": "MAD-01",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-05-16T05:19:00Z"
+ },
+ {
+  "sku": "PRV-2025",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 2,
+  "updated_at": "2026-06-13T21:11:00Z"
+ },
+ {
+  "sku": "PRV-2032",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 5,
+  "updated_at": "2026-09-17T04:11:00Z"
+ },
+ {
+  "sku": "PRV-2084",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-08-13T09:24:00Z"
+ },
+ {
+  "sku": "PRV-2103",
+  "warehouse": "MAD-01",
+  "quantity": 900,
+  "reserved": 2,
+  "updated_at": "2026-09-18T03:44:00Z"
+ },
+ {
+  "sku": "PRV-2074",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-08-12T02:14:00Z"
+ },
+ {
+  "sku": "PRV-2003",
+  "warehouse": "BCN-02",
+  "quantity": 1,
+  "reserved": 2,
+  "updated_at": "2026-08-28T08:36:00Z"
+ },
+ {
+  "sku": "PRV-2102",
+  "warehouse": "VLC-03",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-03-12T13:28:00Z"
+ },
+ {
+  "sku": "PRV-2083",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-01-18T08:07:00Z"
+ },
+ {
+  "sku": "PRV-2007",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-06-18T15:40:00Z"
+ },
+ {
+  "sku": "PRV-2078",
+  "warehouse": "MAD-01",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-06-11T10:33:00Z"
+ },
+ {
+  "sku": "PRV-2087",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 2,
+  "updated_at": "2026-09-21T19:37:00Z"
+ },
+ {
+  "sku": "PRV-2091",
+  "warehouse": "MAD-01",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-02-18T21:53:00Z"
+ },
+ {
+  "sku": "PRV-2075",
+  "warehouse": "BCN-02",
+  "quantity": 1,
+  "reserved": 2,
+  "updated_at": "2026-07-20T07:12:00Z"
+ },
+ {
+  "sku": "PRV-2058",
+  "warehouse": "VLC-03",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-08-13T07:52:00Z"
+ },
+ {
+  "sku": "PRV-2001",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-02-26T13:50:00Z"
+ },
+ {
+  "sku": "PRV-2047",
+  "warehouse": "BCN-02",
+  "quantity": 900,
+  "reserved": 0,
+  "updated_at": "2026-02-19T17:56:00Z"
+ },
+ {
+  "sku": "PRV-2115",
+  "warehouse": "BCN-02",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-03-26T00:55:00Z"
+ },
+ {
+  "sku": "PRV-2109",
+  "warehouse": "VLC-03",
+  "quantity": 900,
+  "reserved": 2,
+  "updated_at": "2026-08-17T18:49:00Z"
+ },
+ {
+  "sku": "PRV-2073",
+  "warehouse": "BCN-02",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-05-18T08:43:00Z"
+ },
+ {
+  "sku": "PRV-2054",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 5,
+  "updated_at": "2026-03-12T20:20:00Z"
+ },
+ {
+  "sku": "PRV-2064",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-02-11T19:19:00Z"
+ },
+ {
+  "sku": "PRV-2009",
+  "warehouse": "VLC-03",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-09-19T16:27:00Z"
+ },
+ {
+  "sku": "PRV-2120",
+  "warehouse": "BCN-02",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-01-27T11:03:00Z"
+ },
+ {
+  "sku": "PRV-2014",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 5,
+  "updated_at": "2026-02-17T14:29:00Z"
+ },
+ {
+  "sku": "PRV-2069",
+  "warehouse": "BCN-02",
+  "quantity": 0,
+  "reserved": 0,
+  "updated_at": "2026-02-21T15:37:00Z"
+ },
+ {
+  "sku": "PRV-2065",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 0,
+  "updated_at": "2026-08-14T06:44:00Z"
+ },
+ {
+  "sku": "PRV-2012",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 5,
+  "updated_at": "2026-05-16T23:15:00Z"
+ },
+ {
+  "sku": "PRV-2017",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-09-10T14:39:00Z"
+ },
+ {
+  "sku": "PRV-2113",
+  "warehouse": "VLC-03",
+  "quantity": 3,
+  "reserved": 2,
+  "updated_at": "2026-01-21T23:27:00Z"
+ },
+ {
+  "sku": "PRV-2101",
+  "warehouse": "MAD-01",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-03-10T06:33:00Z"
+ },
+ {
+  "sku": "PRV-2065",
+  "warehouse": "MAD-01",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-04-22T05:54:00Z"
+ },
+ {
+  "sku": "PRV-2020",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-01-20T06:10:00Z"
+ },
+ {
+  "sku": "PRV-2049",
+  "warehouse": "BCN-02",
+  "quantity": 150,
+  "reserved": 0,
+  "updated_at": "2026-02-10T02:56:00Z"
+ },
+ {
+  "sku": "PRV-2069",
+  "warehouse": "VLC-03",
+  "quantity": 12,
+  "reserved": 0,
+  "updated_at": "2026-06-27T17:49:00Z"
+ },
+ {
+  "sku": "PRV-2026",
+  "warehouse": "VLC-03",
+  "quantity": 1,
+  "reserved": 0,
+  "updated_at": "2026-07-13T22:13:00Z"
+ },
+ {
+  "sku": "PRV-2102",
+  "warehouse": "BCN-02",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-08-11T09:42:00Z"
+ },
+ {
+  "sku": "PRV-2021",
+  "warehouse": "BCN-02",
+  "quantity": 40,
+  "reserved": 0,
+  "updated_at": "2026-06-27T15:59:00Z"
+ },
+ {
+  "sku": "PRV-2098",
+  "warehouse": "MAD-01",
+  "quantity": 150,
+  "reserved": 2,
+  "updated_at": "2026-04-16T18:35:00Z"
+ },
+ {
+  "sku": "PRV-2076",
+  "warehouse": "VLC-03",
+  "quantity": 7,
+  "reserved": 2,
+  "updated_at": "2026-07-13T19:52:00Z"
+ },
+ {
+  "sku": "PRV-2080",
+  "warehouse": "VLC-03",
+  "quantity": 3,
+  "reserved": 0,
+  "updated_at": "2026-03-23T00:46:00Z"
+ }
+]

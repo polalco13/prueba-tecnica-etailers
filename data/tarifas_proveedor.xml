@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TarifasProveedor proveedor="Distribuciones Nortesur SL" ejercicio="2026">
+  <Condiciones>
+    <PortesGratisDesde moneda='EUR'>250.00</PortesGratisDesde>
+    <PlazoPagoDias>60</PlazoPagoDias>
+  </Condiciones>
+  <Descuentos>
+    <Descuento tipo="categoria" valor="Electricidad">
+      <PorcentajeBase>5</PorcentajeBase>
+      <PorVolumen desdeUnidades="10">5</PorVolumen>
+    </Descuento>
+    <Descuento tipo="categoria" valor="Fontanería">
+      <PorcentajeBase>12</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="categoria" valor="Herramienta eléctrica">
+      <PorcentajeBase>3</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="categoria" valor="Herramienta manual">
+      <PorcentajeBase>10</PorcentajeBase>
+      <PorVolumen desdeUnidades="50">3</PorVolumen>
+    </Descuento>
+    <Descuento tipo="categoria" valor="Jardinería">
+      <PorcentajeBase>3</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="categoria" valor="Pintura">
+      <PorcentajeBase>7.5</PorcentajeBase>
+      <PorVolumen desdeUnidades="10">2</PorVolumen>
+    </Descuento>
+    <Descuento tipo="marca" valor="Bellota">
+      <PorcentajeBase>4</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Bosch">
+      <PorcentajeBase>8</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="DeWalt">
+      <PorcentajeBase>4</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Gardena">
+      <PorcentajeBase>8</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Makita">
+      <PorcentajeBase>8</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Roca">
+      <PorcentajeBase>8</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Schneider">
+      <PorcentajeBase>0</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Stanley">
+      <PorcentajeBase>8</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Titan">
+      <PorcentajeBase>0</PorcentajeBase>
+    </Descuento>
+    <Descuento tipo="marca" valor="Wurth">
+      <PorcentajeBase>8</PorcentajeBase>
+    </Descuento>
+  </Descuentos>
+  <Excepciones>
+    <Producto sku="PRV-2001">
+      <PrecioNetoAcordado>165.75</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2124">
+      <PrecioNetoAcordado>102.69</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2090">
+      <PrecioNetoAcordado>239.0</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2089">
+      <PrecioNetoAcordado>249.31</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2003">
+      <PrecioNetoAcordado>27.86</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2073">
+      <PrecioNetoAcordado>179.03</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2122">
+      <PrecioNetoAcordado>136.93</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2069">
+      <PrecioNetoAcordado>261.4</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2063">
+      <PrecioNetoAcordado>278.48</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2033">
+      <PrecioNetoAcordado>152.55</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2080">
+      <PrecioNetoAcordado>246.53</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-2100">
+      <PrecioNetoAcordado>172.64</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-8888">
+      <PrecioNetoAcordado>9.99</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+    <Producto sku="PRV-8889">
+      <PrecioNetoAcordado>9.99</PrecioNetoAcordado>
+      <AplicaDescuentoAdicional>false</AplicaDescuentoAdicional>
+    </Producto>
+  </Excepciones>
+</TarifasProveedor>

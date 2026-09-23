@@ -1,0 +1,134 @@
+sku;ean;nombre;marca;categoria;precio_coste;pvp_recomendado;iva;peso_kg;fecha_alta;descripcion
+PRV-2084;8455986646629;Rollo teflon Titan 2000;Titan;Fontanería;30,38;45,16;21;17,022;2023-08-25;Rollo teflon de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2041;8433650222324;Atornillador Makita Pro;Makita;Herramienta eléctrica;314,82;594,17;21;16,659;25/09/2021;Atornillador de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2102;8470561044249;Regleta 6 tomas Wurth Compact;Wurth;Electricidad;224,70;372,90;10;20,247;19-06-2020;Regleta 6 tomas de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2075;8,461061067530E+12;Valvula antirretorno Stanley XL;Stanley;Fontanería;319,08;601,09;21;13,208;2023/08/12;Valvula antirretorno de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-9001;8412345678905;Producto incompleto;Bosch;Pintura
+PRV-2094;467538684904;Cable manguera Gardena Compact;Gardena;Electricidad;201.71;274.78;21;1.997;24-12-2024;Cable manguera de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2064;8475173657078;  DESBROZADORA BOSCH 2000   ;Bosch;JARDINERÍA;276.98;415.44;21;7.841;2019-06-14;Desbrozadora de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2009;8429065579535;Martillo Gardena Plus;Gardena;Herramienta manual;14,42;29,60;21;5,985;14/10/2026;Martillo de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2106;8422343573522;  RODILLO ANTIGOTA SCHNEIDER 2000   ;Schneider;Pintura;210.15;307.27;21;13.975;10-12-2026;Rodillo antigota de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2003;8458901203587;Destornillador DeWalt Pro;DeWalt;Herramienta manual;33,97;49,55;21;4,598;2021/06/23;Destornillador de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2031;8482302296046;Amoladora Gardena Pro;Gardena;Herramienta eléctrica;205.31;269.82;21;22.378;2022/01/03;Amoladora de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2004;8499612433016;Destornillador Schneider XL;Schneider;Herramienta manual;37.85;77.57;21;27.203;2025-08-12;Destornillador de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2088;8427089167752;Diferencial 40A Schneider Plus;Schneider;Electricidad;146.40;260,77;21;7.355;2025-12-09;Diferencial 40A de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2048;8424394040732;Cortacesped Schneider Pro;Schneider;Jardinería;178,85;287,90;21;19,847;;Cortacesped de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2101;8436027370604;Regleta 6 tomas Makita Compact;Makita;Electricidad;132,54;181,19;21;14,983;17/09/2026;Regleta 6 tomas de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2083;;Rollo teflon Roca Plus;Roca;Fontanería;63,54;108,64;10;8,680;2024/04/14;Rollo teflon de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2056; 8436081631888 ;Manguera reforzada Gardena Pro;Gardena;Jardinería;68,38;141,21;21;4,469;2024-08-25;Manguera reforzada de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2093;8458534078088;Cable manguera Gardena Plus;Gardena;Electricidad;223,02?;353,79;21;14,998;23/04/2024;Cable manguera de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2023; 8449734717815 ;Cinta metrica Titan Plus;Titan;Herramienta manual;224,39;404,27;10;24,978;2019/02/28;Cinta metrica de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2039;'8446926062753;Lijadora orbital Stanley Compact;Stanley;Herramienta eléctrica;267,88;354,20;21;20,429;2023/05/23;Lijadora orbital de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2097;8493655959564;Base schuko Schneider Compact;Schneider;Electricidad;122.13;225.25;21;14.379;18/08/2022;Base schuko de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2061;8493215410702;Desbrozadora Gardena Basic;Gardena;Jardinería;2532,60;48.66;21;15.773;20/07/2025;Desbrozadora de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2015;8439907184186;  ALICATE TITAN BASIC   ;Titan;Herramienta manual;164,23;317,27;21;22,967;2022/05/10;Alicate de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2077;'8434674949662;Grifo monomando Wurth Compact;Wurth;Fontanería;295,11;421,67;21;23,906;01/05/2021;Grifo monomando de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2045; 8461054410269 ;Cortacesped Schneider Basic;Schneider;Jardinería;262,92;473,56;21;8,433;07/05/2025;Cortacesped de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2010;8437240103314;Martillo DeWalt Basic;DeWalt;HERRAMIENTA MANUAL;291.59;372.04;21;10.410;28-08-2024;Martillo de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2017;8458047909787;Juego de puntas Bellota XL;Bellota;Herramienta manual;133,00;260,83;10;23,035;01/03/2021;Juego de puntas de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2104;8449069230089;Regleta 6 tomas DeWalt Compact;DeWalt;Electricidad;49,84;94,62;21;23,134;2022-07-22;Regleta 6 tomas de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2071;8458487164128;  CODO PVC ROCA 2000   ;Roca;Fontanería;318,55;520,60;21;4,843;2025/09/18;Codo PVC de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2112;8,414215121651E+12;Brocha plana Gardena Pro;Gardena;Pintura;15.13;30.08;21;8.389;2020-10-14;Brocha plana de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2058;'8459088230892;Aspersor DeWalt Compact;DeWalt;Jardinería;104.43;187.63;21;14.585;11-07-2022;Aspersor de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2035;8451003579185;Sierra caladora Bellota Basic;Bellota;Herramienta eléctrica;154,51;296,59 EUR;10;n/a;2024/11/16;Sierra caladora de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2057;8460472536087;  ASPERSOR TITAN PLUS   ;Titan;Jardinería;274,44;367,99;21;22,645;21/03/2021;Aspersor de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2060;8474986004352;Aspersor Gardena Plus;Gardena;Jardinería;170,43;263,72;21;0,521;2020-05-06;Aspersor de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2051;8455516956778;Tijera de poda Stanley Compact;Stanley;Jardinería;168,80;273,28;21;24,938;2019/12/15;Tijera de poda de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2049;8418060753774;Tijera de poda Makita Basic;Makita;Jardinería;315.55;442.04;10;10.010;02/10/2019;Tijera de poda de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2062;8423093036268;Desbrozadora Bosch Compact;Bosch;Jardinería;-89,40;115,24;21;21,945;27-11-2022;Desbrozadora de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2117;8476136769623;Imprimacion 4L DeWalt XL;DeWalt;Pintura;277,14;484,26;21;17,825;03/02/2019;Imprimacion 4L de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2066;8494603121361;Llave de paso Stanley Plus;stanley;Fontanería;255,21;529,45;21;6,983;09-07-2026;Llave de paso de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2096;'8432624169375;Cable manguera Stanley Compact;Stanley;Electricidad;15,00;25,62;10;6,148;2026-05-25;Cable manguera de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2007;8492830941011;Llave inglesa DeWalt Pro;DeWalt;Herramienta manual;43.86;62.58;21;11.632;2022/10/26;Llave inglesa de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2099;8447412576839;  BASE SCHUKO WURTH PRO   ;Wurth;Electricidad;274,19;370,89;21;1,306;2025/02/15;Base schuko de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2115;'8491615982003;Cinta de carrocero Schneider Pro;Schneider;Pintura;207.97;303.69;21;16.533;2022/04/26;Cinta de carrocero de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2085;8440528776629;  DIFERENCIAL 40A ROCA BASIC   ;Roca;Electricidad;86.12;113.25;10;16.834;06/09/2021;Diferencial 40A de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2033;8435969197119;Sierra caladora Gardena Compact;Gardena;Herramienta eléctrica;186,04;372,60;10;4,637;27/07/2021;Sierra caladora de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2089; 8479139834626 ;Magnetotermico Titan Compact;Titan;Electricidad;304,04;439,08;10;9,934;22/06/2021;Magnetotermico de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2082;8468598461146;Rollo teflon Gardena 2000;Gardena;FONTANERÍA;254.91;481.23;10;26.232;11-11-2019;Rollo teflon de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2081;8420303198792;Rollo teflon Stanley 2000;Stanley;Fontanería;67,88;103,76;21;24,860;24/04/2021;Rollo teflon de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2036;8451173183670;  SIERRA CALADORA STANLEY COMPACT   ;Stanley;Herramienta eléctrica;255,04;356,34;21;16,538;2025-03-06;Sierra caladora de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2080;8421495863901;Grifo monomando Gardena Plus;Gardena;Fontanería;300,65;412,62;21;3,928;2021-06-13;Grifo monomando de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2091;8450036545044;Magnetotermico Roca XL;Roca;ELECTRICIDAD;224.18;315.53;21;19.892;2026/12/01;Magnetotermico de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2011;8427359081856;Martillo Roca XL;Roca;Herramienta manual;17,55;26,04;21;7,013;2022/07/07;Martillo de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2118;8457792960418;Imprimacion 4L Titan Plus;titan;PINTURA;312.24;577.85;10;2.058;16-01-2019;Imprimacion 4L de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2095;8464720770216;Cable manguera Makita Plus;Makita;Electricidad;65,57;97,78;21;5,105;;Cable manguera de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2053;8464068220374;Manguera reforzada Stanley Pro;stanley;Jardinería;47,70;85,46;N/D;5,359;05/12/2024;Manguera reforzada de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2047;8437250878271;Cortacesped Titan Compact;Titan;Jardinería;41,92?;70,03;21;8,977;2021/04/10;Cortacesped de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2044;8496019384613;Atornillador Wurth Compact;Wurth;Herramienta eléctrica;128,88;219,90;21;12,787;2023-02-21;
+PRV-2028;8430748565394;Taladro percutor Bosch Plus;Bosch;HERRAMIENTA ELÉCTRICA;133.17;216.73;21;5.943;2026-01-26;Taladro percutor de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2005;8466758645818;Llave inglesa Bosch Plus;Bosch;Herramienta manual;301,36;427,36;10;6,110;11/12/2021;Llave inglesa de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2110;8497912841456;Brocha plana Roca Basic;Roca;Pintura;135,82;276,81;21;5,437;21-06-2024;Brocha plana de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2052;8428478266193;Tijera de poda Wurth 2000;Wurth;Jardinería;223.74;406.51 EUR;21;26.490;2019-12-18;Tijera de poda de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2040;8499255233073;Lijadora orbital Wurth Compact;wurth;Herramienta eléctrica;201.14;368.12;10;9.794;2023-05-17;Lijadora orbital de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2043;8435152845469;  ATORNILLADOR ROCA XL   ;Roca;Herramienta eléctrica;32.49;60.56;21;18.637;2022/06/07;Atornillador de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2108;8488700910430;Rodillo antigota Schneider Plus;Schneider;Pintura;3,44;7,06;21;0,608;2024-12-04;Rodillo antigota de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2001;;  DESTORNILLADOR BOSCH PRO   ;bosch;HERRAMIENTA MANUAL;-0,00;393,75;NULL;0;;
+PRV-2067; 8423955183451 ;Llave de paso Bellota Pro;Bellota;Fontanería;160.10;308.15;21;3.282;2023/01/27;Llave de paso de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2006;8427596707595;Llave inglesa Stanley XL;Stanley;Herramienta manual;282,34;522,74;21;12,541;26-05-2024;Llave inglesa de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2029;8472362633042;  AMOLADORA MAKITA 2000   ;Makita;Herramienta eléctrica;292,54;590,74;21;0,300;12/07/2019;Amoladora de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2105;8426578601180;Rodillo antigota Bellota Plus;bellota;Pintura;115,46;241,64;NULL;5,909;15/07/2024;Rodillo antigota de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2079;8470552004092;Grifo monomando Titan Plus;titan;Fontanería;333.81;700.39;-;15.903;2020/12/01;Grifo monomando de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2014;8481397769213;Alicate Roca Basic;roca;Herramienta manual;42,01;61,75;10;18,118;07-02-2025;Alicate de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2116;8478393191933;Cinta de carrocero Gardena XL;Gardena;Pintura;283,88?;364,17;21;6,608;2022-02-12;Cinta de carrocero de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2123;8413774350431;Esmalte sintetico Bellota XL;Bellota;Pintura;-243,88;386,95;21;18,785;2019/01/28;Esmalte sintetico de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2045; 8461054410269 ;Cortacesped Schneider Basic;Schneider;Jardinería;262,92;473,56;21;8,433;07/05/2025;Cortacesped de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2120;8424055253648;  IMPRIMACION 4L BELLOTA XL   ;Bellota;Pintura;92,22;145,83 EUR;10;23,462;2025-06-09;Imprimacion 4L de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2022;8433778471611;  CINTA METRICA GARDENA XL   ;Gardena;Herramienta manual;285.35;412.19;21;22.413;08-01-2022;Cinta metrica de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2050;8470718581030;  TIJERA DE PODA STANLEY BASIC   ;Stanley;Jardinería;47,12;78,91;10;21,361;26-11-2020;Tijera de poda de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2111; 8488338186634 ;Brocha plana Bosch Pro;Bosch;Pintura;36,23;73,39;21;1,207;2021/11/08;Brocha plana de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2092;8495129885683;  MAGNETOTERMICO WURTH BASIC   ;wurth;Electricidad;170,61;285,42;21;2,926;2019-06-22;Magnetotermico de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2100; 8469069590570 ;Base schuko Makita Pro;Makita;ELECTRICIDAD;210.54;408.63;21;27.980;2022-04-06;Base schuko de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2068;8419935138696;Llave de paso DeWalt Plus;DeWalt;Fontanería;145,07;215,72;21;26,515;2020-07-23;Llave de paso de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2086;8458221838360;Diferencial 40A Stanley Pro;Stanley;Electricidad;37,99;63,99 EUR;21;3,353;14-06-2026;Diferencial 40A de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2020;'8477177647987;Juego de puntas Makita Compact;Makita;Herramienta manual;256,02;413,05;21;15,447;2023-09-26;Juego de puntas de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2072;8490858821025;Codo PVC Stanley 2000;Stanley;Fontanería;36,65;60,75;10;0,477;2021-10-20;Codo PVC de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2119;8453760140394;Imprimacion 4L Bosch 2000;Bosch;Pintura;124,91;219,55;10;24,722;2020/02/26;Imprimacion 4L de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2087;8426460187174;Diferencial 40A Stanley 2000;Stanley;Electricidad;97,28;126,17;21;18,668;2022/09/13;
+PRV-2042;;Atornillador Bosch 2000;Bosch;Herramienta eléctrica;154,45;284,42;21;13,974;09-03-2020;Atornillador de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2027;8476891178654;Taladro percutor Titan Pro;titan;Herramienta eléctrica;55,06;114,60;N/D;18,108;2024/05/16;Taladro percutor de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2113;8418321359240;  CINTA DE CARROCERO BELLOTA XL   ;Bellota;Pintura;154,56;193,91;21;25,473;13/01/2026;Cinta de carrocero de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2070;8416995228060;Codo PVC Stanley Basic;Stanley;Fontanería;291.37?;450.97;10;3.891;02-12-2026;Codo PVC de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2019;8438101559523;Juego de puntas Bosch Compact;Bosch;HERRAMIENTA MANUAL;284.94;593.47;21;5.213;2021/08/06;Juego de puntas de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2034; 8440135364660 ;Sierra caladora Gardena Pro;Gardena;Herramienta eléctrica;207.66;384.51;21;16.939;03-04-2025;Sierra caladora de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2025;8443533424356;Taladro percutor Schneider XL;Schneider;Herramienta eléctrica;159.43;317.16;10;1.752;24/07/2019;Taladro percutor de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2104;8449069230089;Regleta 6 tomas DeWalt Compact;DeWalt;Electricidad;46,15;94,62;21;23,134;2022-07-22;Regleta 6 tomas de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2107;8467581086335;Rodillo antigota DeWalt Compact;DeWalt;Pintura;0,00;385,35;21;9,315;2026/02/11;Rodillo antigota de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2013;8426683848913;Alicate Bosch Basic;Bosch;Herramienta manual;34400,16;539.00;21;25.419;22/03/2022;Alicate de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2002;8440050164475;Destornillador Stanley Compact;Stanley;Herramienta manual;65,83;92,24;10;25,580;06-10-2026;Destornillador de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2018;8417718490139;Juego de puntas Gardena Compact;Gardena;Herramienta manual;181,34;228,67 EUR;21;24,562;18-08-2026;Juego de puntas de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2078; 8449337990486 ;  GRIFO MONOMANDO MAKITA PRO   ;Makita;Fontanería;315,68;487,71;21;6,877;20-11-2021;Grifo monomando de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2046;8468627391901;Cortacesped Titan Plus;Titan;JARDINERÍA;140.12;238.18;10;26.658;09-02-2026;Cortacesped de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2032;480631408895;Amoladora Titan 2000;Titan;Herramienta eléctrica;84,55;107,02;21;23,335;2021-10-02;Amoladora de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2030;8487129199471;Amoladora Schneider Pro;Schneider;Herramienta eléctrica;176,65;359,61;21;22,484;02-08-2025;Amoladora de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2026;8443974966187;Taladro percutor Bosch Plus;Bosch;Herramienta eléctrica;50,66;65,47;21;10,568;13-05-2020;Taladro percutor de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2109;8435463442098;Brocha plana Bosch Pro;Bosch;PINTURA;51.77;79.11;21;26.073;09/06/2020;Brocha plana de la gama Bosch. Referencia de proveedor para distribucion B2B.
+;;;;;;;;;;
+PRV-2114;8423949060140;Cinta de carrocero Stanley Pro;Stanley;Pintura;105,26;162,43;21;22,549;26-04-2025;Cinta de carrocero de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2098;8478611538298;Base schuko Gardena Compact;Gardena;Electricidad;158,68;314,14;21;9,743;06-03-2026;Base schuko de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2013;8426683848913;Alicate Bosch Basic;Bosch;Herramienta manual;318.52;539.00;21;25.419;22/03/2022;Alicate de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2021;8429223056175;Cinta metrica Stanley XL;Stanley;Herramienta manual;136,14;261,88;10;7,664;08/12/2025;Cinta metrica de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2055;8429620281897;Manguera reforzada Bellota Compact;Bellota;JARDINERÍA;288.37;544.74;10;7.951;2021/09/18;Manguera reforzada de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2063;468274137563;Desbrozadora Wurth XL;Wurth;Jardinería;339,61;453,41;10;15,905;2021/02/13;Desbrozadora de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2074;8412120615491;Valvula antirretorno Gardena Compact;Gardena;Fontanería;193,86;271,99;21;23,483;07-07-2022;Valvula antirretorno de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2069;8453047159682;Codo PVC DeWalt Pro;DeWalt;Fontanería;318,78;435,83 EUR;10;;10/08/2023;Codo PVC de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2006;8427596707595;Llave inglesa Stanley XL;Stanley;Herramienta manual;282,34;522,74;21;12,541;26-05-2024;Llave inglesa de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2124;;Esmalte sintetico Schneider 2000;Schneider;Pintura;125.23;220.09;10;5.703;2026-09-14;Esmalte sintetico de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2012; 8491973379538 ;Martillo Makita XL;Makita;Herramienta manual;195,29;381,08;21;4,046;2020-05-13;Martillo de la gama Makita. Referencia de proveedor para distribucion B2B.
+PRV-2122; 8432501452972 ;Esmalte sintetico Gardena 2000;Gardena;Pintura;166,99;269,84;21;6,372;01-01-2020;Esmalte sintetico de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2073;8482388995741;Valvula antirretorno Titan Pro;Titan;FONTANERÍA;218.33;299.82;21;26.901;04/10/2025;Valvula antirretorno de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-9002;8498765432105;Producto con campo de mas;Titan;Pintura;15,00;24,90;21;1,200;01/03/2025;Descripcion con ; punto y coma dentro;columna_sobrante
+PRV-2065;8450796360673;Llave de paso Schneider Plus;Schneider;Fontanería;6,09;11,41;21;5,466;02/11/2025;Llave de paso de la gama Schneider. Referencia de proveedor para distribucion B2B.
+PRV-2090;8451864862037;Magnetotermico Gardena Plus;Gardena;Electricidad;291,46;408,46;10;20,310;13-03-2025;Magnetotermico de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2024;8416784390916;Cinta metrica Wurth XL;Wurth;Herramienta manual;60,56?;76,41;21;14,614;2022-02-26;Cinta metrica de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2059;8491592824129;Aspersor Titan Basic;Titan;Jardinería;227,20;462,55;21;0,266;2022/11/09;Aspersor de la gama Titan. Referencia de proveedor para distribucion B2B.
+PRV-2054;8479703518136;Manguera reforzada Stanley 2000;Stanley;Jardinería;0,00;517,01;21;11,495;02-10-2025;Manguera reforzada de la gama Stanley. Referencia de proveedor para distribucion B2B.
+PRV-2061;8493215410702;Desbrozadora Gardena Basic;Gardena;Jardinería;23.45;48.66;21;15.773;20/07/2025;Desbrozadora de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2103;8427324840983;Regleta 6 tomas Gardena XL;Gardena;Electricidad;173.27;231.03 EUR;21;0;2021/09/18;Regleta 6 tomas de la gama Gardena. Referencia de proveedor para distribucion B2B.
+PRV-2038;8,472315995969E+12;Lijadora orbital Bellota Compact;Bellota;Herramienta eléctrica;108,08;200,82;10;13,758;24-01-2025;Lijadora orbital de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2037;8449266607653;Lijadora orbital Bosch Basic;Bosch;HERRAMIENTA ELÉCTRICA;190.93;322.07;21;25.604;14/03/2019;Lijadora orbital de la gama Bosch. Referencia de proveedor para distribucion B2B.
+PRV-2016;8423039388437;Alicate Bellota Pro;Bellota;Herramienta manual;209.02;340.69;21;21.145;2023-12-18;Alicate de la gama Bellota. Referencia de proveedor para distribucion B2B.
+PRV-2008;8415573964093;  LLAVE INGLESA DEWALT PRO   ;DeWalt;Herramienta manual;267,98;365,88;10;13,378;2024-09-10;Llave inglesa de la gama DeWalt. Referencia de proveedor para distribucion B2B.
+PRV-2076;8483773619471;Valvula antirretorno Roca Plus;Roca;Fontanería;73.01;144.70;21;7.170;2022-12-26;Valvula antirretorno de la gama Roca. Referencia de proveedor para distribucion B2B.
+PRV-2092;8495129885683;  MAGNETOTERMICO WURTH BASIC   ;wurth;Electricidad;170,61;285,42;21;2,926;2019-06-22;Magnetotermico de la gama Wurth. Referencia de proveedor para distribucion B2B.
+PRV-2121;8443287503055;Esmalte sintetico Titan XL;Titan;Pintura;105.00;211.54;10;17.603;21/01/2023;Esmalte sintetico de la gama Titan. Referencia de proveedor para distribucion B2B.

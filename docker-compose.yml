@@ -1,0 +1,44 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: prueba-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: catalogo
+      MYSQL_USER: etailers
+      MYSQL_PASSWORD: etailers
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpass"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  stock-api:
+    image: node:20-alpine
+    container_name: prueba-stock-api
+    restart: unless-stopped
+    working_dir: /app
+    command: node server.js
+    environment:
+      PORT: 3001
+      STOCK_API_TOKEN: etailers-demo-token
+      ERROR_RATE: "0.15"
+      RATE_LIMIT: "40"
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./mock-api:/app:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:
