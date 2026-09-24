@@ -1,6 +1,6 @@
 # Plan de implementación y estrategia Git
 
-Estado actualizado tras F5: F0–F4 integradas; F5 implementada y verificada en `feature/etl-stock`, pendiente de PR 2 e integración. F6 y siguientes no iniciadas. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
+Estado actualizado tras F6: F0–F5 integradas; F6 implementada y verificada en `feature/orders`, pendiente de PR 3 e integración. F7 y siguientes no iniciadas. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
 
 ## Orden y alcance
 
@@ -175,4 +175,4 @@ Antes de cada merge: tests de la fase y regresiones afectadas, diff/secretos rev
 
 Ejemplo de solicitud futura: «Implementa únicamente F1 siguiendo AGENTS y los documentos de planificación. Antes del cambio identifica archivos, razón y criterio; prueba las reglas y resume evidencias y pendientes. No avances a F2». Una fase puede dividirse en tareas aún más pequeñas si no cabe en un diff revisable.
 
-El siguiente paso es revisar e integrar PR 2 de F5. Después podrá solicitarse F6 por separado. Resolver cada supuesto en su fase y dejar documentada la decisión si no hay confirmación comercial; nunca rellenar huecos con datos inventados.
+El siguiente paso es revisar e integrar PR 3 de F6. Después podrá solicitarse F7 por separado. Resolver cada supuesto en su fase y dejar documentada la decisión si no hay confirmación comercial; nunca rellenar huecos con datos inventados.

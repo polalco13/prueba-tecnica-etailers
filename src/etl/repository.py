@@ -6,8 +6,9 @@ from collections.abc import Iterable
 from pymysql.connections import Connection
 
 from src.etl.normalize import comparison_key
+from src.etl.orders import OrdersSelection
 from src.etl.pricing import PricedCatalog, PricedProduct
-from src.etl.records import Issue
+from src.etl.records import Action, Issue, ReasonCode, Severity, SourceRef
 from src.etl.reporting import RULES_VERSION, CatalogCounters
 from src.etl.stock import ReconciledStock, StockCounters
 
@@ -23,13 +24,18 @@ def start_run(connection: Connection, run_id: str) -> None:
 
 
 def mark_publishing(
-    connection: Connection, run_id: str, csv_hash: str, xml_hash: str, stock_hash: str
+    connection: Connection,
+    run_id: str,
+    csv_hash: str,
+    xml_hash: str,
+    stock_hash: str,
+    orders_hash: str,
 ) -> None:
     with connection.cursor() as cursor:
         cursor.execute(
             "UPDATE etl_runs SET phase = 'publish', csv_sha256 = %s, xml_sha256 = %s, "
-            "stock_sha256 = %s WHERE id = %s AND status = 'running'",
-            (csv_hash, xml_hash, stock_hash, run_id),
+            "stock_sha256 = %s, orders_sha256 = %s WHERE id = %s AND status = 'running'",
+            (csv_hash, xml_hash, stock_hash, orders_hash, run_id),
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Estado de ejecución no actualizable")
@@ -140,6 +146,7 @@ def complete_run(
     csv_hash: str,
     xml_hash: str,
     stock_counters: StockCounters,
+    order_counts: dict[str, int],
 ) -> None:
     with connection.cursor() as cursor:
         cursor.execute(
@@ -150,7 +157,11 @@ def complete_run(
                 csv_hash,
                 xml_hash,
                 json.dumps(
-                    {"catalog_csv": counters.as_dict(), "stock_api": stock_counters.as_dict()}
+                    {
+                        "catalog_csv": counters.as_dict(),
+                        "stock_api": stock_counters.as_dict(),
+                        "orders_csv": order_counts,
+                    }
                 ),
                 run_id,
             ),
@@ -192,6 +203,87 @@ def publish_stock(connection: Connection, run_id: str, stock: ReconciledStock) -
                     product_ids[total.sku],
                 ),
             )
+
+
+def publish_orders(
+    connection: Connection, run_id: str, selection: OrdersSelection, catalog_skus_seen: set[str]
+) -> tuple[Issue, ...]:
+    """Upserts conservan IDs; retira versiones ausentes sin desactivar las FKs."""
+    if not selection.orders:
+        raise ValueError("Pedidos sin entidades válidas; no se publica")
+    created = []
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT sku, id FROM products")
+        product_ids = dict(cursor.fetchall())
+        for order in selection.orders:
+            for line in order.lines:
+                if line.sku in product_ids:
+                    cursor.execute(
+                        "UPDATE products SET last_run_id = %s WHERE id = %s",
+                        (run_id, product_ids[line.sku]),
+                    )
+                    continue
+                cursor.execute(
+                    "INSERT INTO products (sku, in_catalog, is_historical, last_run_id) "
+                    "VALUES (%s, 0, 1, %s)",
+                    (line.sku, run_id),
+                )
+                product_ids[line.sku] = cursor.lastrowid
+                origin = (
+                    "rechazado en catálogo"
+                    if line.sku in catalog_skus_seen
+                    else "ausente del catálogo"
+                )
+                created.append(
+                    Issue(
+                        SourceRef("orders_csv", line.ref.locator, line.sku),
+                        ReasonCode.HISTORICAL_PRODUCT_CREATED,
+                        Action.WARN,
+                        Severity.WARNING,
+                        f"Histórico creado: SKU {origin}; pedido {order.header.source_order_id}",
+                    )
+                )
+            header = order.header
+            cursor.execute(
+                "INSERT INTO orders (source_order_id, order_date, customer, channel, status, "
+                "has_rejected_lines, last_run_id) VALUES (%s,%s,%s,%s,%s,%s,%s) "
+                "ON DUPLICATE KEY UPDATE order_date=VALUES(order_date), customer=VALUES(customer), "
+                "channel=VALUES(channel), status=VALUES(status), "
+                "has_rejected_lines=VALUES(has_rejected_lines), last_run_id=VALUES(last_run_id)",
+                (
+                    header.source_order_id,
+                    header.order_date,
+                    header.customer,
+                    header.channel,
+                    header.status,
+                    order.has_rejected_lines,
+                    run_id,
+                ),
+            )
+            cursor.execute(
+                "SELECT id FROM orders WHERE source_order_id=%s", (header.source_order_id,)
+            )
+            order_id = cursor.fetchone()[0]
+            for line in order.lines:
+                cursor.execute(
+                    "INSERT INTO order_lines (order_id, product_id, line_key, quantity, unit_price, "
+                    "discount, source_locator, last_run_id) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) "
+                    "ON DUPLICATE KEY UPDATE source_locator=VALUES(source_locator), "
+                    "last_run_id=VALUES(last_run_id)",
+                    (
+                        order_id,
+                        product_ids[line.sku],
+                        line.line_key,
+                        line.quantity,
+                        line.unit_price,
+                        line.discount,
+                        line.ref.locator,
+                        run_id,
+                    ),
+                )
+        cursor.execute("DELETE FROM order_lines WHERE last_run_id <> %s", (run_id,))
+        cursor.execute("DELETE FROM orders WHERE last_run_id <> %s", (run_id,))
+    return tuple(created)
 
 
 def fail_run(connection: Connection, run_id: str, code: str, issues: Iterable[Issue]) -> None:
