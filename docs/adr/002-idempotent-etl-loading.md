@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesto. Validar en F6 que el CSV de pedidos representa una exportación completa, no un delta.
+Implementado en F4–F6 y verificado en F7 contra MySQL 8: repetición de cuatro fuentes, rollback y exclusión de escritores concurrentes. Evidencia en [SOLUCION](../../SOLUCION.md#resultados-de-ejecución). Sigue pendiente confirmar comercialmente que el CSV de pedidos es una exportación completa y que las líneas idénticas son duplicados; los tests no confirman esos supuestos. La entrega a Make corresponde a F10.
 
 ## Contexto
 

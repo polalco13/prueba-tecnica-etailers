@@ -1,15 +1,15 @@
 # Solución — documento vivo
 
-**Estado: plantilla de entrega. F0–F6 comprobadas dentro de su alcance; dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado: F0–F7 comprobadas dentro de su alcance; F6–F7 pendientes de integrar en main. SQL analítico, dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
 
 Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
 
 ## Resumen
 
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
-- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto calculado con selección definitiva por SKU en memoria (F3); migración MySQL y carga transaccional de catálogo/tarifas con auditoría (F4); API paginada y stock por almacén con publicación atómica de tres fuentes (F5); lector, normalización, históricos y reconciliación transaccional de pedidos (F6). Validación end-to-end completa: **TBD**.
+- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7).
 - Versión/commit entregado y enlace GitHub: **TBD**.
-- Estado de requisitos obligatorios y extras: **TBD**.
+- A01–A05: verificados técnicamente en F7, con pérdidas y supuestos comerciales explícitos más abajo. A06–A11 y extras: pendientes de sus fases; no se declara el ejercicio completo.
 
 ## Arquitectura final
 
@@ -45,7 +45,7 @@ Pasos de bootstrap comprobados en F0, que F12 debe repetir desde un clon limpio:
 7. Arrancar web: comando, host/puerto y URL local **TBD**.
 8. Registrar validación desde clon/BD de pruebas nuevos, fecha y commit: **TBD**. No ejecutar pruebas destructivas sobre el volumen del usuario.
 
-El incremento F6 permite cargar las cuatro fuentes; todavía no hay web ni Make. La validación end-to-end completa corresponde a F7 y en F12 no pueden quedar pasos críticos implícitos.
+El incremento F6 permite cargar las cuatro fuentes y F7 lo verificó en MySQL aislado; todavía no hay web ni Make. En F12 habrá que repetir el procedimiento desde un clon limpio.
 
 ### Dependencias elegidas en F0
 
@@ -56,20 +56,20 @@ El incremento F6 permite cargar las cuatro fuentes; todavía no hay web ni Make.
 - **Comando F6:** `.venv/bin/python -m src.etl` después de aplicar las migraciones. Usa también `ORDERS_CSV_PATH` (por defecto `data/pedidos_historico.csv`). Extrae las cuatro fuentes antes de abrir la transacción de negocio y publica pedidos, líneas e históricos junto con catálogo y stock. No envía Make.
 - Código de salida `0`: publicación confirmada; puede haber filas rechazadas y quedan en `rejections`. Código `1`: fallo o concurrencia, sin publicar un catálogo parcial. Revisar `etl_runs` y las incidencias del `run_id` del log para fallos ocurridos tras crear el run. La caída antes de obtener el lock o antes de crear el run no genera auditoría de ejecución.
 - Repetir el mismo comando con los mismos CSV/XML y respuestas completas de stock mantiene los valores de negocio y añade un `etl_runs`/sus incidencias nuevos. Los SKU que faltan en una instantánea válida pasan a históricos, con precios y stock `NULL`; un catálogo vacío o sin productos válidos, o un fichero modificado durante la extracción, falla y conserva la versión anterior. Solo se admite un escritor mediante advisory lock MySQL. Una caída abrupta puede dejar un run `running` para revisión manual.
-- Parámetros opcionales de stock: `STOCK_PER_PAGE=50`, `STOCK_ATTEMPTS=5`, `STOCK_CONNECT_TIMEOUT=5`, `STOCK_READ_TIMEOUT=15`, `STOCK_REQUESTS_PER_MINUTE=30`, `STOCK_BUDGET_SECONDS=300`. Tiempos en segundos; límites y reintentos en [TECH_SPEC](TECH_SPEC.md#api-de-stock). No hace falta modificar `.env` para usar estos valores. ETL completo, dashboard y notificación: **TBD**.
+- Parámetros opcionales de stock: `STOCK_PER_PAGE=50`, `STOCK_ATTEMPTS=5`, `STOCK_CONNECT_TIMEOUT=5`, `STOCK_READ_TIMEOUT=15`, `STOCK_REQUESTS_PER_MINUTE=30`, `STOCK_BUDGET_SECONDS=300`. Tiempos en segundos; límites y reintentos en [TECH_SPEC](TECH_SPEC.md#api-de-stock). No hace falta modificar `.env` para usar estos valores. Dashboard y notificación: **TBD**.
 - Reenvío a Make de un run confirmado sin repetir ETL: **TBD**.
 - Recuperación automática adicional: **TBD**.
 
-### Comprobación manual local de F6 (pendiente)
+### Comprobación manual en la base del usuario (pendiente)
 
-Las comprobaciones F5/F6 se hicieron en MySQL temporal; no se migró ni recargó la base `catalogo` del usuario. Para llevar este incremento a esa base, con los servicios activos y `.env` apuntando a ella:
+Las comprobaciones F6/F7 se hicieron en MySQL temporal; esta tarea no migró ni recargó la base `catalogo` del usuario. Para llevar este incremento a esa base, con los servicios activos y `.env` apuntando a ella:
 
 ```bash
 .venv/bin/python -m src.db migrate
 .venv/bin/python -m src.etl
 ```
 
-Después, refrescar tablas en DBeaver. Debe aparecer `stock_by_warehouse`. Estas consultas permiten contrastar el último run y los totales; con las mismas fuentes usadas en esta prueba se esperan los resultados de la tabla de evidencias:
+Después, refrescar tablas en DBeaver. Deben aparecer `stock_by_warehouse`, `orders` y `order_lines`. Estas consultas permiten contrastar el último run y los totales; con las mismas fuentes se esperan los contadores de filas de la tabla de evidencias. El número de históricos creados depende de los que ya existieran en esa base:
 
 ```sql
 SELECT id, status, phase, error_code, counters
@@ -95,11 +95,11 @@ GROUP BY o.id, source_order_id, status, has_rejected_lines
 ORDER BY source_order_id;
 ```
 
-La comprobación manual en la base local y la integración de PR 3 siguen pendientes; F7 no se inicia por estos comandos.
+La comprobación visual en la base del usuario es opcional para revisar el resultado local; no sustituye las pruebas MySQL de F7 ya ejecutadas. Revisar e integrar PR 3 de F6–F7 sigue pendiente. F8 requiere una petición posterior.
 
 ## Cómo ejecutar tests
 
-Las pruebas unitarias de F1–F6 se ejecutan sin BD ni API real; las pruebas de integración F4–F6 requieren un MySQL 8 separado:
+Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integración F4–F7 requieren un MySQL 8 separado:
 
 ```bash
 .venv/bin/python -m pytest -q
@@ -107,7 +107,15 @@ Las pruebas unitarias de F1–F6 se ejecutan sin BD ni API real; las pruebas de 
 .venv/bin/ruff format --check src tests
 ```
 
-Sin `F4_TEST_DB_PORT`, los tests de integración se omiten. Para incluirlos, arrancar un contenedor temporal MySQL 8 **sin montar `mysql_data`**, con una base cuyo nombre empiece por `f4_test_`; pasar `F4_TEST_DB_PORT` y `F4_TEST_DB_PASSWORD` al proceso de pytest. Son opcionales `F4_TEST_DB_HOST` (127.0.0.1), `F4_TEST_DB_NAME` (`f4_test_catalog`) y `F4_TEST_DB_USER` (`f4_tester`). El test aplica la migración en esa base y crea solo datos sintéticos. No apuntarlo al volumen o base `catalogo` del usuario. Se conservan los nombres `F4_TEST_*` para las regresiones y los tests F5/F6. F6 se verificó con **323 tests pasando** en total (302 sin BD y 21 de integración MySQL); la lectura aislada del CSV real no modifica la fuente. Sin BD se omiten los 21 tests de integración. F7 corresponde a la validación end-to-end completa.
+Sin `F4_TEST_DB_PORT`, los tests de integración se omiten. Para incluirlos, arrancar un contenedor temporal MySQL 8 **sin montar `mysql_data`**, con una base cuyo nombre empiece por `f4_test_`; pasar `F4_TEST_DB_PORT` y `F4_TEST_DB_PASSWORD` al proceso de pytest. Son opcionales `F4_TEST_DB_HOST` (127.0.0.1), `F4_TEST_DB_NAME` (`f4_test_catalog`) y `F4_TEST_DB_USER` (`f4_tester`). El test aplica la migración en esa base y crea solo datos sintéticos. No apuntarlo al volumen o base `catalogo` del usuario. Se conservan los nombres `F4_TEST_*` para todas las fases. F7 añade cinco casos MySQL y un caso unitario de capitalización de cliente a las regresiones: **329 tests** (303 sin BD y 26 de integración). Sin BD se omiten esos 26, por lo que esa ejecución sola no acredita F7.
+
+Para repetir solo F7, con las variables anteriores configuradas:
+
+```bash
+.venv/bin/python -m pytest tests/integration/test_etl.py -q
+```
+
+Las fixtures se generan en directorios temporales: CSV Latin-1, XML, pedidos UTF-8 BOM y HTTP simulado con fechas fijas. Las cinco pruebas comprueban carga/repetición/trazas, duplicados sin rechazos, fallo de última página, fallo MySQL al publicar y exclusión de un segundo escritor mientras el primero extrae. Las consultas de [etl_checks.py](tests/integration/etl_checks.py) verifican todas las FKs, claves únicas, líneas negativas según estado, históricos sin coste, sumas de stock y contadores contra incidencias persistidas. Los tests previos siguen comprobando las restricciones con escrituras inválidas y la corrección/retirada de líneas.
 
 ## Esquema de base de datos
 
@@ -115,7 +123,7 @@ F4 aplicó [`001_products_and_runs.sql`](db/migrations/001_products_and_runs.sql
 
 ## Decisiones sobre calidad de datos
 
-Reglas propuestas en [DATA_RULES](DATA_RULES.md): encoding por fuente, nulos, precios Decimal, EAN conservador, selección determinista de duplicados, descuentos, fechas, estados/canales y stock desconocido. En F1 se implantaron normalizadores puros para centinelas y texto, SKU/ID, decimales y dinero, descuentos, cantidades exactas, fechas y timestamps con zona, estados/canales observados, EAN y redondeo `ROUND_HALF_UP`. Un descuento sin `%` igual a `1` se interpreta como 1 %, según la decisión documentada. F2 lee el catálogo Latin-1 con `csv`, rechaza filas con columnas o campos obligatorios inválidos y descarta solo campos opcionales incorrectos. Conserva el coste CSV inválido como candidato condicionado a una excepción válida. F3 resuelve las tarifas, calcula el precio neto y entonces escoge la primera fila válida por SKU; los conflictos de tarifa general abortan el cálculo. F4 persiste el resultado en MySQL con auditoría. F5 integra stock conforme a la concreción de DATA_RULES: duplicados y versiones anteriores separados de rechazos, última observación por almacén, reservas sin restar, conflictos/errores con total inválido y ausencia con total desconocido. F6 lee 1.142 filas del histórico real sin modificarlo; en memoria quedaron 786 líneas aceptadas, 349 rechazadas y 7 deduplicadas, agrupadas en 277 pedidos, 22 parciales y 36 SKUs históricos potenciales. La validación end-to-end queda para F7.
+Reglas en [DATA_RULES](DATA_RULES.md): encoding por fuente, nulos, precios Decimal, EAN conservador, selección determinista de duplicados, descuentos, fechas, estados/canales y stock desconocido. F1 implantó normalizadores puros; un descuento sin `%` igual a `1` se interpreta como 1 %. F2 lee el catálogo Latin-1 con `csv`, rechaza campos obligatorios inválidos y descarta solo opcionales incorrectos; conserva coste CSV inválido condicionado a una excepción. F3 resuelve tarifas y escoge la primera fila válida por SKU; conflictos de tarifa general abortan. F4 persiste con auditoría. F5 integra stock, separando versiones/duplicados de rechazos y reservas del físico. F6 leyó 1.142 filas reales de pedidos: 786 aceptadas, 349 rechazadas y 7 deduplicadas, con 277 pedidos, 22 parciales y 36 SKUs históricos potenciales. F7 confirmó estas mismas cifras publicadas en MySQL.
 
 La lectura aislada del catálogo original en F2 (sin tarifas ni MySQL) observó **133 registros de origen, 130 candidatos antes de precio final, 10 con coste CSV pendiente de validar por excepción y 13 incidencias preliminares**: 2 de columnas, 5 de campo obligatorio y 6 de EAN. Varios motivos pueden pertenecer a una sola fila. Eran cifras provisionales, antes de la selección económica de F3. Los ficheros de `data/` no se modificaron.
 
@@ -135,7 +143,7 @@ F4 conserva el ID de un producto que desaparece del CSV, lo marca histórico y l
 
 F4 usa clave única SKU, upsert y reconciliación de catálogo completo con auditoría por run. F6 usa la firma `order-line-v1` y una instantánea completa de pedidos; las firmas idénticas se deduplican y las líneas/pedidos ausentes se retiran. Confirmación comercial de que el CSV es completo y política sobre dos líneas legítimas idénticas: **TBD**.
 
-En el MySQL temporal, dos ejecuciones del comando con CSV/XML originales (`8c7c5ff3-f0ff-4171-8c60-334f896263a2` y `5ebade37-5a8d-4f66-9735-d8b50939a658`) dieron los mismos 115 productos vigentes y el mismo SHA-256 de la representación ordenada de sus campos de negocio: `80987e68f753c2f71d102802e2ceaf3f99b6693fcd53e17b56090c937face02e`. F6 verificó en MySQL sintético la repetición, corrección de una línea, retirada de pedidos ausentes, promoción/retirada de históricos y rollback después de publicar pedidos. La validación real de las cuatro fuentes y sus cifras queda para F7.
+F6 verificó en MySQL sintético la corrección de una línea, retirada de pedidos ausentes y promoción/retirada de históricos. F7 comparó las cuatro tablas completas tras dos cargas reales: mismos valores, IDs y cantidades de filas. Solo se excluyó `last_run_id`; fechas de origen, firmas y localizadores de línea se conservaron en la comparación. Se añadió un run y su auditoría por carga, con 36 avisos de creación de históricos solo en la primera. Los identificadores, hashes y cifras se detallan abajo.
 
 ## Integración Make
 
@@ -155,26 +163,71 @@ URL local/comando: **TBD**. Evidencia de catálogo, filtros, gráfico desde abri
 
 ## Resultados de ejecución
 
-Esta tabla no contiene resultados previstos ni números simulados.
+F7, 24/09/2026: dos llamadas reales a `run_etl(settings)`, sin sustituir lectores ni HTTP, en `f4_test_f7_real` inicialmente vacía, sobre MySQL 8.0.46 temporal sin el volumen del usuario. Se aplicaron las tres migraciones. La API local original entregó cinco páginas de 50 (última de 30). El mock carga su fichero en memoria al arrancar y no modifica sus registros; se conservaron los mismos bytes de CSV/XML/pedidos/stock durante ambas cargas. No se usa fecha analítica en F7. Al terminar se detuvo el contenedor temporal creado con `--rm`; los run_id siguientes identifican esa evidencia, no ejecuciones en la base del usuario.
 
 | Evidencia | Resultado real |
 | --- | --- |
-| Fecha/commit/reglas y entorno | F6, 24/09/2026, `catalog-stock-orders-v1`, MySQL 8 temporal; commit final de entrega TBD. |
-| Hashes de entrada y fecha de referencia | CSV `ebe2a2079d02814b02b3094ef0e9c0d2c696b6a81c21172a8e0a2d2821d9159a`; XML `3922610e433d4b6e833a24f7e9db6d6c3c7858fbb8de4694d7fb005af511e3df`, iguales en ambos runs y guardados en `etl_runs`. Stock `08987b5f88455dc32034f60c331ed68ebbc94e4d3c33c312ae2f574e51b398bb`, también idéntico. Fecha analítica no aplica en F5. |
-| run_id inicial / repetición y estados | `8b8d057e-70ce-48b7-ae64-b460ad55e954` / `3e50dd32-ae8e-4065-8c99-b860ff961e96`, ambos `completed` en `f4_test_real` temporal, sin fixtures previas. |
-| Registros leídos por fuente | Catálogo CSV: 133; tarifas XML: reglas leídas, no filas CSV equivalentes. Stock: 230 en 5 páginas de 50. Pedidos: 1.142 filas reales leídas en memoria. |
-| Productos aceptados/insertados/actualizados/sin cambio | 115 vigentes tras ambos runs; contadores de filas MySQL insertadas/actualizadas no se infieren de `affected_rows` y quedan TBD. |
-| Productos históricos | 0 en estas ejecuciones F5; los casos de retiro/promoción se verifican con fixtures aparte. |
-| Pedidos/líneas aceptados y pedidos parciales | F6: 1.142 filas reales leídas; 786 aceptadas, 349 rechazadas y 7 deduplicadas; 277 pedidos y 22 parciales en memoria. No se publicó el histórico real en esta fase. |
-| Stock por almacén y productos con stock desconocido/inválido | 206 observaciones por almacén; 103 productos con stock conocido, 12 desconocido, 0 inválido. Cero huérfanos y cero diferencias entre total conocido y SUM(quantity) por producto. |
-| Filas leídas/aceptadas/rechazadas/deduplicadas por fuente; avisos y campos descartados aparte | Catálogo: 133/115/15/3; stock: 230/206/24/0. Pedidos real en memoria: **1.142/786/349/7**; 31 avisos, sin campos descartados. Los 81 conflictos de cliente del histórico son diferencias solo de mayúsculas y se conservan como conflicto hasta confirmación; no se elige una variante silenciosamente. |
-| Facturación, unidades, ticket y margen/cobertura | TBD |
-| Duraciones y estado Make | TBD |
-| Comparación de datos de negocio entre runs | 115 productos y 206 almacenes idénticos, incluidos IDs de producto y excluido `last_run_id`. SHA-256 de ambos conjuntos ordenados: `947b0b7a96e5a3fd111e513f608b2583a7d2706875cf821976395a07bec6bb69`. Hashes de fuentes y contadores idénticos entre runs. |
+| Código y reglas | Implementación F6 `e949385`, pruebas F7 `039a403` en `feature/orders`; reglas `catalog-stock-orders-v1`, sin cambios de negocio en F7. |
+| run_id inicial / repetición | `bcef2d47-9487-4707-ac1c-85bfbbfbf00e` / `65fa3677-da9e-418e-bc20-7c6488e99793`, ambos `completed`. |
+| Productos | 151 en ambas cargas: 115 comerciales + 36 históricos. Los históricos sostienen 81 líneas aceptadas: 27 SKUs ausentes del catálogo original y 9 con fila rechazada. |
+| Pedidos/líneas | 277 pedidos, 22 parciales y 786 líneas en ambas cargas. No se deducen inserciones/actualizaciones de `affected_rows`. |
+| Stock | 206 observaciones; entre los 115 comerciales, 103 con stock conocido, 12 desconocido y 0 inválido. Cero diferencias frente a SUM(quantity). |
+| Integridad | Cero FKs huérfanas en las cuatro tablas y auditoría, cero claves duplicadas, cero pedidos sin líneas. Históricos con coste/PVP/stock NULL. |
+| Auditoría | 524 incidencias iniciales y 488 en repetición; la diferencia son 36 creaciones de históricos. Los rechazos de origen y las deduplicaciones se repiten con el nuevo run_id. |
+| Comparación de negocio | Igualdad exacta de las cuatro tablas mediante `business_snapshot`, incluidos IDs y fechas de origen, excluyendo solo `last_run_id`. SHA-256: `8b5b29d361941891824dd2cbcdd8edf6471148869dc85c00686a83a610cc4185` en ambas. |
+| Duraciones y API | 11,238 s / 9,015 s para `run_etl`, sin contar consultas de control. Primer run: un reintento en página 1; segundo: ninguno. No es un benchmark. |
+| Make / métricas | `make_status=not_applicable`; facturación, ticket, margen y cobertura pendientes de F8; entrega externa pendiente de F10. |
+
+Hashes SHA-256, idénticos antes/después y entre runs:
+
+| Entrada | SHA-256 |
+| --- | --- |
+| Catálogo CSV | `ebe2a2079d02814b02b3094ef0e9c0d2c696b6a81c21172a8e0a2d2821d9159a` |
+| Tarifas XML | `3922610e433d4b6e833a24f7e9db6d6c3c7858fbb8de4694d7fb005af511e3df` |
+| Pedidos CSV | `7819b3dc624de1bb6ec7a4dc80e207a5c5a7075c8d6295842aa3fcc7b42e11ac` |
+| Stock recibido, hash de páginas guardado en etl_runs | `08987b5f88455dc32034f60c331ed68ebbc94e4d3c33c312ae2f574e51b398bb` |
+| Fichero original mock-api/stock.json | `4e0e4f2117766b5a2067d7a055406573afc23f12cb183be7d1944ff5ad72906d` |
+
+| Fuente | Leídas | Aceptadas | Rechazadas | Deduplicadas | Avisos inicial / repetición | Campos descartados |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Catálogo | 133 | 115 | 15 | 3 | 7 / 7 | 7 |
+| Stock | 230 | 206 | 24 | 0 | 40 / 40 | 0 |
+| Pedidos | 1.142 | 786 | 349 | 7 | 67 / 31 | 0 |
+
+En las tres fuentes se cumple `read = accepted + rejected + deduplicated`, contrastado con los localizadores distintos de auditoría y las filas de negocio publicadas. XML tiene reglas, no filas de entidades equivalentes: 6 categorías, 10 marcas y 14 excepciones; sus 7 avisos (5 términos no aplicados y 2 excepciones sin candidato) se incluyen en `catalog_csv.quality_warnings`, conservando `source=tariffs_xml` en auditoría. Esto evita inventar un contador de filas XML comparable al de CSV.
+
+Para reproducir la comparación real, usar otra base temporal inicialmente vacía con las migraciones aplicadas y las cuatro fuentes originales: invocar `run_etl` dos veces, llamar tras cada carga a `assert_integrity`, `assert_counters` y `business_snapshot` de [etl_checks.py](tests/integration/etl_checks.py), comparar los dos snapshots y `snapshot_hash`. Configurar solo la conexión de pruebas por entorno o `dataclasses.replace(load_settings(), ...)`; conservar el token en memoria y no editar `.env`. No ejecutar las fixtures sintéticas sobre esa misma base antes de la medida. El hash de negocio incluye IDs, por lo que demuestra igualdad entre estas cargas, no un identificador universal para bases con historiales distintos.
+
+### Trazas revisadas desde origen hasta MySQL
+
+Contraste directo de las celdas originales, XML/stock y consultas SQL; sin copiar nombres de clientes a evidencias:
+
+| Fuente / localizador | Contraste observado |
+| --- | --- |
+| Catálogo fila 98, PRV-2002; XML Herramienta manual / Stanley | `65,83` → Decimal 65.83; 10 % + 8 %: `65.83 × (1 − 0.10 − 0.08) = 53.9806`, igual a MySQL. Sin stock observado: NULL. |
+| Catálogo fila 66, PRV-2001; excepción XML del mismo SKU | Coste `-0,00` descartado con `NON_POSITIVE_PRICE`; excepción 165.75 → `net_cost=165.7500`, `base_cost=NULL`, origen `exception`. |
+| Catálogo filas 5 y 6 | EAN científico de PRV-2075 descartado sin eliminar producto; PRV-9001 rechazado por número de columnas. Auditoría conserva fila y motivo. |
+| Stock PRV-2001, page:4/row:38 y page:5/row:5 | MAD-01: quantity 0/reserved 2; BCN-02: 12/0. MySQL publica físico 12 y conserva ambas reservas; aviso para MAD-01. |
+| Stock page:1/row:6, PRV-7104 | `UNKNOWN_PRODUCT_SKU`; la observación no crea producto. |
+| Pedidos fila 3, PED-2025-00001 / PRV-2104 | `2025-04-19 19:57:00`, `b2c`, `91,75` → día 2025-04-19, B2C, precio 91.7500, cantidad 1, descuento 0. |
+| Pedidos fila 2, mismo pedido | Cantidad −3 en COMPLETADO y precio vacío: dos motivos de rechazo, una sola fila rechazada. Se conserva el pedido como parcial por sus líneas válidas. |
+| Pedidos fila 14, PED-2025-00004 / PRV-2062 | 50 unidades a 116.03; catálogo fila 38 rechazado por precio no positivo. Se crea histórico con coste NULL y FK válida. Estado CANCELADO conservado; no se calcula facturación en F7. |
+
+Las devoluciones negativas se prueban con fixtures sintéticas. No hay líneas negativas aceptadas en esta carga real: las ocho cantidades negativas originales pertenecen a COMPLETADO/CANCELADO, y se rechazan por cabecera o por cantidad incompatible.
 
 ## Rechazos
 
-Consulta de revisión: `SELECT source, record_locator, entity_key, reason_code, field_name, action FROM rejections WHERE run_id = ? ORDER BY id` (sustituir `?` por parámetro del cliente). El primer run real en la BD temporal persistió 36 incidencias: rechazos, deduplicaciones, avisos y campos descartados. `133 = 115 + 15 + 3`; los duplicados no cuentan como rechazos y una fila puede tener varios motivos. El detalle/payload de cada incidencia queda limitado; no se copia aquí ningún valor de proveedor. F5 añade 64 incidencias de stock por run real: 24 rechazos por SKU desconocido, 28 avisos de reservas superiores al físico y 12 avisos de ausencia. Total con catálogo/tarifas: 100 incidencias/run. Auditoría de pedidos: **TBD**.
+Consulta de revisión: `SELECT source, record_locator, entity_key, reason_code, field_name, action FROM rejections WHERE run_id = ? ORDER BY id` (sustituir `?` por parámetro del cliente). El nombre `rejections` incluye también deduplicaciones, campos descartados y avisos; no usar COUNT(*) de toda la tabla como contador de filas rechazadas.
+
+| Fuente | Motivos de acción reject_row (incidencias) | Filas distintas |
+| --- | --- | ---: |
+| Catálogo | AMBIGUOUS_NUMBER 5; CONFLICTING_PRODUCT_SKU 3; INVALID_COLUMN_COUNT 2; MISSING_REQUIRED_FIELD 5; NON_POSITIVE_PRICE 4 | 15 |
+| Stock | UNKNOWN_PRODUCT_SKU 24 | 24 |
+| Pedidos | CONFLICTING_ORDER_HEADER 324; INVALID_QUANTITY 7; INVALID_QUANTITY_FOR_STATUS 6; MISSING_ORDER_DATE 1; MISSING_REQUIRED_FIELD 12 | 349 |
+
+Catálogo tiene 19 incidencias de rechazo y pedidos 350, porque una fila puede tener varios motivos. Stock tiene además 28 avisos por reservas y 12 por ausencia. Pedidos tiene 20 avisos de herencia, 11 de descuento vacío y 36 de creación histórica solo en la primera carga. Todas las diferencias de contadores están explicadas.
+
+**Pérdida relevante por la política actual:** 324 filas corresponden a 81 pedidos con diferencias solo de mayúsculas/minúsculas del cliente, después de excluir centinelas y normalizar NFC/espacios. F6 compara esa etiqueta conservando capitalización y F7 no cambió esa regla. Los otros 25 rechazos de pedidos son filas distintas con problemas de cantidad/campos obligatorios. No afirmar que esas 324 filas sean ventas inválidas: su exclusión es una decisión técnica conservadora pendiente de confirmar. Antes de interpretar las métricas, conviene decidir si se compara cliente sin distinguir mayúsculas y, si cambia la política, versionarla y repetir esta validación. La trazabilidad acredita el descarte, no su conveniencia comercial.
 
 ## Pruebas realizadas
 
@@ -189,14 +242,15 @@ Consulta de revisión: `SELECT source, record_locator, entity_key, reason_code, 
 | F4: migración e integración MySQL | MySQL 8 temporal sin volumen del usuario; `F4_TEST_DB_PORT=… F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; dos ejecuciones de `.venv/bin/python -m src.etl` con CSV/XML originales sobre la BD temporal | 201 tests pasan, Ruff limpio; UNIQUE/FK/CHECK, repetición, retiro/promoción, rollback, catálogo vacío, fichero cambiante, tarifa conflictiva y lock comprobados. 115 productos vigentes, 36 incidencias/run, estado de negocio idéntico. |
 | F5: API mock, reglas y publicación de stock | `F4_TEST_DB_PORT=… F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; dos comandos ETL contra la API local real con destino MySQL temporal | 273 tests pasan; lint/formato correctos. HTTP simulado cubre paginación, 401/403, 429 con segundos/fecha HTTP, 500, timeout, presupuesto, JSON/meta inválidos y páginas repetidas. Reglas cubren duplicados, versiones, conflictos, límites, reservas y NULL frente a cero. API real: 230 observaciones en 5 páginas; primer run necesitó un reintento en página 3, segundo ninguno. |
 | MySQL, FKs y rollback | F4–F6 en MySQL 8 temporal; tests de pedidos sintéticos | PK/FKs/CHECK de almacenes y pedidos; repetición, corrección, históricos, promoción/retirada, instantánea vacía y rollback comprobados. |
-| F6: pedidos y reconciliación | `.venv/bin/python -m pytest tests/integration -q`; tests unitarios; Ruff | 21 tests MySQL pasan: BOM/CSV, cabeceras, parciales, firmas, históricos, promoción/retirada, FKs/CHECKs, repetición, corrección, instantánea vacía y rollback. |
-| ETL completo y segunda ejecución | TBD | TBD |
+| F6: pedidos y reconciliación | `.venv/bin/python -m pytest tests/integration -q`; tests unitarios; Ruff | 323 tests en total al cerrar F6: 302 unitarios y 21 MySQL. Unitarios: BOM/CSV, cabeceras, parciales y firmas. MySQL: históricos, promoción/retirada, FKs/CHECKs, repetición, corrección, instantánea vacía y rollback. |
+| F7: ETL completo y segunda ejecución | `F4_TEST_DB_PORT=… F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; dos llamadas reales a `run_etl` en otra BD temporal vacía | 329 tests: 303 unitarios y 26 MySQL. F7 añade cinco casos E2E y una regresión de cliente con diferente capitalización. Cargas reales: 151 productos, 206 almacenes, 277 pedidos y 786 líneas idénticos; contadores e integridad correctos. |
+| F7: fallos y concurrencia | `tests/integration/test_etl.py` en MySQL 8, fuentes sintéticas | Última página 500 agotada y error real de FK tras escribir las cuatro tablas: negocio anterior íntegro, run failed durable, sin histórico ficticiamente creado en auditoría. Otro lector ve la versión previa antes del rollback. Segundo escritor rechazado antes de crear run durante extracción; tras liberar lock, nueva carga completada. |
 | SQL/conciliación de métricas | TBD | TBD |
 | Web en navegador | TBD | TBD |
 | Make con ejecución real y destinos | TBD | TBD |
 | Arranque desde cero y secretos | TBD | TBD |
 
-Los tests F4–F6 acreditan catálogo, tarifas, stock, pedidos y auditoría en una base temporal; no acreditan todavía la validación end-to-end de F7 ni las métricas de F8.
+Trazabilidad de aceptación: A01 (cuatro fuentes y fallos), A02 (dos precios contrastados con origen), A03 (FKs e históricos), A04 (localizadores/contadores/rechazos) y A05 (repetición completa más corrección de líneas probada en F6) quedan verificados bajo las reglas vigentes. F8 no se ha iniciado; ninguna cifra de facturación o margen está acreditada por estas pruebas.
 
 ## Qué cambiaría con cinco millones de líneas
 
@@ -214,7 +268,7 @@ Por validar: ausencia de ID de línea y coste histórico; base fiscal/zona de ne
 
 ## Uso de IA
 
-Se usó Codex para inspeccionar el repositorio y redactar la planificación; después, para implementar F0–F6. En F1–F3 se ejecutaron tests unitarios sintéticos y Ruff; F4 añadió tests de integración sintéticos en MySQL temporal y dos cargas de CSV/XML reales allí, sin modificar fuentes ni el volumen del usuario. F5 añadió HTTP simulado, consolidación de stock y pruebas MySQL, además de dos cargas reales de tres fuentes en otra base temporal. F6 añadió parser de pedidos, históricos y reconciliación con 21 pruebas MySQL. No se ha ejecutado todavía la validación end-to-end completa de F7. El responsable deberá revisar y poder explicar las decisiones y resultados.
+Se usó Codex para inspeccionar el repositorio, redactar la planificación e implementar F0–F7. F1–F3 incorporaron reglas puras y Ruff; F4–F6 añadieron persistencia, stock y pedidos con pruebas MySQL y cargas parciales reales. F7 añadió pruebas de integración completa, un caso unitario que explicita la comparación actual de cliente, dos cargas reales de las cuatro fuentes y contraste de muestras contra origen. No modificó reglas de negocio, fuentes ni el volumen del usuario; corrigió el mensaje de error del CLI que aún mencionaba F5 y documentación desactualizada. El responsable deberá revisar y poder explicar las decisiones y resultados.
 
 Uso durante implementación, tareas asistidas, decisiones revisadas personalmente, validación y errores detectados: **TBD**. No atribuir aprobaciones o verificaciones humanas que no han ocurrido.
 

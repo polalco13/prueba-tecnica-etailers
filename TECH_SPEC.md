@@ -1,6 +1,6 @@
 # Especificación técnica propuesta
 
-Estado: diseño, sin implementación. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
+Estado: ETL implementado hasta F6 y validado end-to-end en F7. SQL analítico, web y Make siguen siendo diseño pendiente. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
 
 ## Inspección y límites de evidencia
 
@@ -105,7 +105,7 @@ No se propone tabla de clientes ni catálogo de marcas/categorías: textos canó
 
 ## Integridad referencial e históricos
 
-D: para un SKU de una línea histórica válida que falte en el catálogo aceptado, crear/reutilizar un producto mínimo `is_historical=true`, `in_catalog=false`, coste/PVP/EAN/stock nulos y nombre de presentación «SKU … (histórico)». Es una etiqueta de interfaz, no un nombre atribuido al proveedor. Registrar `HISTORICAL_PRODUCT_CREATED`; distinguir en el detalle ausencia original de catálogo frente a producto rechazado. No crear históricos a partir de líneas rechazadas.
+D: para un SKU de una línea histórica válida que falte en el catálogo aceptado, crear/reutilizar un producto mínimo `is_historical=true`, `in_catalog=false`, coste/PVP/EAN/stock nulos y nombre de presentación «SKU … (histórico)». Es una etiqueta de interfaz, no un nombre atribuido al proveedor. Registrar `HISTORICAL_PRODUCT_CREATED` solo al crear el producto; distinguir en el detalle ausencia original de catálogo frente a producto rechazado. Reutilizar el ID existente no repite ese evento. No crear históricos a partir de líneas rechazadas.
 
 Si posteriormente aparece en catálogo, actualizar el mismo ID y quitar el indicador histórico. Los productos que dejan de estar en la instantánea se conservan para FKs, pasan a históricos y pierden coste/stock actuales; no presentar el valor previo como vigente. La auditoría conserva procedencia y motivo del cambio, pero un hash de fuente no permite reconstruir sus valores: sin conservar el fichero de aquella ejecución no existe historial completo de precios. Ocultarlos por defecto del listado comercial, pero incluirlos en análisis de ventas bajo «Sin categoría» cuando proceda.
 
@@ -160,7 +160,7 @@ El total físico usa `sum(quantity)` de un registro vigente por `(sku, warehouse
 
 F11 puede añadir `updated_since`: persistir watermark solo tras commit, solapamiento por límite inclusivo y deduplicación por clave/fecha. El endpoint no publica tombstones de almacenes eliminados: mantener refresco completo periódico; una respuesta incremental vacía no borra lo anterior. No adelantar incremental a F5.
 
-Concreción implementada en F5: `python -m src.etl` publica catálogo, tarifas y stock; pedidos siguen pendientes. `002_stock.sql` añade `etl_runs.stock_sha256` y `stock_by_warehouse`; el migrador aplica versiones en orden y puede retomar el ADD COLUMN tras una interrupción sin perder datos. El hash de stock encadena las respuestas HTTP 200 completas en orden de página, precedidas de su longitud; identifica la entrada recibida, no un historial reconstruible ni una firma independiente de la paginación. El lock de F4 se conserva para que ambos incrementos no admitan escritores simultáneos.
+Concreción implementada en F5: el comando pasó a publicar catálogo, tarifas y stock; F6 incorporó pedidos. `002_stock.sql` añade `etl_runs.stock_sha256` y `stock_by_warehouse`; el migrador aplica versiones en orden y puede retomar el ADD COLUMN tras una interrupción sin perder datos. El hash de stock encadena las respuestas HTTP 200 completas en orden de página, precedidas de su longitud; identifica la entrada recibida, no un historial reconstruible ni una firma independiente de la paginación. El lock de F4 se conserva para que ambos incrementos no admitan escritores simultáneos.
 
 Parámetros operativos de F5: `STOCK_PER_PAGE=50` (1–100), `STOCK_ATTEMPTS=5` (1–10), `STOCK_CONNECT_TIMEOUT=5` y `STOCK_READ_TIMEOUT=15` segundos (1–120), `STOCK_REQUESTS_PER_MINUTE=30` (1–40), `STOCK_BUDGET_SECONDS=300` (1–3600). Backoff base 1 segundo, jitter de 0 a 1 segundo y máximo 30; un `Retry-After` válido puede superar ese máximo, pero nunca el presupuesto restante. El presupuesto incluye descarga y esperas; se comprueba antes y después de cada petición y tras dormir. Los timeouts HTTP son por operación de red: no se promete interrupción exacta del proceso al segundo 300. No se siguen redirecciones ni se toman proxies del entorno para evitar reenviar el Bearer a otro destino. Se comprueban tamaño exacto de página, tipos y totales constantes. Los estados `known`/`unknown`/`invalid`, versiones descartadas y fecha agregada se concretan en DATA_RULES.
 
