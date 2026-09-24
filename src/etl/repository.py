@@ -1,4 +1,4 @@
-"""Persistencia parametrizada de catálogo F4; el caller controla la transacción."""
+"""Persistencia parametrizada de catálogo y stock; el caller controla la transacción."""
 
 import json
 from collections.abc import Iterable
@@ -9,6 +9,7 @@ from src.etl.normalize import comparison_key
 from src.etl.pricing import PricedCatalog, PricedProduct
 from src.etl.records import Issue
 from src.etl.reporting import RULES_VERSION, CatalogCounters
+from src.etl.stock import ReconciledStock, StockCounters
 
 
 def start_run(connection: Connection, run_id: str) -> None:
@@ -21,12 +22,14 @@ def start_run(connection: Connection, run_id: str) -> None:
     connection.commit()
 
 
-def mark_publishing(connection: Connection, run_id: str, csv_hash: str, xml_hash: str) -> None:
+def mark_publishing(
+    connection: Connection, run_id: str, csv_hash: str, xml_hash: str, stock_hash: str
+) -> None:
     with connection.cursor() as cursor:
         cursor.execute(
-            "UPDATE etl_runs SET phase = 'publish', csv_sha256 = %s, xml_sha256 = %s "
-            "WHERE id = %s AND status = 'running'",
-            (csv_hash, xml_hash, run_id),
+            "UPDATE etl_runs SET phase = 'publish', csv_sha256 = %s, xml_sha256 = %s, "
+            "stock_sha256 = %s WHERE id = %s AND status = 'running'",
+            (csv_hash, xml_hash, stock_hash, run_id),
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Estado de ejecución no actualizable")
@@ -136,16 +139,59 @@ def complete_run(
     counters: CatalogCounters,
     csv_hash: str,
     xml_hash: str,
+    stock_counters: StockCounters,
 ) -> None:
     with connection.cursor() as cursor:
         cursor.execute(
             "UPDATE etl_runs SET status = 'completed', phase = 'publish', "
             "finished_at = UTC_TIMESTAMP(6), csv_sha256 = %s, xml_sha256 = %s, "
             "counters = %s WHERE id = %s AND status = 'running'",
-            (csv_hash, xml_hash, json.dumps({"catalog_csv": counters.as_dict()}), run_id),
+            (
+                csv_hash,
+                xml_hash,
+                json.dumps(
+                    {"catalog_csv": counters.as_dict(), "stock_api": stock_counters.as_dict()}
+                ),
+                run_id,
+            ),
         )
         if cursor.rowcount != 1:
             raise RuntimeError("Estado de ejecución no actualizable")
+
+
+def publish_stock(connection: Connection, run_id: str, stock: ReconciledStock) -> None:
+    """Reemplaza solo la instantánea de almacenes dentro de la transacción del caller."""
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT sku, id FROM products WHERE in_catalog = 1")
+        product_ids = dict(cursor.fetchall())
+        if product_ids.keys() != {total.sku for total in stock.totals}:
+            raise ValueError("Stock y catálogo no corresponden a la misma instantánea")
+        cursor.execute("DELETE FROM stock_by_warehouse")
+        for row in stock.observations:
+            cursor.execute(
+                "INSERT INTO stock_by_warehouse "
+                "(product_id, warehouse_code, quantity, reserved, updated_at, last_run_id) "
+                "VALUES (%s, %s, %s, %s, %s, %s)",
+                (
+                    product_ids[row.sku],
+                    row.warehouse,
+                    row.quantity,
+                    row.reserved,
+                    row.updated_at.replace(tzinfo=None),
+                    run_id,
+                ),
+            )
+        for total in stock.totals:
+            cursor.execute(
+                "UPDATE products SET stock_total = %s, stock_status = %s, stock_as_of = %s "
+                "WHERE id = %s",
+                (
+                    total.quantity,
+                    total.status,
+                    total.as_of.replace(tzinfo=None) if total.as_of else None,
+                    product_ids[total.sku],
+                ),
+            )
 
 
 def fail_run(connection: Connection, run_id: str, code: str, issues: Iterable[Issue]) -> None:
