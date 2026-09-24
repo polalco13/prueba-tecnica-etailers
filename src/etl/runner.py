@@ -1,4 +1,4 @@
-"""Incremento F4: catálogo y tarifas; publicación atómica con auditoría durable."""
+"""Incremento F5: catálogo, tarifas y stock con publicación atómica y auditoría durable."""
 
 import hashlib
 from dataclasses import dataclass
@@ -14,6 +14,8 @@ from src.etl.catalog import CatalogReadError, extract_catalog
 from src.etl.pricing import TariffReadError, load_tariffs, price_catalog
 from src.etl.records import Action, Issue, ReasonCode, Severity, SourceRef
 from src.etl.reporting import CatalogCounters, catalog_counters
+from src.etl.stock import StockCounters, reconcile_stock
+from src.etl.stock_client import StockFetchError, fetch_stock
 
 LOCK_NAME = "prueba_tecnica_catalog_pricing"
 
@@ -31,6 +33,7 @@ class RunValidationError(ValueError):
 class RunResult:
     run_id: str
     counters: CatalogCounters
+    stock_counters: StockCounters
 
 
 def _sha256(path: Path) -> str:
@@ -49,6 +52,8 @@ def _source_hash(path: Path, source: str) -> str:
 
 
 def _failure_issue(exc: Exception) -> Issue:
+    if isinstance(exc, StockFetchError):
+        return Issue(exc.ref, exc.code, Action.FAIL_RUN, Severity.ERROR, str(exc))
     if isinstance(exc, (CatalogReadError, TariffReadError, RunValidationError)):
         ref = exc.ref
         code = exc.code
@@ -61,8 +66,8 @@ def _failure_issue(exc: Exception) -> Issue:
     return Issue(ref, code, Action.FAIL_RUN, Severity.ERROR, f"Ejecución fallida: {code}")
 
 
-def run_catalog_pricing(settings: Settings) -> RunResult:
-    """Un único escritor; crea run durable y publica catálogo/ítems juntos."""
+def run_etl(settings: Settings) -> RunResult:
+    """Un único escritor; extrae tres fuentes antes de la transacción de negocio."""
 
     run_id = str(uuid4())
     logger = get_run_logger("etl", run_id)
@@ -89,6 +94,11 @@ def run_catalog_pricing(settings: Settings) -> RunResult:
                         ReasonCode.EMPTY_CATALOG, SourceRef("catalog_csv", "/")
                     )
                 counters = catalog_counters(priced)
+                snapshot = fetch_stock(settings, run_id)
+                stock = reconcile_stock(
+                    snapshot, {product.candidate.record.payload.sku for product in priced.products}
+                )
+                issues = (*issues, *stock.issues)
                 if csv_hash != _source_hash(settings.csv_path, "catalog_csv"):
                     raise RunValidationError(
                         ReasonCode.SOURCE_CHANGED, SourceRef("catalog_csv", "/")
@@ -98,13 +108,16 @@ def run_catalog_pricing(settings: Settings) -> RunResult:
                         ReasonCode.SOURCE_CHANGED, SourceRef("tariffs_xml", "/")
                     )
                 logger.info("Extracción validada: %d productos", len(priced.products))
-                repository.mark_publishing(connection, run_id, csv_hash, xml_hash)
+                repository.mark_publishing(connection, run_id, csv_hash, xml_hash, snapshot.sha256)
                 repository.publish_catalog(connection, run_id, priced)
+                repository.publish_stock(connection, run_id, stock)
                 repository.insert_issues(connection, run_id, issues)
-                repository.complete_run(connection, run_id, counters, csv_hash, xml_hash)
+                repository.complete_run(
+                    connection, run_id, counters, csv_hash, xml_hash, stock.counters
+                )
                 connection.commit()
-                logger.info("Catálogo publicado")
-                return RunResult(run_id, counters)
+                logger.info("Catálogo, tarifas y stock publicados")
+                return RunResult(run_id, counters, stock.counters)
             except Exception as exc:
                 connection.rollback()
                 failure = _failure_issue(exc)

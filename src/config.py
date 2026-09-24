@@ -16,6 +16,16 @@ class ConfigError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class StockOptions:
+    per_page: int = 50
+    attempts: int = 5
+    connect_timeout: int = 5
+    read_timeout: int = 15
+    requests_per_minute: int = 30
+    budget_seconds: int = 300
+
+
+@dataclass(frozen=True, slots=True)
 class Settings:
     db_host: str
     db_port: int
@@ -29,6 +39,7 @@ class Settings:
     orders_csv_path: Path
     business_timezone: str
     log_level: str
+    stock: StockOptions = field(default_factory=StockOptions)
 
 
 _REQUIRED = (
@@ -43,6 +54,27 @@ _REQUIRED = (
     "XML_PATH",
 )
 _LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
+
+
+def _stock_options(values: Mapping[str, str]) -> StockOptions:
+    options = {}
+    for name, default, maximum in (
+        ("per_page", 50, 100),
+        ("attempts", 5, 10),
+        ("connect_timeout", 5, 120),
+        ("read_timeout", 15, 120),
+        ("requests_per_minute", 30, 40),
+        ("budget_seconds", 300, 3600),
+    ):
+        key = f"STOCK_{name.upper()}"
+        try:
+            value = int(values.get(key, str(default)))
+        except ValueError:
+            raise ConfigError(f"{key} inválido") from None
+        if not 1 <= value <= maximum:
+            raise ConfigError(f"{key} fuera de rango")
+        options[name] = value
+    return StockOptions(**options)
 
 
 def load_settings(
@@ -106,6 +138,7 @@ def load_settings(
         orders_csv_path=Path(values.get("ORDERS_CSV_PATH") or "data/pedidos_historico.csv"),
         business_timezone=timezone_name,
         log_level=log_level,
+        stock=_stock_options(values),
     )
 
 

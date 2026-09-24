@@ -106,3 +106,29 @@ def test_logging_has_run_context_and_no_duplicate_handler() -> None:
     assert "run=run-123" in output
     assert "normalización lista" in output
     assert "secret" not in output
+
+
+@pytest.mark.parametrize(
+    "key,value",
+    [
+        ("STOCK_PER_PAGE", "101"),
+        ("STOCK_ATTEMPTS", "0"),
+        ("STOCK_REQUESTS_PER_MINUTE", "41"),
+        ("STOCK_BUDGET_SECONDS", "-1"),
+        ("STOCK_CONNECT_TIMEOUT", "bad-secret"),
+        ("STOCK_READ_TIMEOUT", "NaN"),
+    ],
+)
+def test_invalid_stock_options(settings_env: dict[str, str], key: str, value: str) -> None:
+    settings_env[key] = value
+    with pytest.raises(ConfigError, match=key) as error:
+        load_settings(None, settings_env)
+    assert "bad-secret" not in str(error.value)
+
+
+def test_stock_options_defaults_and_overrides(settings_env: dict[str, str]) -> None:
+    defaults = load_settings(None, settings_env).stock
+    assert (defaults.attempts, defaults.per_page, defaults.budget_seconds) == (5, 50, 300)
+    settings_env.update({"STOCK_PER_PAGE": "100", "STOCK_ATTEMPTS": "3"})
+    assert load_settings(None, settings_env).stock.per_page == 100
+    assert load_settings(None, settings_env).stock.attempts == 3

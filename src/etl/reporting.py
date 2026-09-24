@@ -1,11 +1,11 @@
-"""Semántica de contadores de F4, independiente de filas afectadas por MySQL."""
+"""Contadores de catálogo y versión de reglas, independientes de affected_rows de MySQL."""
 
 from dataclasses import asdict, dataclass
 
 from src.etl.pricing import PricedCatalog
 from src.etl.records import Action
 
-RULES_VERSION = "catalog-pricing-v1"
+RULES_VERSION = "catalog-pricing-stock-v1"
 
 
 @dataclass(frozen=True, slots=True)

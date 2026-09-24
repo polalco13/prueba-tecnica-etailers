@@ -1,4 +1,4 @@
-"""Conexión MySQL y aplicación explícita de la migración versionada F4."""
+"""Conexión MySQL y aplicación explícita de migraciones versionadas."""
 
 import argparse
 from pathlib import Path
@@ -8,8 +8,8 @@ from pymysql.connections import Connection
 
 from src.config import Settings, configure_logging, get_run_logger, load_settings
 
-MIGRATION_VERSION = "001_products_and_runs"
-MIGRATION_PATH = Path(__file__).resolve().parent.parent / "db/migrations/001_products_and_runs.sql"
+MIGRATIONS = ("001_products_and_runs", "002_stock")
+MIGRATION_DIR = Path(__file__).resolve().parent.parent / "db/migrations"
 
 
 def connect(settings: Settings) -> Connection:
@@ -38,10 +38,8 @@ def schema_is_current(connection: Connection) -> bool:
         )
         if cursor.fetchone()[0] == 0:
             return False
-        cursor.execute(
-            "SELECT COUNT(*) FROM schema_migrations WHERE version = %s", (MIGRATION_VERSION,)
-        )
-        return cursor.fetchone()[0] == 1
+        cursor.execute("SELECT version FROM schema_migrations")
+        return set(MIGRATIONS) <= {row[0] for row in cursor.fetchall()}
 
 
 def apply_migration(connection: Connection) -> bool:
@@ -58,22 +56,35 @@ def apply_migration(connection: Connection) -> bool:
                 "version VARCHAR(64) PRIMARY KEY, applied_at DATETIME(6) NOT NULL "
                 "DEFAULT CURRENT_TIMESTAMP(6)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
             )
-        if schema_is_current(connection):
-            return False
-        sql = "\n".join(
-            line
-            for line in MIGRATION_PATH.read_text(encoding="utf-8").splitlines()
-            if not line.lstrip().startswith("--")
-        )
+        applied = False
         with connection.cursor() as cursor:
-            for statement in sql.split(";"):
-                if statement.strip():
+            cursor.execute("SELECT version FROM schema_migrations")
+            existing = {row[0] for row in cursor.fetchall()}
+            for version in MIGRATIONS:
+                if version in existing:
+                    continue
+                sql = "\n".join(
+                    line
+                    for line in (MIGRATION_DIR / f"{version}.sql").read_text().splitlines()
+                    if not line.lstrip().startswith("--")
+                )
+                for statement in sql.split(";"):
+                    if not statement.strip():
+                        continue
+                    if statement.strip().startswith("ALTER TABLE etl_runs ADD COLUMN stock_sha256"):
+                        # DDL hace commit implícito: permite retomar F5 tras una interrupción.
+                        cursor.execute(
+                            "SELECT COUNT(*) FROM information_schema.columns "
+                            "WHERE table_schema = DATABASE() AND table_name = 'etl_runs' "
+                            "AND column_name = 'stock_sha256'"
+                        )
+                        if cursor.fetchone()[0]:
+                            continue
                     cursor.execute(statement)
-            cursor.execute(
-                "INSERT INTO schema_migrations (version) VALUES (%s)", (MIGRATION_VERSION,)
-            )
-        connection.commit()
-        return True
+                cursor.execute("INSERT INTO schema_migrations (version) VALUES (%s)", (version,))
+                connection.commit()
+                applied = True
+        return applied
     except Exception:
         connection.rollback()
         raise
@@ -95,7 +106,7 @@ def main() -> int:
         get_run_logger("db").error("Migración no completada (%s)", type(exc).__name__)
         return 1
     get_run_logger("db").info(
-        "Migración %s: %s", MIGRATION_VERSION, "aplicada" if applied else "ya aplicada"
+        "Migraciones hasta %s: %s", MIGRATIONS[-1], "aplicadas" if applied else "ya aplicadas"
     )
     return 0
 

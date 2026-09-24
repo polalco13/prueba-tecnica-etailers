@@ -1,7 +1,6 @@
 """F4 contra MySQL 8 aislado; todos los CSV/XML de este módulo son sintéticos."""
 
 import csv
-import os
 from decimal import Decimal
 from pathlib import Path
 
@@ -13,33 +12,14 @@ from src.config import Settings
 from src.etl import repository, runner
 from src.etl.catalog import HEADER
 from src.etl.pricing import TariffReadError, Tariffs
-from src.etl.runner import LOCK_NAME, RunValidationError, run_catalog_pricing
+from src.etl.runner import LOCK_NAME, RunValidationError, run_etl
+from src.etl.stock_client import StockSnapshot
 
 
-@pytest.fixture
-def settings(tmp_path: Path) -> Settings:
-    port = os.environ.get("F4_TEST_DB_PORT")
-    if not port:
-        pytest.skip("F4_TEST_DB_PORT: requiere MySQL 8 de pruebas aislado")
-    base = Settings(
-        db_host=os.environ.get("F4_TEST_DB_HOST", "127.0.0.1"),
-        db_port=int(port),
-        db_name=os.environ.get("F4_TEST_DB_NAME", "f4_test_catalog"),
-        db_user=os.environ.get("F4_TEST_DB_USER", "f4_tester"),
-        db_password=os.environ["F4_TEST_DB_PASSWORD"],
-        stock_api_url="http://127.0.0.1:1",
-        stock_api_token="unused",
-        csv_path=tmp_path / "catalog.csv",
-        xml_path=tmp_path / "tariffs.xml",
-        orders_csv_path=tmp_path / "unused.csv",
-        business_timezone="Europe/Madrid",
-        log_level="ERROR",
-    )
-    if not base.db_name.startswith("f4_test_"):
-        raise ValueError("Las pruebas F4 requieren una base f4_test_* aislada")
-    with db.connect(base) as connection:
-        db.apply_migration(connection)
-    return base
+@pytest.fixture(autouse=True)
+def empty_stock(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Las regresiones F4 no necesitan HTTP: stock vacío sintético.
+    monkeypatch.setattr(runner, "fetch_stock", lambda *_: StockSnapshot((), "0" * 64))
 
 
 def _row(**changes: str) -> list[str]:
@@ -112,7 +92,7 @@ def test_migration_repeat_load_audit_and_mysql_constraints(settings: Settings) -
     _write(settings, rows)
     with db.connect(settings) as connection:
         assert db.apply_migration(connection) is False
-    first = run_catalog_pricing(settings)
+    first = run_etl(settings)
     assert first.counters.as_dict() == {
         "rows_read": 4,
         "rows_accepted": 2,
@@ -126,7 +106,7 @@ def test_migration_repeat_load_audit_and_mysql_constraints(settings: Settings) -
     assert any(row[:3] == ("PRV-001", Decimal("85.0000"), Decimal("120.0000")) for row in before)
     assert any(row[:3] == ("EX-001", Decimal("42.2200"), Decimal("120.0000")) for row in before)
     assert all(row[3:5] == (None, "unknown") for row in before)
-    second = run_catalog_pricing(settings)
+    second = run_etl(settings)
     assert _business(settings) == before
     assert second.run_id != first.run_id
     assert _run_status(settings, second.run_id) == ("completed", None, "4")
@@ -175,12 +155,12 @@ def test_migration_repeat_load_audit_and_mysql_constraints(settings: Settings) -
 
 def test_retire_absent_and_promote_same_sku(settings: Settings) -> None:
     _write(settings, [_row(), _row(sku="EX-001")])
-    run_catalog_pricing(settings)
+    run_etl(settings)
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute("SELECT id FROM products WHERE sku = 'EX-001'")
         original_id = cursor.fetchone()[0]
     _write(settings, [_row()])
-    run_catalog_pricing(settings)
+    run_etl(settings)
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute(
             "SELECT id, in_catalog, is_historical, net_cost, pvp, stock_total "
@@ -188,7 +168,7 @@ def test_retire_absent_and_promote_same_sku(settings: Settings) -> None:
         )
         assert cursor.fetchone() == (original_id, 0, 1, None, None, None)
     _write(settings, [_row(), _row(sku="EX-001")])
-    run_catalog_pricing(settings)
+    run_etl(settings)
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute(
             "SELECT id, in_catalog, is_historical, net_cost FROM products WHERE sku='EX-001'"
@@ -200,7 +180,7 @@ def test_forced_publish_failure_rolls_back_and_audits(
     settings: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _write(settings, [_row()])
-    run_catalog_pricing(settings)
+    run_etl(settings)
     before = _business(settings)
     _write(settings, [_row(precio_coste="200"), _row(sku="NEW-001")])
 
@@ -209,7 +189,7 @@ def test_forced_publish_failure_rolls_back_and_audits(
 
     monkeypatch.setattr(repository, "complete_run", fail)
     with pytest.raises(RuntimeError, match="fallo sintético"):
-        run_catalog_pricing(settings)
+        run_etl(settings)
     assert _business(settings) == before
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute(
@@ -225,11 +205,11 @@ def test_forced_publish_failure_rolls_back_and_audits(
 
 def test_empty_snapshot_keeps_previous_business_state(settings: Settings) -> None:
     _write(settings, [_row()])
-    run_catalog_pricing(settings)
+    run_etl(settings)
     before = _business(settings)
     _write(settings, [])
     with pytest.raises(RunValidationError, match="EMPTY_CATALOG"):
-        run_catalog_pricing(settings)
+        run_etl(settings)
     assert _business(settings) == before
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute("SELECT status, error_code FROM etl_runs ORDER BY started_at DESC LIMIT 1")
@@ -238,7 +218,7 @@ def test_empty_snapshot_keeps_previous_business_state(settings: Settings) -> Non
 
 def test_conflicting_tariff_audited_without_publication(settings: Settings) -> None:
     _write(settings, [_row()])
-    run_catalog_pricing(settings)
+    run_etl(settings)
     before = _business(settings)
     _write(
         settings,
@@ -249,7 +229,7 @@ def test_conflicting_tariff_audited_without_publication(settings: Settings) -> N
         "</Descuentos><Excepciones/></TarifasProveedor>",
     )
     with pytest.raises(TariffReadError):
-        run_catalog_pricing(settings)
+        run_etl(settings)
     assert _business(settings) == before
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute(
@@ -267,16 +247,16 @@ def test_concurrent_writer_is_rejected_before_run_is_created(settings: Settings)
         cursor.execute("SELECT GET_LOCK(%s, 0)", (LOCK_NAME,))
         assert cursor.fetchone()[0] == 1
         with pytest.raises(RuntimeError, match="Ya hay una carga"):
-            run_catalog_pricing(settings)
+            run_etl(settings)
         cursor.execute("SELECT RELEASE_LOCK(%s)", (LOCK_NAME,))
-    run_catalog_pricing(settings)
+    run_etl(settings)
 
 
 def test_changed_source_aborts_before_publish(
     settings: Settings, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _write(settings, [_row()])
-    run_catalog_pricing(settings)
+    run_etl(settings)
     before = _business(settings)
     original = runner.load_tariffs
 
@@ -287,7 +267,7 @@ def test_changed_source_aborts_before_publish(
 
     monkeypatch.setattr(runner, "load_tariffs", edit_csv_during_extraction)
     with pytest.raises(RunValidationError, match="SOURCE_CHANGED"):
-        run_catalog_pricing(settings)
+        run_etl(settings)
     assert _business(settings) == before
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute("SELECT status, error_code FROM etl_runs ORDER BY started_at DESC LIMIT 1")
