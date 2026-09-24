@@ -81,6 +81,7 @@ def test_header_inheritance_compatible_dates_and_missing_customer(tmp_path: Path
     [
         ({"fecha_pedido": "2026-01-03"}, "CONFLICTING_ORDER_HEADER"),
         ({"cliente": "Otro cliente sintético"}, "CONFLICTING_ORDER_HEADER"),
+        ({"cliente": "CLIENTE SINTÉTICO"}, "CONFLICTING_ORDER_HEADER"),
         ({"canal": "B2C"}, "CONFLICTING_ORDER_HEADER"),
         ({"estado": "ENVIADO"}, "CONFLICTING_ORDER_HEADER"),
         ({"estado": "completadoo"}, "UNKNOWN_ORDER_STATUS"),

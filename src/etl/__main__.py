@@ -11,7 +11,7 @@ def main() -> int:
         result = run_etl(settings)
     except Exception as exc:
         # Los detalles de excepciones de fuentes/DB pueden incluir datos o credenciales.
-        get_run_logger("etl").error("Ejecución F5 no completada (%s)", type(exc).__name__)
+        get_run_logger("etl").error("Ejecución ETL no completada (%s)", type(exc).__name__)
         return 1
     get_run_logger("etl", result.run_id).info(
         "F6 catálogo: leídas=%d aceptadas=%d rechazadas=%d deduplicadas=%d",
