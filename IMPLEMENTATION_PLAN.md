@@ -1,6 +1,6 @@
 # Plan de implementación y estrategia Git
 
-Estado actualizado tras F5: F0–F4 integradas; F5 implementada y verificada en `feature/etl-stock`, pendiente de PR 2 e integración. F6 y siguientes no iniciadas. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
+Estado actualizado tras F7: F0–F5 integradas; F6–F7 implementadas y verificadas en `feature/orders`, pendientes de PR 3 e integración. F8 y siguientes no iniciadas. F7 verificó las cuatro fuentes reales dos veces en MySQL temporal, con igualdad de negocio y contadores conciliados; los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
 
 ## Orden y alcance
 
@@ -153,7 +153,7 @@ Las fases preparan primero reglas puras y después persistencia, integración, S
 
 ## Estrategia Git y PR
 
-No crear ahora las ramas ni commits futuros. La rama actual observada es `main`; hay un cambio previo en `.gitignore` que no debe incorporarse por accidente. La planificación puede entregarse en una rama documental propia en una tarea de Git posterior; no cuenta como sustituto de ramas funcionales.
+No crear ramas ni commits de fases futuras. Al iniciar F7 la rama era `feature/orders`, con F6 en dos commits y el árbol de trabajo limpio. F6 y F7 forman juntas PR 3; no se exige integrar F6 antes de validarla en F7. La rama documental de planificación no sustituye a las ramas funcionales.
 
 | PR previsto | Rama nacida del main actualizado | Fases y resultado revisable |
 | --- | --- | --- |
@@ -175,4 +175,4 @@ Antes de cada merge: tests de la fase y regresiones afectadas, diff/secretos rev
 
 Ejemplo de solicitud futura: «Implementa únicamente F1 siguiendo AGENTS y los documentos de planificación. Antes del cambio identifica archivos, razón y criterio; prueba las reglas y resume evidencias y pendientes. No avances a F2». Una fase puede dividirse en tareas aún más pequeñas si no cabe en un diff revisable.
 
-El siguiente paso es revisar e integrar PR 2 de F5. Después podrá solicitarse F6 por separado. Resolver cada supuesto en su fase y dejar documentada la decisión si no hay confirmación comercial; nunca rellenar huecos con datos inventados.
+El siguiente paso es revisar e integrar PR 3 de F6–F7, incluida la corrección de cliente del ADR 004 y sus evidencias con reglas v2. El usuario confirmó equivalencia entre mayúsculas/minúsculas. Se mantiene la deduplicación para el dataset entregado, con sus límites en ADR 002. Después podrá solicitarse F8 por separado en `feature/dashboard`. No atribuir confirmación comercial a los supuestos que siguen abiertos.

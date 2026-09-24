@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesto. Se apoya en la existencia de SKU históricos ausentes indicada por el README; verificar los casos reales durante F6.
+Implementado en F6 y verificado en F7. Tras la corrección de capitalización de ADR 004, las cargas reales v2 conservan 44 históricos (35 ausentes del catálogo y 9 rechazados), relacionados con 118 líneas aceptadas, sin FKs huérfanas. [SOLUCION](../../SOLUCION.md#resultados-de-ejecución) conserva también la evidencia anterior v1 y las pruebas sintéticas de promoción/reutilización. Consultas de margen y presentación en web siguen pendientes de F8/F9.
 
 ## Contexto
 
@@ -10,7 +10,7 @@ El README exige FKs reales entre líneas y productos y advierte de SKU que ya no
 
 ## Decisión
 
-Crear/reutilizar un producto identificado por SKU para cada línea de pedido válida que no tenga producto comercial aceptado. Marcar `is_historical=true`, `in_catalog=false`; campos desconocidos a NULL, sin precio/stock inventados. La etiqueta visual de histórico no se atribuye al proveedor. Registrar procedencia, incluyendo si el SKU estaba ausente o si su fila de catálogo fue rechazada.
+Crear/reutilizar un producto identificado por SKU para cada línea de pedido válida que no tenga producto comercial aceptado. Marcar `is_historical=true`, `in_catalog=false`; campos desconocidos a NULL, sin precio/stock inventados. La etiqueta visual de histórico no se atribuye al proveedor. Registrar procedencia al crear, incluyendo si el SKU estaba ausente o si su fila de catálogo fue rechazada. Reutilizarlo actualiza su referencia al run sin repetir `HISTORICAL_PRODUCT_CREATED`: es un evento de creación, no un conteo de históricos presentes.
 
 Todas las líneas conservan una FK no nula. Históricos contribuyen a ventas; se agrupan como sin categoría si falta ese atributo. Coste desconocido no participa en margen conocido y su facturación queda visible mediante cobertura. No crear productos solo por recibir un SKU desconocido en stock. Si el SKU regresa al catálogo, promover el mismo ID.
 

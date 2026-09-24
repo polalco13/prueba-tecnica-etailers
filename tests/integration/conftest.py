@@ -1,5 +1,6 @@
 """MySQL temporal compartido por las regresiones F4 y la integración F5."""
 
+import csv
 import os
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import pytest
 
 from src import db
 from src.config import Settings
+from src.etl.orders import HEADER
 
 
 @pytest.fixture
@@ -32,4 +34,21 @@ def settings(tmp_path: Path) -> Settings:
         raise ValueError("Las pruebas F4 requieren una base f4_test_* aislada")
     with db.connect(base) as connection:
         db.apply_migration(connection)
+    # Un pedido válido sintético mantiene las regresiones F4/F5 aisladas de datos reales.
+    with base.orders_csv_path.open("w", encoding="utf-8-sig", newline="") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(HEADER)
+        writer.writerow(
+            [
+                "REGRESSION",
+                "2026-01-01",
+                "Cliente sintético",
+                "B2B",
+                "COMPLETADO",
+                "PRV-001",
+                "1",
+                "10",
+                "0",
+            ]
+        )
     return base
