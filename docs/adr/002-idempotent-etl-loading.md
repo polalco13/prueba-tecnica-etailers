@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado en F4–F6 y verificado en F7 contra MySQL 8: repetición de cuatro fuentes, rollback y exclusión de escritores concurrentes. Evidencia en [SOLUCION](../../SOLUCION.md#resultados-de-ejecución). Sigue pendiente confirmar comercialmente que el CSV de pedidos es una exportación completa y que las líneas idénticas son duplicados; los tests no confirman esos supuestos. La entrega a Make corresponde a F10.
+Implementado en F4–F6 y verificado en F7 contra MySQL 8: repetición de cuatro fuentes, rollback y exclusión de escritores concurrentes. Evidencia en [SOLUCION](../../SOLUCION.md#resultados-de-ejecución). El usuario aclara que el CSV es el fichero recibido para la prueba: se procesa completo como dataset del ejercicio (decisión técnica), sin atribuirle un contrato confirmado sobre futuras exportaciones del ERP. La entrega a Make corresponde a F10.
 
 ## Contexto
 
@@ -27,5 +27,7 @@ Con entradas/reglas idénticas, el contenido de negocio permanece idéntico. Aud
 - Incremental desde el principio: exige watermark, bajas y reglas de reconciliación no necesarias para el primer objetivo; reservar a F11.
 
 ## Consecuencias
+
+Para este ejercicio se mantiene la deduplicación: el README advierte de filas repetidas y, tras corregir la capitalización del cliente en ADR 004, las ocho líneas deduplicadas del CSV real coinciden en las nueve columnas originales. Se conserva una ocurrencia y se registran motivo, fila descartada y fila conservada. Esto apoya el criterio elegido, pero no demuestra que un ERP real nunca emita dos líneas legítimas idénticas; antes de aceptar exportaciones futuras habría que confirmar su semántica o pedir un ID estable de línea. No se añade multiplicidad ni carga incremental sin esa información.
 
 Se necesita reconciliar el conjunto aceptado, no solo escribir registros. Una fila que deja de ser válida no debe conservar silenciosamente el valor anterior en la versión actual. Tests cubren repetición, corrección, desaparición, fallo y concurrencia. La política de deduplicación y autoridad del snapshot es un supuesto de negocio relevante que debe confirmarse y permanecer visible. Para cinco millones de líneas se preferirán staging y procesamiento por lotes sin cambiar el contrato externo de publicación.

@@ -81,7 +81,7 @@ def test_header_inheritance_compatible_dates_and_missing_customer(tmp_path: Path
     [
         ({"fecha_pedido": "2026-01-03"}, "CONFLICTING_ORDER_HEADER"),
         ({"cliente": "Otro cliente sintético"}, "CONFLICTING_ORDER_HEADER"),
-        ({"cliente": "CLIENTE SINTÉTICO"}, "CONFLICTING_ORDER_HEADER"),
+        ({"cliente": "Cliente sintetico"}, "CONFLICTING_ORDER_HEADER"),
         ({"canal": "B2C"}, "CONFLICTING_ORDER_HEADER"),
         ({"estado": "ENVIADO"}, "CONFLICTING_ORDER_HEADER"),
         ({"estado": "completadoo"}, "UNKNOWN_ORDER_STATUS"),
@@ -94,6 +94,29 @@ def test_bad_nonempty_header_rejects_whole_order(tmp_path: Path, changes: dict, 
     result = parse(tmp_path, [row(), row(**changes)])
     assert result.orders == () and result.rows_rejected == 2
     assert code in {i.reason_code for i in result.issues}
+
+
+@pytest.mark.parametrize(
+    "variant", ["CLIENTE SINTÉTICO", " cliente  sintético ", "Cliente sinte\u0301tico"]
+)
+def test_customer_case_variants_keep_first_normalized_label(tmp_path: Path, variant: str) -> None:
+    result = parse(tmp_path, [row(), row(cliente=variant, sku="B")])
+    assert result.rows_accepted == 2 and result.rows_rejected == 0
+    assert result.orders[0].header.customer == "Cliente sintético"
+    assert result.issues == ()
+    reversed_rows = parse(tmp_path, [row(cliente="CLIENTE SINTÉTICO"), row(sku="B")])
+    assert reversed_rows.orders[0].header.customer == "CLIENTE SINTÉTICO"
+
+
+def test_missing_customer_inherits_equivalent_case_variants(tmp_path: Path) -> None:
+    result = parse(
+        tmp_path, [row(cliente="NULL"), row(sku="B"), row(cliente="CLIENTE SINTÉTICO", sku="C")]
+    )
+    assert result.rows_accepted == 3
+    assert result.orders[0].header.customer == "Cliente sintético"
+    assert [(i.reason_code, i.field_name, i.ref.locator) for i in result.issues] == [
+        ("HEADER_VALUE_INHERITED", "cliente", "2")
+    ]
 
 
 @pytest.mark.parametrize(

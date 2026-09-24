@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado en F6 y verificado en F7: 36 históricos reales (27 ausentes del catálogo y 9 rechazados), relacionados con 81 líneas aceptadas, sin FKs huérfanas. [SOLUCION](../../SOLUCION.md#resultados-de-ejecución) recoge las cargas reales y las pruebas sintéticas de promoción/reutilización. Consultas de margen y presentación en web siguen pendientes de F8/F9.
+Implementado en F6 y verificado en F7. Tras la corrección de capitalización de ADR 004, las cargas reales v2 conservan 44 históricos (35 ausentes del catálogo y 9 rechazados), relacionados con 118 líneas aceptadas, sin FKs huérfanas. [SOLUCION](../../SOLUCION.md#resultados-de-ejecución) conserva también la evidencia anterior v1 y las pruebas sintéticas de promoción/reutilización. Consultas de margen y presentación en web siguen pendientes de F8/F9.
 
 ## Contexto
 

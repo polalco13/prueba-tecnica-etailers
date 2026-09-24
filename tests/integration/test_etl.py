@@ -32,11 +32,12 @@ def order_row(
     price: str = "20",
     discount: str = "10%",
     status: str = "completado",
+    customer: str = "Cliente sintético",
 ) -> list[str]:
     return [
         order_id,
         "01/04/2025",
-        "Cliente sintético",
+        customer,
         "b2b",
         status,
         sku,
@@ -68,7 +69,9 @@ def test_four_sources_reconcile_repeat_and_trace(
         [
             order_row(),
             order_row(),
-            order_row(sku="EX-001", quantity="1", price="30", discount=""),
+            order_row(
+                sku="EX-001", quantity="1", price="30", discount="", customer="CLIENTE SINTÉTICO"
+            ),
             order_row(sku="E2E-BAD", quantity="0"),
             order_row("E2E-2", historical),
             order_row("E2E-3", quantity="-1", status="DEVUELTO"),

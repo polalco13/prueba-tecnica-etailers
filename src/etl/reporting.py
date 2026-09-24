@@ -6,7 +6,7 @@ from src.etl.orders import OrdersSelection
 from src.etl.pricing import PricedCatalog
 from src.etl.records import Action
 
-RULES_VERSION = "catalog-stock-orders-v1"
+RULES_VERSION = "catalog-stock-orders-v2"
 
 
 def orders_counters(selection: OrdersSelection, historical_created: int = 0) -> dict[str, int]:

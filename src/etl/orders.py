@@ -176,7 +176,7 @@ def _header(rows: list[OrderRow], timezone: str) -> tuple[OrderHeader | None, li
     missing: list[tuple[OrderRow, str]] = []
     for index, parser in enumerate(parsers, 1):
         field_name = HEADER[index]
-        distinct = set()
+        distinct = {}
         for row in rows:
             try:
                 value = parser(row.cells[index])
@@ -185,7 +185,10 @@ def _header(rows: list[OrderRow], timezone: str) -> tuple[OrderHeader | None, li
                 else:
                     if (index == 1 and value.year < 1000) or (index == 2 and len(value) > 255):
                         raise NormalizationError(ReasonCode.INVALID_ORDER_HEADER)
-                    distinct.add(value)
+                    # ADR 004: comparar cliente sin capitalización y conservar la
+                    # primera etiqueta válida, sin eliminar tildes ni puntuación.
+                    key = value.casefold() if index == 2 else value
+                    distinct.setdefault(key, value)
             except NormalizationError as exc:
                 errors.add((exc.code, field_name))
         if len(distinct) > 1:
@@ -195,7 +198,7 @@ def _header(rows: list[OrderRow], timezone: str) -> tuple[OrderHeader | None, li
                 ReasonCode.MISSING_ORDER_DATE if index == 1 else ReasonCode.MISSING_REQUIRED_FIELD
             )
             errors.add((code, field_name))
-        values.append(next(iter(distinct)) if len(distinct) == 1 else None)
+        values.append(next(iter(distinct.values())) if len(distinct) == 1 else None)
     if errors:
         return None, [
             _issue(row, code, field_name=field_name)
