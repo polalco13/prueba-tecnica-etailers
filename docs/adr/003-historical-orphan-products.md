@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado en F6 y verificado en F7. Tras la corrección de capitalización de ADR 004, las cargas reales v2 conservan 44 históricos (35 ausentes del catálogo y 9 rechazados), relacionados con 118 líneas aceptadas, sin FKs huérfanas. [SOLUCION](../../SOLUCION.md#resultados-de-ejecución) conserva también la evidencia anterior v1 y las pruebas sintéticas de promoción/reutilización. F8 verificó la consulta de margen con coste desconocido separado y cobertura visible; la presentación web sigue pendiente de F9.
+Implementado en F6 y verificado en F7. Tras la corrección de capitalización de ADR 004, las cargas reales v2 conservan 44 históricos (35 ausentes del catálogo y 9 rechazados), relacionados con 118 líneas aceptadas, sin FKs huérfanas. [SOLUCION](../../SOLUCION.md#resultados-de-ejecución) conserva también la evidencia anterior v1 y las pruebas sintéticas de promoción/reutilización. F8 verificó la consulta de margen con coste desconocido separado y cobertura visible; F9 verifica su presentación web, los históricos etiquetados en rankings y su exclusión del catálogo comercial.
 
 ## Contexto
 

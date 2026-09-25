@@ -1,6 +1,6 @@
 # Plan de producto — Integración y automatizaciones
 
-Estado: planificación; no hay ETL, web ni escenario Make implementados por esta tarea. Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
+Estado: requisitos con ETL F0–F7, consultas F8 y web F9 implementados y verificados según SOLUCION. Make sigue pendiente; F8–F9 esperan integración en main. Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
 
 En estos documentos, **R** significa requisito explícito del README; **D**, decisión técnica propuesta; **S**, supuesto pendiente de validar. Una propuesta no constituye una regla de negocio confirmada. El encargo de planificación exige tests y mayor detalle de robustez aunque el README los considere extras.
 
@@ -85,7 +85,7 @@ S1: importes de pedido y coste son EUR y comparables sin IVA; el origen no lo co
 
 ## Trazabilidad final con README
 
-Todos los estados describen trabajo futuro, no resultados ejecutados.
+Los estados distinguen evidencia técnica ejecutada y trabajo pendiente; no implican confirmación de supuestos comerciales.
 
 | Requisito README | Documento/Fase | Estado |
 | --- | --- | --- |
@@ -96,12 +96,12 @@ Todos los estados describen trabajo futuro, no resultados ejecutados.
 | Cantidades, estados, canales y definición de facturación | R05; DATA_RULES; F6/F8 | ETL F6–F7 y SQL F8 verificados; criterio comercial por confirmar |
 | MySQL relacionado y productos históricos | R06; TECH_SPEC; ADR 003; F4/F6 | Verificado en F6–F7 |
 | Rechazos con fuente, fila y motivo | R07; DATA_RULES; F2–F7 | Verificado en F7 |
-| Catálogo, búsqueda y filtro de categoría | R08; TECH_SPEC; F9 | Planificado |
-| Evolución mensual de facturación y unidades desde abril de 2025 | R09; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
-| Facturación, pedidos y ticket medio | R10; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
-| Canal, top 10 y categoría | R11; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
-| Margen bruto | R12; TECH_SPEC; F8–F9 | SQL F8 verificado; comparabilidad de costes por confirmar; interfaz F9 pendiente |
-| Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
+| Catálogo, búsqueda y filtro de categoría | R08; TECH_SPEC; F9 | Verificado en MySQL/HTML y navegador |
+| Evolución mensual de facturación y unidades desde abril de 2025 | R09; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
+| Facturación, pedidos y ticket medio | R10; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
+| Canal, top 10 y categoría | R11; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
+| Margen bruto | R12; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados; comparabilidad de costes por confirmar |
+| Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
 | Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Planificado |
 | Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | Planificado |
 | Idempotencia | R16; ADR 002; F4/F6–F7 | Verificada en F7 con fuentes congeladas |

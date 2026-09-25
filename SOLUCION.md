@@ -1,19 +1,19 @@
 # Solución — documento vivo
 
-**Estado: F0–F7 integradas en `main`; F8 analítica SQL implementada y verificada en `feature/dashboard`. Dashboard F9 y Make F10 pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado: F0–F7 integradas en `main`; F8 analítica SQL y F9 dashboard implementados y verificados en `feature/dashboard`, pendientes de integración mediante PR 4. Make F10 no iniciado.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
 
 Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
 
 ## Resumen
 
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
-- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7); consultas analíticas probadas y contrastadas con una carga real aislada (F8).
+- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7); consultas analíticas probadas y contrastadas con una carga real aislada (F8); catálogo web paginado y dashboard con gráfico, métricas y avisos de calidad, comprobados en MySQL y navegador (F9).
 - Versión/commit entregado y enlace GitHub: **TBD**.
-- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A07, Make y extras: pendientes de sus fases; no se declara el ejercicio completo.
+- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A08: verificada en F9. Make y extras: pendientes de sus fases; no se declara el ejercicio completo.
 
 ## Arquitectura final
 
-El incremento implementado es CSV/XML/API de stock/CSV de pedidos → lectores y reglas Python → transacción InnoDB MySQL 8 (`products`, `stock_by_warehouse`, `orders`, `order_lines`, `etl_runs`, `rejections`) → consultas SQL de solo lectura en `src/analytics/queries.py`. Las incidencias de fallos se confirman por separado tras rollback; un advisory lock serializa escritores. Diagrama final con web y Make: **TBD**.
+El incremento implementado es CSV/XML/API de stock/CSV de pedidos → lectores y reglas Python → transacción InnoDB MySQL 8 (`products`, `stock_by_warehouse`, `orders`, `order_lines`, `etl_runs`, `rejections`) → consultas SQL de solo lectura en `src/analytics/queries.py` → FastAPI/Jinja2 y Chart.js local en `src/web/`. El catálogo usa `src/analytics/catalog.py`; los importes se calculan en SQL, no en JavaScript. Las incidencias de fallos se confirman por separado tras rollback; un advisory lock serializa escritores. Diagrama final con web y Make: **TBD**.
 
 ## Requisitos de entorno
 
@@ -42,10 +42,10 @@ Pasos de bootstrap comprobados en F0, que F12 debe repetir desde un clon limpio:
 
    En F0 se creó `.venv` local y se instalaron las versiones fijadas. La verificación de instalación desde `requirements.txt` y `pip check` consta en las pruebas realizadas. `.venv` y las cachés de herramientas están ignoradas por Git.
 6. Aplicar las migraciones F4–F6 con `.venv/bin/python -m src.db migrate` una vez que `.env` apunte al MySQL deseado. Es idempotente y registra `001_products_and_runs`, `002_stock` y `003_orders` en `schema_migrations`; repetir el comando informa «ya aplicadas». También sirve para un volumen existente sin borrar el volumen: `db/init` solo se ejecuta al inicializarlo. Antes de cualquier migración sobre una BD con datos propios, respaldarla y revisar si ya existen tablas con los mismos nombres. La actualización de esquemas F4/F5 conservó productos e IDs en una base temporal; F6 verificó la reanudación de su migración sin perder pedidos.
-7. Arrancar web: comando, host/puerto y URL local **TBD**.
+7. Arrancar web: `.venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000` y abrir http://127.0.0.1:8000. Mantener esa terminal abierta; `Ctrl+C` detiene la web. Lee la BD configurada en `.env`; no lanza el ETL al abrirla. Véase la comprobación manual F9 más abajo.
 8. Registrar validación desde clon/BD de pruebas nuevos, fecha y commit: **TBD**. No ejecutar pruebas destructivas sobre el volumen del usuario.
 
-El incremento F6 permite cargar las cuatro fuentes y F7 lo verificó en MySQL aislado; todavía no hay web ni Make. En F12 habrá que repetir el procedimiento desde un clon limpio.
+El incremento F6 permite cargar las cuatro fuentes y F7 lo verificó en MySQL aislado; F9 añade la web; Make sigue pendiente. En F12 habrá que repetir el procedimiento desde un clon limpio.
 
 ### Dependencias elegidas en F0
 
@@ -56,7 +56,7 @@ El incremento F6 permite cargar las cuatro fuentes y F7 lo verificó en MySQL ai
 - **Comando F6:** `.venv/bin/python -m src.etl` después de aplicar las migraciones. Usa también `ORDERS_CSV_PATH` (por defecto `data/pedidos_historico.csv`). Extrae las cuatro fuentes antes de abrir la transacción de negocio y publica pedidos, líneas e históricos junto con catálogo y stock. No envía Make.
 - Código de salida `0`: publicación confirmada; puede haber filas rechazadas y quedan en `rejections`. Código `1`: fallo o concurrencia, sin publicar un catálogo parcial. Revisar `etl_runs` y las incidencias del `run_id` del log para fallos ocurridos tras crear el run. La caída antes de obtener el lock o antes de crear el run no genera auditoría de ejecución.
 - Repetir el mismo comando con los mismos CSV/XML y respuestas completas de stock mantiene los valores de negocio y añade un `etl_runs`/sus incidencias nuevos. Los SKU que faltan en una instantánea válida pasan a históricos, con precios y stock `NULL`; un catálogo vacío o sin productos válidos, o un fichero modificado durante la extracción, falla y conserva la versión anterior. Solo se admite un escritor mediante advisory lock MySQL. Una caída abrupta puede dejar un run `running` para revisión manual.
-- Parámetros opcionales de stock: `STOCK_PER_PAGE=50`, `STOCK_ATTEMPTS=5`, `STOCK_CONNECT_TIMEOUT=5`, `STOCK_READ_TIMEOUT=15`, `STOCK_REQUESTS_PER_MINUTE=30`, `STOCK_BUDGET_SECONDS=300`. Tiempos en segundos; límites y reintentos en [TECH_SPEC](TECH_SPEC.md#api-de-stock). No hace falta modificar `.env` para usar estos valores. Dashboard y notificación: **TBD**.
+- Parámetros opcionales de stock: `STOCK_PER_PAGE=50`, `STOCK_ATTEMPTS=5`, `STOCK_CONNECT_TIMEOUT=5`, `STOCK_READ_TIMEOUT=15`, `STOCK_REQUESTS_PER_MINUTE=30`, `STOCK_BUDGET_SECONDS=300`. Tiempos en segundos; límites y reintentos en [TECH_SPEC](TECH_SPEC.md#api-de-stock). No hace falta modificar `.env` para usar estos valores. Dashboard: implementado en F9. Notificación: **TBD** para F10.
 - Reenvío a Make de un run confirmado sin repetir ETL: **TBD**.
 - Recuperación automática adicional: **TBD**.
 
@@ -97,9 +97,38 @@ ORDER BY source_order_id;
 
 La comprobación visual en la base del usuario es opcional para revisar el resultado local; no sustituye las pruebas MySQL de F7–F8 ya ejecutadas. PR 3 de F6–F7 está integrada en `main`. F8 no modifica el esquema ni requiere recargar datos del usuario; si su base ya contiene F6, puede ejecutar las consultas de lectura con la misma definición de fecha.
 
+## Dashboard F9 y comprobación manual
+
+La web es de consulta: no migra ni carga datos, ni llama a la API de stock o Make. Reutiliza las consultas F8 sobre una misma conexión MySQL por petición. El catálogo comercial tiene 20 productos por página ordenados por SKU; los históricos aparecen en las ventas/rankings, pero no en este listado.
+
+Desde la carpeta del proyecto, con Docker activo y `.env` apuntando a la BD deseada:
+
+```bash
+docker compose up -d
+.venv/bin/python -m src.db migrate
+.venv/bin/python -m src.etl
+.venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000
+```
+
+Los dos comandos centrales preparan/actualizan la BD: si ya tiene migraciones hasta `003_orders` y una carga completa v2, basta arrancar Uvicorn. La web abre en http://127.0.0.1:8000; se detiene con `Ctrl+C`. No necesita Node ni una CDN: Chart.js 4.5.1 se incluye con su licencia y [procedencia verificable](src/web/static/vendor/README.md). No se añaden dependencias Python a las fijadas en F0.
+
+Pasos de revisión:
+
+1. Comprueba «Última carga publicada», las cuatro tarjetas y los avisos. La fecha es UTC y corresponde a la última carga completada; un intento fallido posterior no sustituye la publicación. Un error de conexión/esquema devuelve HTTP 503 con mensaje, sin presentar ceros ficticios.
+2. En el gráfico, barras = facturación, línea = unidades, con ejes separados. Abre «Ver datos mensuales» para consultar los importes exactos; los meses sin ventas son cero y el mes actual es parcial. La tabla funciona incluso sin JavaScript.
+3. Revisa canales, categorías, cobertura del margen, top 10 e inventario bajo mínimos. «Sin categoría», «Histórico» y ventas sin coste se muestran explícitamente. Stock desconocido o inválido nunca aparece como cero.
+4. En «Catálogo», busca `destornillador` y selecciona «Herramienta manual»: con el origen actual se muestran PRV-2001 a PRV-2004; PRV-2002 tiene stock «Desconocido». Búsqueda por nombre/SKU/descripción y categoría se combinan; no filtran las estadísticas generales, como indica el formulario.
+5. Pulsa «Limpiar»: con estas fuentes hay 115 productos/6 páginas; «Siguiente» muestra la página 2 conservando los filtros si existen. Una búsqueda sin coincidencias muestra un mensaje. La búsqueda textual ignora mayúsculas y tildes mediante la collation de MySQL, trata `%`, `_` y `!` como caracteres literales; la categoría utiliza la clave normalizada del catálogo. Los valores SQL van parametrizados y el HTML se escapa.
+
+**Evidencia real F9 (25/09/2026):** se creó una BD temporal `f4_test_web_real` y se ejecutó una carga de las cuatro fuentes originales, `run_id=76173378-fc01-4c34-b36b-7b45fda9ad58`, completada a las 10:52 UTC. La web mostró 1.381.450,43 de facturación, 269 pedidos (23 parciales), ticket 5.135,50, margen −2.954.287,69, cobertura 90,36 %, 18 meses y 12 productos bajo mínimos, coincidentes con F8. Navegador de escritorio y ancho móvil 390 px comprobados; consola sin errores/avisos JavaScript observados. Las [capturas](docs/evidence/README.md) contienen productos y cifras agregadas, sin clientes ni secretos. La BD temporal y el servidor de prueba se retiraron al terminar; la captura no acredita una carga en la BD del usuario.
+
+En la primera comprobación con la configuración local, `schema_is_current` devolvió falso y la web mostró «Aplica las migraciones documentadas». F9 no migró ni recargó esa base. Para verla allí, ejecutar los pasos anteriores tras comprobar el destino de `.env`. Quedan pendientes la revisión humana e integración de PR 4, la confirmación de costes/EUR/IVA y las fases posteriores. **F10 no se ha iniciado.**
+
+La suite emite un aviso de deprecación de Starlette al usar su TestClient con el `httpx` ya fijado; las pruebas pasan. No se añadió un segundo cliente HTTP ni se ocultó el aviso. Una futura actualización coordinada de dependencias deberá revisarlo.
+
 ## Cómo ejecutar tests
 
-Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integración F4–F8 requieren un MySQL 8 separado:
+Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integración F4–F9 requieren un MySQL 8 separado:
 
 ```bash
 .venv/bin/python -m pytest -q
@@ -107,7 +136,7 @@ Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integració
 .venv/bin/ruff format --check src tests
 ```
 
-Sin `F4_TEST_DB_PORT`, los tests de integración se omiten. Para incluirlos, arrancar un contenedor temporal MySQL 8 **sin montar `mysql_data`**, con una base cuyo nombre empiece por `f4_test_`; pasar `F4_TEST_DB_PORT` y `F4_TEST_DB_PASSWORD` al proceso de pytest. Son opcionales `F4_TEST_DB_HOST` (127.0.0.1), `F4_TEST_DB_NAME` (`f4_test_catalog`) y `F4_TEST_DB_USER` (`f4_tester`). El test aplica la migración en esa base y crea solo datos sintéticos. No apuntarlo al volumen o base `catalogo` del usuario. Se conservan los nombres `F4_TEST_*` para todas las fases. Tras F8 hay **339 tests** (307 sin BD y 32 de integración): F8 añade seis casos SQL sintéticos; la regresión F0–F7 conserva sus 333. Sin BD se omiten los 32 de integración, por lo que esa ejecución sola no acredita F7 ni F8.
+Sin `F4_TEST_DB_PORT`, los tests de integración se omiten. Para incluirlos, arrancar un contenedor temporal MySQL 8 **sin montar `mysql_data`**, con una base cuyo nombre empiece por `f4_test_`; pasar `F4_TEST_DB_PORT` y `F4_TEST_DB_PASSWORD` al proceso de pytest. Son opcionales `F4_TEST_DB_HOST` (127.0.0.1), `F4_TEST_DB_NAME` (`f4_test_catalog`) y `F4_TEST_DB_USER` (`f4_tester`). El test aplica la migración en esa base y crea solo datos sintéticos. No apuntarlo al volumen o base `catalogo` del usuario. Se conservan los nombres `F4_TEST_*` para todas las fases. Tras F9 hay **348 tests** (307 sin BD y 41 de integración): F8 añade seis casos SQL y F9 nueve casos web/MySQL; la regresión F0–F7 conserva sus 333. Sin BD se omiten los 41 de integración, por lo que esa ejecución sola no acredita F7–F9.
 
 Para repetir solo F7, con las variables anteriores configuradas:
 
@@ -240,7 +269,7 @@ La serie observada pasa de 106.943,03 y 295 unidades en julio de 2025 a 2.682,07
 
 El margen negativo está dominado por dos SKU con coste actual muy superior al PVP y al precio de pedido. Para `PRV-2013`, el catálogo original tiene coste `34400,16` en fila 97 y `318.52` en fila 109; conforme a la regla F3 ganó la primera fila válida, el coste neto quedó 28.208,1312 y la segunda se auditó como `CONFLICTING_PRODUCT_SKU`. Su contribución al margen es −3.242.476,26. `PRV-2061` sigue el mismo patrón: costes originales `2532,60` (fila 23) y `23.45` (fila 126), neto elegido 2.254,0140 y contribución −227.755,29. F8 no cambia la deduplicación ni sustituye costes: el origen y la semántica comercial de esos importes requieren revisión antes de interpretar el margen como rentabilidad. EUR/IVA siguen sin confirmarse.
 
-**Decisión pendiente para valorar más adelante:** confirmar con el proveedor qué fila/coste corresponde a cada uno de esos SKU y si coste y precio de pedido son importes unitarios en la misma moneda y base de IVA. Hasta recibir esa información, la propuesta para F9 es presentar el KPI como «margen estimado a coste actual», mostrar cobertura y un aviso visible sobre los dos costes conflictivos y la base fiscal sin confirmar. Esto aún no es una decisión comercial ni una interfaz implementada. Si se confirma un error de origen, habrá que revisar la política de selección de catálogo en F2/F3, versionar la regla y repetir ETL y pruebas; no sustituir por la segunda fila ni excluir ventas del margen silenciosamente.
+**Decisión pendiente para valorar más adelante:** confirmar con el proveedor qué fila/coste corresponde a cada uno de esos SKU y si coste y precio de pedido son importes unitarios en la misma moneda y base de IVA. Hasta recibir esa información, F9 presenta el KPI como «Margen bruto estimado» y «A coste actual», muestra cobertura y un aviso visible sobre conflictos de catálogo y base fiscal sin confirmar. El aviso lee los SKU `CONFLICTING_PRODUCT_SKU` de la última carga completada (en la carga real F9: PRV-2013, PRV-2061 y PRV-2104); no afirma que todos tengan el mismo impacto económico. La interfaz está implementada; la validación comercial sigue pendiente. Si se confirma un error de origen, habrá que revisar la política de selección de catálogo en F2/F3, versionar la regla y repetir ETL y pruebas; no sustituir por la segunda fila ni excluir ventas del margen silenciosamente.
 
 Para revisar en DBeaver el total a la misma fecha, esta consulta de solo lectura reproduce el filtro y el redondeo de F8; el resto del SQL canónico está en [`queries.py`](src/analytics/queries.py):
 
@@ -291,11 +320,11 @@ Catálogo tiene 19 incidencias de rechazo y pedidos 34, porque una fila puede te
 | Corrección F6–F7: ADR 004 | Suite completa en MySQL temporal, Ruff y dos cargas reales v2 | 333 tests pasan (307 unitarios, 26 MySQL). 159 productos, 206 almacenes, 358 pedidos y 1.101 líneas idénticos entre cargas. Cero huérfanos, contadores conciliados y las 81 cabeceras restauradas. |
 | F7: fallos y concurrencia | `tests/integration/test_etl.py` en MySQL 8, fuentes sintéticas | Última página 500 agotada y error real de FK tras escribir las cuatro tablas: negocio anterior íntegro, run failed durable, sin histórico ficticiamente creado en auditoría. Otro lector ve la versión previa antes del rollback. Segundo escritor rechazado antes de crear run durante extracción; tras liberar lock, nueva carga completada. |
 | F8: SQL/conciliación de métricas | MySQL 8 temporal; `F4_TEST_DB_PORT=… F4_TEST_DB_NAME=f4_test_analytics F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; una carga real aislada y recálculo independiente con `as_of=2026-09-25`; Ruff | 339 tests pasan (307 sin BD, 32 MySQL), lint/formato correctos. Las consultas y el cálculo independiente coinciden en total, 18 meses/unidades, canales, categorías, top 10, margen, mes anterior y bajo stock. La comprobación real no alteró el volumen del usuario. |
-| Web en navegador | TBD | TBD |
+| F9: web/MySQL y navegador | Nueve casos `test_web.py`; suite completa sobre MySQL 8.0.46 temporal; Ruff; carga real aislada y [capturas](docs/evidence/README.md) | 348 tests pasan (307 sin BD, 41 MySQL), lint y formato correctos. Filtros, paginación, HTML escapado, comodines literales/inyección, vacíos, error 503, última publicación ante fallo posterior, stock inválido y métricas contrastadas con SQL. Gráfico, tablas, filtros y paginación comprobados en navegador; ajuste móvil verificado a 390 × 844. |
 | Make con ejecución real y destinos | TBD | TBD |
 | Arranque desde cero y secretos | TBD | TBD |
 
-Trazabilidad de aceptación: A01 (cuatro fuentes y fallos), A02 (dos precios contrastados con origen), A03 (FKs e históricos), A04 (localizadores/contadores/rechazos) y A05 (repetición completa más corrección de líneas probada en F6) quedan verificados bajo las reglas vigentes. F8 acredita las consultas SQL de A07 y A08 bajo las decisiones documentadas; mostrar A07 en el dashboard es tarea F9. El margen estimado no equivale a beneficio confirmado por los conflictos de coste y la base fiscal pendiente.
+Trazabilidad de aceptación: A01 (cuatro fuentes y fallos), A02 (dos precios contrastados con origen), A03 (FKs e históricos), A04 (localizadores/contadores/rechazos) y A05 (repetición completa más corrección de líneas probada en F6) quedan verificados bajo las reglas vigentes. F8 acredita las consultas SQL de A07 y A08 bajo las decisiones documentadas; F9 verifica la presentación de A06–A08 con datos reales y casos sintéticos. El margen estimado no equivale a beneficio confirmado por los conflictos de coste y la base fiscal pendiente.
 
 ## Qué cambiaría con cinco millones de líneas
 
@@ -313,7 +342,7 @@ Por validar: ausencia de ID de línea y coste histórico; base fiscal/zona de ne
 
 ## Uso de IA
 
-Se usó Codex para inspeccionar el repositorio, redactar la planificación e implementar F0–F8. F1–F3 incorporaron reglas puras y Ruff; F4–F6 añadieron persistencia, stock y pedidos con pruebas MySQL y cargas parciales reales. F7 añadió pruebas de integración completa, un caso unitario que explicita la comparación actual de cliente, dos cargas reales de las cuatro fuentes y contraste de muestras contra origen. No modificó reglas de negocio, fuentes ni el volumen del usuario; corrigió el mensaje de error del CLI que aún mencionaba F5 y documentación desactualizada. El responsable deberá revisar y poder explicar las decisiones y resultados. Después de F7, el usuario confirmó equivalencia de capitalización del cliente: se implementó ADR 004, se versionaron reglas v2 y se repitieron suite y dos cargas reales. La deduplicación de las ocho repeticiones idénticas se mantuvo como decisión para la prueba. F8 añadió consultas SQL, seis pruebas MySQL sintéticas y contraste de métricas con una carga real aislada; detectó categorías con distinta capitalización y costes conflictivos con efecto material sobre el margen, documentados arriba.
+Se usó Codex para inspeccionar el repositorio, redactar la planificación e implementar F0–F9. F1–F3 incorporaron reglas puras y Ruff; F4–F6 añadieron persistencia, stock y pedidos con pruebas MySQL y cargas parciales reales. F7 añadió pruebas de integración completa, un caso unitario que explicita la comparación actual de cliente, dos cargas reales de las cuatro fuentes y contraste de muestras contra origen. No modificó reglas de negocio, fuentes ni el volumen del usuario; corrigió el mensaje de error del CLI que aún mencionaba F5 y documentación desactualizada. El responsable deberá revisar y poder explicar las decisiones y resultados. Después de F7, el usuario confirmó equivalencia de capitalización del cliente: se implementó ADR 004, se versionaron reglas v2 y se repitieron suite y dos cargas reales. La deduplicación de las ocho repeticiones idénticas se mantuvo como decisión para la prueba. F8 añadió consultas SQL, seis pruebas MySQL sintéticas y contraste de métricas con una carga real aislada; detectó categorías con distinta capitalización y costes conflictivos con efecto material sobre el margen, documentados arriba. F9 añadió la interfaz, nueve pruebas MySQL/HTML y capturas reales; la revisión móvil detectó un desbordamiento de tablas, corregido con contenedores desplazables y ancho mínimo de los paneles.
 
 Uso durante implementación, tareas asistidas, decisiones revisadas personalmente, validación y errores detectados: **TBD**. No atribuir aprobaciones o verificaciones humanas que no han ocurrido.
 
@@ -323,5 +352,5 @@ Uso durante implementación, tareas asistidas, decisiones revisadas personalment
 - Ramas reales (mínimo tres de trabajo) y enlaces de PR merged a main (mínimo dos): **TBD**.
 - Commit de main verificado y procedimiento reproducible: **TBD**.
 - Resumen de dos o tres párrafos: **TBD**.
-- Captura de panel con gráfico, escenario Make y ejecución correcta: **TBD**.
+- Captura real de panel F9: [dashboard](docs/evidence/f9-dashboard.png), [catálogo filtrado](docs/evidence/f9-catalog-filter.png) y [contexto de evidencia](docs/evidence/README.md). Escenario Make y ejecución correcta: **TBD**.
 - Borrador de correo conforme al destinatario/asunto de README: **TBD**. Preparar no equivale a enviar; no se envía automáticamente.

@@ -1,6 +1,6 @@
 # Especificación técnica propuesta
 
-Estado: ETL implementado hasta F6 y validado end-to-end en F7; consultas SQL analíticas implementadas y verificadas en F8. Web y Make siguen siendo diseño pendiente. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
+Estado: ETL implementado hasta F6 y validado end-to-end en F7; consultas SQL analíticas implementadas y verificadas en F8. Web implementada y verificada en F9; Make sigue siendo diseño pendiente. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
 
 ## Inspección y límites de evidencia
 
@@ -148,6 +148,14 @@ Para una fecha de referencia `as_of` (por defecto hoy en `BUSINESS_TIMEZONE`), f
 
 Mantener SQL centralizado; el dashboard y Make consumen la misma definición. Evaluar estados y canal por cabecera evita dobles conteos. Unir stock agregado al producto, no multiplicar líneas por cada almacén.
 
+## Web implementada en F9
+
+`src/web/app.py` expone GET `/` con FastAPI/Jinja2 y recursos locales. `src/analytics/catalog.py` consulta el catálogo vigente: búsqueda literal por SKU/nombre/descripción (collation sin distinguir mayúsculas/tildes), categoría por clave normalizada y paginación estable de 20 filas por SKU; filtros combinables y SQL parametrizado. Los filtros solo afectan al catálogo. Una página superior al último resultado se ajusta a la última; valores malformados o fuera de límites devuelven 422. Plantillas con autoescape; errores de configuración/BD y esquema pendiente devuelven 503 sin detalles sensibles.
+
+Las métricas se leen mediante `AnalyticsQueries` en la misma conexión que catálogo/última publicación. Importes exactos permanecen Decimal/texto; Chart.js convierte a Number únicamente para dibujar, sin fórmulas económicas. Gráfico mixto con ejes separados, tabla HTML de respaldo, vacíos, stock NULL/invalid, históricos, pedidos parciales, cobertura, EUR/IVA y conflictos del último run completado visibles. Chart.js 4.5.1 se sirve localmente con licencia MIT y hash/procedencia en `src/web/static/vendor/README.md`; evita red externa al abrir el panel, sin añadir un proceso npm/build. FastAPI/Jinja2/Uvicorn ya estaban fijados en F0.
+
+Arranque: `.venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000`. Host/puerto se eligen con opciones de Uvicorn; no se han creado variables propias `WEB_HOST/PORT`. Sin autenticación multiusuario ni exposición pública; alcance local de PRD. Las capturas y el procedimiento manual están en SOLUCION; Make queda fuera de F9.
+
 ## API de stock
 
 Contrato leído del mock: GET `/health` sin autenticación; GET `/api/v1/stock` con Bearer desde entorno, `page` desde 1, `per_page` por defecto 50 y máximo 100. Respuesta `{data, meta}` con `page`, `per_page`, `total_records`, `total_pages`, `has_next`. `updated_since` filtra de forma inclusiva (`>=`). No se ha ejecutado ninguna petición para esta planificación.
@@ -168,7 +176,7 @@ Concreción implementada en F6: `003_orders.sql` añade `orders`, `order_lines` 
 
 ## Configuración y seguridad
 
-Variables existentes: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `STOCK_API_URL`, `STOCK_API_TOKEN`, `CSV_PATH`, `XML_PATH`. Añadir en implementación `ORDERS_CSV_PATH`, `BUSINESS_TIMEZONE` (propuesta Europe/Madrid, S), `ANALYTICS_AS_OF` opcional, parámetros de HTTP/retries/límite, `LOG_LEVEL`, `WEB_HOST/PORT`, `MAKE_WEBHOOK_URL`, timeout Make y umbral de rechazos. Documentar valores no secretos en plantilla; no copiar credenciales de ejemplo a código. No cambiar `.env` existente sin necesidad ni mostrar su contenido.
+Variables existentes: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `STOCK_API_URL`, `STOCK_API_TOKEN`, `CSV_PATH`, `XML_PATH`. Añadir en implementación `ORDERS_CSV_PATH`, `BUSINESS_TIMEZONE` (propuesta Europe/Madrid, S), `ANALYTICS_AS_OF` opcional, parámetros de HTTP/retries/límite, `LOG_LEVEL`, `MAKE_WEBHOOK_URL`, timeout Make y umbral de rechazos. Documentar valores no secretos en plantilla; no copiar credenciales de ejemplo a código. No cambiar `.env` existente sin necesidad ni mostrar su contenido.
 
 El Compose actual tiene valores de demostración literales: no está configurado para sustituirlos todos desde `.env`. En F0 verificar alineación sin afirmar que cambiar `.env` cambia los contenedores; parametrización de Compose, si se necesita, sería cambio posterior explícito. Dentro de Docker los hosts serán nombres de servicio y MySQL puerto 3306, no localhost:3307. El volumen MySQL ya inicializado no vuelve a ejecutar `db/init`; aplicar scripts versionados sin borrar volúmenes.
 

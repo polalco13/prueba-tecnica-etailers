@@ -1,6 +1,6 @@
 # Plan de implementación y estrategia Git
 
-Estado actualizado en F8: F0–F7 integradas en `main`; las consultas F8 están implementadas y verificadas en `feature/dashboard`, pendientes de integración junto con F9. F9 y siguientes no iniciadas. F7 verificó las cuatro fuentes reales dos veces en MySQL temporal; F8 contrastó SQL contra casos sintéticos y una carga real aislada. Los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
+Estado actualizado en F9: F0–F7 integradas en `main`; consultas F8 y dashboard F9 implementados y verificados en `feature/dashboard`, pendientes de revisión e integración mediante PR 4. F10 y siguientes no iniciadas. F7 verificó las cuatro fuentes reales dos veces en MySQL temporal; F8 contrastó SQL contra casos sintéticos y una carga real aislada. Los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
 
 ## Orden y alcance
 
@@ -175,4 +175,4 @@ Antes de cada merge: tests de la fase y regresiones afectadas, diff/secretos rev
 
 Ejemplo de solicitud futura: «Implementa únicamente F1 siguiendo AGENTS y los documentos de planificación. Antes del cambio identifica archivos, razón y criterio; prueba las reglas y resume evidencias y pendientes. No avances a F2». Una fase puede dividirse en tareas aún más pequeñas si no cabe en un diff revisable.
 
-F8 queda implementada en `feature/dashboard` con SQL común y pruebas MySQL. La siguiente tarea, solo cuando se solicite, es F9 en esta rama: conectar el catálogo y el panel a esas consultas y verificar la interfaz. PR 4 está previsto al terminar F9; no atribuir confirmación comercial a EUR/IVA o a los costes conflictivos del origen.
+F8–F9 quedan implementadas en `feature/dashboard`: SQL común, catálogo/panel y 348 pruebas verificadas sobre MySQL temporal, además de capturas reales de navegador. El siguiente paso es revisar e integrar PR 4; todavía no se ha publicado la rama ni creado/cerrado esa PR en esta tarea. Después, solo cuando se solicite, abordar F10. EUR/IVA y costes conflictivos siguen pendientes de confirmación comercial.

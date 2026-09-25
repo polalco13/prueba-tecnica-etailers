@@ -10,5 +10,5 @@ Crear un ADR solo para una decisión con impacto transversal o alternativas sign
 | --- | --- | --- | --- |
 | [001](001-monetary-values-use-decimal.md) | Precisión monetaria Decimal/DECIMAL y redondeo | Implementado; base fiscal pendiente | F1/F3/F8 |
 | [002](002-idempotent-etl-loading.md) | Instantáneas, claves únicas y publicación transaccional | Implementado para el dataset de prueba; contrato futuro pendiente | F4–F7 |
-| [003](003-historical-orphan-products.md) | Productos históricos mínimos para mantener FKs | Implementado; consulta de margen verificada, interfaz pendiente | F6/F8/F9 |
+| [003](003-historical-orphan-products.md) | Productos históricos mínimos para mantener FKs | Implementado; consulta de margen e interfaz verificadas | F6/F8/F9 |
 | [004](004-customer-header-case-insensitive.md) | Cliente equivalente sin distinguir mayúsculas | Aceptado por el usuario e implementado | Corrección F6–F7 |
