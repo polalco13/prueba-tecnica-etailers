@@ -267,6 +267,18 @@ def test_previous_month_window_and_empty_results(sales_db: SyntheticSales) -> No
     assert early.low_stock_products() == []
 
 
+def test_previous_month_crosses_year_and_ticket_rounds_half_up(sales_db: SyntheticSales) -> None:
+    product = sales_db.product("A")
+    first = sales_db.order(date(2025, 12, 1))
+    sales_db.line(first, product, price="1.0000")
+    last = sales_db.order(date(2025, 12, 31))
+    sales_db.line(last, product, price="1.0100")
+    report = AnalyticsQueries(sales_db.connection, date(2026, 1, 1))
+    assert report.previous_month_sales().revenue == Decimal("2.01")
+    assert report.previous_month_sales().orders == 2
+    assert report.previous_month_sales().average_ticket == Decimal("1.01")
+
+
 def test_rounds_each_line_before_summing_and_top_ties(sales_db: SyntheticSales) -> None:
     order = sales_db.order(date(2025, 4, 2))
     for index in range(11, 0, -1):
