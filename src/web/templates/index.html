@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+<section id="resumen" class="intro">
+  <div><p class="eyebrow">Visión general</p><h1>El negocio, en cifras</h1>
+    <p>Desde abril de 2025 hasta {{ as_of.strftime('%d/%m/%Y') }} · {{ timezone }}</p></div>
+  <div class="updated">Última carga publicada<br><strong>{% if publication.finished_at %}{{ publication.finished_at.strftime('%d/%m/%Y %H:%M') }} UTC{% else %}Sin cargas completadas con fecha{% endif %}</strong></div>
+</section>
+{% if not publication.run_id %}<p class="notice">Todavía no hay una carga completada. Ejecuta el ETL para publicar las cuatro fuentes.</p>{% endif %}
+<div class="kpis">
+  <article class="panel kpi"><p>Facturación operativa</p><strong id="revenue" data-value="{{ summary.revenue }}">{{ summary.revenue|number }}</strong><span>Importe tras descuentos de línea</span></article>
+  <article class="panel kpi"><p>Pedidos elegibles</p><strong id="orders">{{ summary.orders|number(0) }}</strong><span>{{ summary.partial_orders }} con líneas rechazadas</span></article>
+  <article class="panel kpi"><p>Ticket medio</p><strong id="ticket" data-value="{{ summary.average_ticket }}">{{ summary.average_ticket|number }}</strong><span>Por pedido elegible</span></article>
+  <article class="panel kpi"><p>Margen bruto estimado</p><strong id="margin" class="{% if margin.known_margin < 0 %}negative{% endif %}" data-value="{{ margin.known_margin }}">{{ margin.known_margin|number }}</strong><span>A coste actual · cobertura {% if coverage_percent is not none %}{{ coverage_percent|number }} %{% else %}sin dato{% endif %}</span></article>
+</div>
+<aside class="notice" aria-label="Criterio de cálculo">
+  <strong>Cómo leer estas cifras.</strong> Solo ENVIADO y COMPLETADO, con cantidades positivas; se excluyen pendientes, cancelados y devueltos. Los pedidos parciales aportan únicamente sus líneas válidas. Moneda EUR y base fiscal (IVA) pendientes de confirmar.
+</aside>
+{% if publication.conflicting_skus %}
+<aside class="notice warning" role="note"><strong>Costes por revisar.</strong> Hay filas de catálogo contradictorias para {{ publication.conflicting_skus|join(', ') }}. Se conservó la primera fila válida. La selección puede afectar al margen: no interpretarlo como beneficio definitivo.</aside>
+{% endif %}
+<section class="panel section" aria-labelledby="evolution-title">
+  <div class="section-heading"><div><p class="eyebrow">Evolución del negocio</p><h2 id="evolution-title">Facturación y unidades por mes</h2></div><span class="badge">{{ as_of.strftime('%m/%Y') }} parcial</span></div>
+  {% if summary.orders == 0 %}<p class="empty">No hay ventas elegibles en este periodo. Los meses sin ventas se muestran a cero.</p>{% endif %}
+  <div class="chart-wrap"><canvas id="sales-chart" role="img" aria-label="Evolución mensual de facturación y unidades. Datos completos en la tabla siguiente."></canvas></div>
+  <p id="chart-fallback" class="muted">La tabla contiene los valores exactos; el gráfico necesita JavaScript.</p>
+  <details><summary>Ver datos mensuales</summary><div class="table-scroll"><table id="monthly-table"><thead><tr><th>Mes</th><th class="num">Facturación</th><th class="num">Unidades</th><th>Periodo</th></tr></thead><tbody>
+    {% for row in monthly %}<tr><td>{{ row.month.strftime('%m/%Y') }}</td><td class="num">{{ row.revenue|number }}</td><td class="num">{{ row.units|number(0) }}</td><td>{{ 'Parcial' if row.is_partial else 'Completo' }}</td></tr>{% endfor %}
+  </tbody></table></div></details>
+</section>
+<div class="two-columns">
+  <section class="panel section"><p class="eyebrow">Origen de las ventas</p><h2>Ventas por canal</h2><div class="table-scroll"><table id="channels"><thead><tr><th>Canal</th><th class="num">Facturación</th><th class="num">Unidades</th></tr></thead><tbody>
+    {% for row in channels %}<tr><td>{{ row.label }}</td><td class="num">{{ row.revenue|number }}</td><td class="num">{{ row.units|number(0) }}</td></tr>{% endfor %}
+  </tbody></table></div></section>
+  <section class="panel section"><p class="eyebrow">Composición del negocio</p><h2>Ventas por categoría</h2><div class="table-scroll"><table id="categories"><thead><tr><th>Categoría actual</th><th class="num">Facturación</th></tr></thead><tbody>
+    {% for row in categories %}<tr><td>{{ row.label }}</td><td class="num">{{ row.revenue|number }}</td></tr>{% else %}<tr><td colspan="2" class="empty">Sin ventas por categoría.</td></tr>{% endfor %}
+  </tbody></table></div></section>
+</div>
+<section class="panel section margin-detail"><div><p class="eyebrow">Cobertura del margen</p><h2>Coste conocido, cálculo visible</h2><p>Es una estimación con el coste actual del catálogo. El coste desconocido no se convierte en cero.</p></div>
+  <dl><div><dt>Ventas con coste conocido</dt><dd>{{ margin.known_revenue|number }}</dd></div><div><dt>Ventas con coste desconocido</dt><dd>{{ margin.unknown_revenue|number }}</dd></div></dl>
+</section>
+<div class="two-columns">
+  <section class="panel section"><p class="eyebrow">Productos destacados</p><h2>Top 10 por facturación</h2><div class="table-scroll"><table id="top-products"><thead><tr><th>Producto</th><th class="num">Facturación</th></tr></thead><tbody>
+    {% for row in top_products %}<tr><td><strong>{{ row.sku }}</strong><small>{{ row.name or 'Nombre no disponible' }}{% if row.is_historical %} · Histórico{% endif %}</small></td><td class="num">{{ row.revenue|number }}</td></tr>{% else %}<tr><td colspan="2" class="empty">Sin productos con ventas elegibles.</td></tr>{% endfor %}
+  </tbody></table></div></section>
+  <section class="panel section"><p class="eyebrow">Atención al inventario</p><h2>Productos bajo mínimos <span class="badge">{{ low_stock|length }}</span></h2><p class="muted">Stock físico conocido &lt; 5, con ventas en los últimos 3 meses naturales. Sin restar reservas.</p><div class="table-scroll"><table id="low-stock"><thead><tr><th>Producto</th><th class="num">Stock</th><th class="num">Uds. vendidas</th></tr></thead><tbody>
+    {% for row in low_stock %}<tr><td><strong>{{ row.sku }}</strong><small>{{ row.name }}</small></td><td class="num"><span class="badge low">{{ row.stock_total }}</span></td><td class="num">{{ row.recent_units }}</td></tr>{% else %}<tr><td colspan="3" class="empty">No hay productos que cumplan el criterio de bajo stock.</td></tr>{% endfor %}
+  </tbody></table></div></section>
+</div>
+<section id="catalogo" class="panel section">
+  <div class="section-heading"><div><p class="eyebrow">Catálogo comercial</p><h2>Consulta de productos</h2></div><span class="badge">{{ catalog.total }} resultados</span></div>
+  <form action="/#catalogo" method="get" class="filters">
+    <div><label for="search">Buscar por nombre, SKU o descripción</label><input id="search" name="q" type="search" maxlength="200" value="{{ q }}" placeholder="Ej. taladro o PRV-2001"></div>
+    <div><label for="category">Categoría</label><select id="category" name="category"><option value="">Todas las categorías</option>{% for key, label in category_options %}<option value="{{ key }}" {% if key == category %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <button type="submit">Buscar</button><a href="/#catalogo">Limpiar</a>
+  </form>
+  <p class="muted">Los filtros se aplican solo al catálogo; las estadísticas muestran el negocio completo. Precios de origen, EUR e IVA por confirmar.</p>
+  <div class="table-scroll"><table id="catalog-table"><thead><tr><th>SKU / Nombre</th><th>Categoría</th><th class="num">Neto de compra</th><th class="num">PVP</th><th class="num">Stock físico</th></tr></thead><tbody>
+    {% for row in catalog.products %}<tr><td><strong>{{ row.sku }}</strong><small>{{ row.name }}</small></td><td>{{ row.category }}</td><td class="num">{{ row.net_cost|number(4) }}</td><td class="num">{{ row.pvp|number(4) }}</td><td class="num">{% if row.stock_total is none %}<span class="unknown">{{ 'Dato inválido' if row.stock_status == 'invalid' else 'Desconocido' }}</span>{% else %}{{ row.stock_total|number(0) }}{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="empty">No hay productos que coincidan con los filtros. Prueba otra búsqueda o limpia los filtros.</td></tr>{% endfor %}
+  </tbody></table></div>
+  <nav class="pagination" aria-label="Páginas del catálogo"><span>Página {{ catalog.page }} de {{ catalog.pages }} · Hasta 20 productos por página</span><div>{% if catalog.page > 1 %}<a href="{{ previous_url }}">← Anterior</a>{% endif %}{% if catalog.page < catalog.pages %}<a href="{{ next_url }}">Siguiente →</a>{% endif %}</div></nav>
+</section>
+{% endblock %}
+{% block scripts %}
+<script id="chart-data" type="application/json">{{ chart_data|tojson }}</script>
+<script src="{{ url_for('static', path='vendor/chart.umd.min.js') }}" defer></script>
+<script src="{{ url_for('static', path='dashboard.js') }}" defer></script>
+{% endblock %}
