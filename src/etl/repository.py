@@ -23,6 +23,23 @@ def start_run(connection: Connection, run_id: str) -> None:
     connection.commit()
 
 
+def save_make_summary(connection: Connection, run_id: str, summary: dict, enabled: bool) -> None:
+    """El caller confirma el resumen junto con la misma instantánea de negocio."""
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "UPDATE etl_runs SET make_summary = %s, make_status = %s "
+            "WHERE id = %s AND status = 'completed' AND make_summary IS NULL",
+            (
+                json.dumps(summary, ensure_ascii=False),
+                "pending" if enabled else "not_applicable",
+                run_id,
+            ),
+        )
+        if cursor.rowcount != 1:
+            raise RuntimeError("Resumen no guardado o ya existente")
+
+
 def mark_publishing(
     connection: Connection,
     run_id: str,

@@ -26,6 +26,13 @@ class StockOptions:
 
 
 @dataclass(frozen=True, slots=True)
+class MakeOptions:
+    webhook_url: str = field(default="", repr=False)
+    timeout: int = 10
+    rejection_threshold: int = 0
+
+
+@dataclass(frozen=True, slots=True)
 class Settings:
     db_host: str
     db_port: int
@@ -40,6 +47,7 @@ class Settings:
     business_timezone: str
     log_level: str
     stock: StockOptions = field(default_factory=StockOptions)
+    make: MakeOptions = field(default_factory=MakeOptions)
 
 
 _REQUIRED = (
@@ -54,6 +62,41 @@ _REQUIRED = (
     "XML_PATH",
 )
 _LOG_LEVELS = frozenset({"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"})
+
+
+def _make_options(values: Mapping[str, str]) -> MakeOptions:
+    webhook = values.get("MAKE_WEBHOOK_URL", "").strip()
+    if webhook:
+        try:
+            url = urlsplit(webhook)
+            valid = (
+                url.scheme == "https"
+                and bool(url.hostname)
+                and bool(url.path.strip("/"))
+                and not url.username
+                and not url.password
+                and not url.fragment
+                and not url.query
+                and url.port in (None, 443)
+            )
+        except ValueError:
+            valid = False
+        if not valid:
+            raise ConfigError("MAKE_WEBHOOK_URL inválida")
+    options = {}
+    for name, default, minimum, maximum in (
+        ("timeout", 10, 1, 60),
+        ("rejection_threshold", 0, 0, 1_000_000),
+    ):
+        key = f"MAKE_{name.upper()}"
+        try:
+            value = int(values.get(key, str(default)))
+        except ValueError:
+            raise ConfigError(f"{key} inválido") from None
+        if not minimum <= value <= maximum:
+            raise ConfigError(f"{key} fuera de rango")
+        options[name] = value
+    return MakeOptions(webhook_url=webhook, **options)
 
 
 def _stock_options(values: Mapping[str, str]) -> StockOptions:
@@ -139,6 +182,7 @@ def load_settings(
         business_timezone=timezone_name,
         log_level=log_level,
         stock=_stock_options(values),
+        make=_make_options(values),
     )
 
 

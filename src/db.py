@@ -8,7 +8,7 @@ from pymysql.connections import Connection
 
 from src.config import Settings, configure_logging, get_run_logger, load_settings
 
-MIGRATIONS = ("001_products_and_runs", "002_stock", "003_orders")
+MIGRATIONS = ("001_products_and_runs", "002_stock", "003_orders", "004_make_delivery")
 MIGRATION_DIR = Path(__file__).resolve().parent.parent / "db/migrations"
 
 
@@ -72,9 +72,17 @@ def apply_migration(connection: Connection) -> bool:
                     if not statement.strip():
                         continue
                     if statement.strip().startswith("ALTER TABLE etl_runs ADD COLUMN "):
-                        # DDL hace commit implícito: retomar hashes F5/F6 tras una interrupción.
+                        # DDL hace commit implícito: retomar columnas tras una interrupción.
                         column = statement.strip().split()[5]
-                        if column not in {"stock_sha256", "orders_sha256"}:
+                        if column not in {
+                            "stock_sha256",
+                            "orders_sha256",
+                            "make_summary",
+                            "make_attempts",
+                            "make_error_code",
+                            "make_last_attempt_at",
+                            "make_accepted_at",
+                        }:
                             raise ValueError("ADD COLUMN sin política de recuperación")
                         cursor.execute(
                             "SELECT COUNT(*) FROM information_schema.columns "

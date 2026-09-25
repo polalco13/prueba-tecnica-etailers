@@ -1,7 +1,8 @@
 """Incremento F6: cuatro fuentes con publicación atómica y auditoría durable."""
 
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
@@ -11,10 +12,11 @@ from src import db
 from src.config import Settings, get_run_logger
 from src.etl import repository
 from src.etl.catalog import CatalogReadError, extract_catalog
+from src.etl.make_client import DeliveryError, deliver_run
 from src.etl.orders import OrdersReadError, extract_orders, select_orders
 from src.etl.pricing import TariffReadError, load_tariffs, price_catalog
 from src.etl.records import Action, Issue, ReasonCode, Severity, SourceRef
-from src.etl.reporting import CatalogCounters, catalog_counters, orders_counters
+from src.etl.reporting import CatalogCounters, catalog_counters, make_summary, orders_counters
 from src.etl.stock import StockCounters, reconcile_stock
 from src.etl.stock_client import StockFetchError, fetch_stock
 
@@ -36,6 +38,7 @@ class RunResult:
     counters: CatalogCounters
     stock_counters: StockCounters
     orders_counters: dict[str, int]
+    make_status: str = "not_applicable"
 
 
 def _sha256(path: Path) -> str:
@@ -68,7 +71,23 @@ def _failure_issue(exc: Exception) -> Issue:
     return Issue(ref, code, Action.FAIL_RUN, Severity.ERROR, f"Ejecución fallida: {code}")
 
 
-def run_etl(settings: Settings) -> RunResult:
+def run_etl(settings: Settings, *, as_of: date | None = None) -> RunResult:
+    """Publica primero; un fallo de entrega nunca se interpreta como fallo del ETL."""
+
+    result = _publish_etl(settings, as_of)
+    if not settings.make.webhook_url:
+        return result
+    try:
+        delivery = deliver_run(settings, result.run_id)
+    except (MySQLError, DeliveryError) as exc:
+        get_run_logger("make", result.run_id).error(
+            "ETL publicado; no se pudo confirmar la entrega (%s)", type(exc).__name__
+        )
+        return replace(result, make_status="uncertain")
+    return replace(result, make_status=delivery.status)
+
+
+def _publish_etl(settings: Settings, as_of: date | None) -> RunResult:
     """Un único escritor; extrae cuatro fuentes antes de la transacción de negocio."""
 
     run_id = str(uuid4())
@@ -133,6 +152,16 @@ def run_etl(settings: Settings) -> RunResult:
                 repository.insert_issues(connection, run_id, (*issues, *created))
                 repository.complete_run(
                     connection, run_id, counters, csv_hash, xml_hash, stock.counters, order_counts
+                )
+                summary = make_summary(
+                    connection,
+                    run_id,
+                    settings.business_timezone,
+                    settings.make.rejection_threshold,
+                    as_of,
+                )
+                repository.save_make_summary(
+                    connection, run_id, summary, bool(settings.make.webhook_url)
                 )
                 connection.commit()
                 logger.info("Catálogo, tarifas, stock y pedidos publicados")
