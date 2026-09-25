@@ -1,6 +1,6 @@
 # Especificación técnica propuesta
 
-Estado: ETL implementado hasta F6 y validado end-to-end en F7. SQL analítico, web y Make siguen siendo diseño pendiente. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
+Estado: ETL implementado hasta F6 y validado end-to-end en F7; consultas SQL analíticas implementadas y verificadas en F8. Web y Make siguen siendo diseño pendiente. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
 
 ## Inspección y límites de evidencia
 

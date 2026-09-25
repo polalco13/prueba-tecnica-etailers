@@ -1,19 +1,19 @@
 # Solución — documento vivo
 
-**Estado: F0–F7 comprobadas dentro de su alcance; F6–F7 pendientes de integrar en main. SQL analítico, dashboard y Make pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado: F0–F7 integradas en `main`; F8 analítica SQL implementada y verificada en `feature/dashboard`. Dashboard F9 y Make F10 pendientes.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
 
 Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
 
 ## Resumen
 
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
-- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7).
+- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7); consultas analíticas probadas y contrastadas con una carga real aislada (F8).
 - Versión/commit entregado y enlace GitHub: **TBD**.
-- A01–A05: verificados técnicamente en F7, con pérdidas y supuestos comerciales explícitos más abajo. A06–A11 y extras: pendientes de sus fases; no se declara el ejercicio completo.
+- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A07, Make y extras: pendientes de sus fases; no se declara el ejercicio completo.
 
 ## Arquitectura final
 
-El incremento implementado es CSV/XML/API de stock/CSV de pedidos → lectores y reglas Python → transacción InnoDB MySQL 8 (`products`, `stock_by_warehouse`, `orders`, `order_lines`, `etl_runs`, `rejections`). Las incidencias de fallos se confirman por separado tras rollback; un advisory lock serializa escritores. Diagrama final con web y Make: **TBD**.
+El incremento implementado es CSV/XML/API de stock/CSV de pedidos → lectores y reglas Python → transacción InnoDB MySQL 8 (`products`, `stock_by_warehouse`, `orders`, `order_lines`, `etl_runs`, `rejections`) → consultas SQL de solo lectura en `src/analytics/queries.py`. Las incidencias de fallos se confirman por separado tras rollback; un advisory lock serializa escritores. Diagrama final con web y Make: **TBD**.
 
 ## Requisitos de entorno
 
@@ -95,11 +95,11 @@ GROUP BY o.id, source_order_id, status, has_rejected_lines
 ORDER BY source_order_id;
 ```
 
-La comprobación visual en la base del usuario es opcional para revisar el resultado local; no sustituye las pruebas MySQL de F7 ya ejecutadas. Revisar e integrar PR 3 de F6–F7 sigue pendiente. F8 requiere una petición posterior.
+La comprobación visual en la base del usuario es opcional para revisar el resultado local; no sustituye las pruebas MySQL de F7–F8 ya ejecutadas. PR 3 de F6–F7 está integrada en `main`. F8 no modifica el esquema ni requiere recargar datos del usuario; si su base ya contiene F6, puede ejecutar las consultas de lectura con la misma definición de fecha.
 
 ## Cómo ejecutar tests
 
-Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integración F4–F7 requieren un MySQL 8 separado:
+Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integración F4–F8 requieren un MySQL 8 separado:
 
 ```bash
 .venv/bin/python -m pytest -q
@@ -107,7 +107,7 @@ Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integració
 .venv/bin/ruff format --check src tests
 ```
 
-Sin `F4_TEST_DB_PORT`, los tests de integración se omiten. Para incluirlos, arrancar un contenedor temporal MySQL 8 **sin montar `mysql_data`**, con una base cuyo nombre empiece por `f4_test_`; pasar `F4_TEST_DB_PORT` y `F4_TEST_DB_PASSWORD` al proceso de pytest. Son opcionales `F4_TEST_DB_HOST` (127.0.0.1), `F4_TEST_DB_NAME` (`f4_test_catalog`) y `F4_TEST_DB_USER` (`f4_tester`). El test aplica la migración en esa base y crea solo datos sintéticos. No apuntarlo al volumen o base `catalogo` del usuario. Se conservan los nombres `F4_TEST_*` para todas las fases. Tras ADR 004 hay **333 tests** (307 sin BD y 26 de integración): incluyen equivalencia de capitalización, herencia, nombres distintos y persistencia de las variantes. Sin BD se omiten esos 26, por lo que esa ejecución sola no acredita F7.
+Sin `F4_TEST_DB_PORT`, los tests de integración se omiten. Para incluirlos, arrancar un contenedor temporal MySQL 8 **sin montar `mysql_data`**, con una base cuyo nombre empiece por `f4_test_`; pasar `F4_TEST_DB_PORT` y `F4_TEST_DB_PASSWORD` al proceso de pytest. Son opcionales `F4_TEST_DB_HOST` (127.0.0.1), `F4_TEST_DB_NAME` (`f4_test_catalog`) y `F4_TEST_DB_USER` (`f4_tester`). El test aplica la migración en esa base y crea solo datos sintéticos. No apuntarlo al volumen o base `catalogo` del usuario. Se conservan los nombres `F4_TEST_*` para todas las fases. Tras F8 hay **339 tests** (307 sin BD y 32 de integración): F8 añade seis casos SQL sintéticos; la regresión F0–F7 conserva sus 333. Sin BD se omiten los 32 de integración, por lo que esa ejecución sola no acredita F7 ni F8.
 
 Para repetir solo F7, con las variables anteriores configuradas:
 
@@ -131,13 +131,15 @@ F3 cruza ese catálogo con el XML real. El parser reconoció 6 reglas de categor
 
 ## Definición de facturación y margen
 
-Propuesta: ENVIADO/COMPLETADO con líneas válidas positivas, excluyendo cancelados, pendientes y devueltos; importe tras descuento de línea. Coste actual disponible para margen y cobertura visible cuando falta coste. No se conoce aún la base fiscal confirmada de los precios.
+F8 implementa la **facturación operativa** propuesta: pedidos `ENVIADO`/`COMPLETADO`, líneas válidas con cantidad positiva y fecha entre 2025-04-01 y `as_of`, ambos incluidos. Cancelados, pendientes y devueltos quedan fuera. Las devoluciones permanecen en la BD pero no se compensan sin vínculo con la venta original. Un pedido con líneas rechazadas cuenta una vez si tiene al menos una línea válida elegible; solo esas líneas aportan importe. Cada línea se calcula como `ROUND_HALF_UP(cantidad × precio_unitario × (1 − descuento), 2)` antes de sumar. El ticket es facturación / pedidos, a dos decimales, o `NULL` si no hay pedidos.
 
-Decisión final, validación EUR/IVA, tratamiento de devoluciones, fecha de referencia, zona horaria y ejemplo real conciliado: **TBD**. Explicar pedidos parciales y desconocidos. No afirmar rentabilidad histórica exacta con costes actuales.
+`as_of` por defecto es el día actual de `BUSINESS_TIMEZONE` (`Europe/Madrid` por defecto); para repetir medidas se pasa una fecha fija. La serie completa los meses desde abril de 2025 con cero y marca el mes de `as_of` como parcial. El mes anterior de Make es el mes natural completo inmediatamente previo a `as_of`, sujeto al mismo límite global desde abril de 2025. Categorías con distinta capitalización se agrupan por `category_key` del ETL; las históricas sin categoría forman el grupo explícito `Sin categoría`. Canal, categoría y margen parten del mismo conjunto de líneas; no se multiplica por almacenes.
+
+El margen conocido suma, por línea con `net_cost` actual no nulo, el importe menos `ROUND_HALF_UP(cantidad × net_cost, 2)`. Puede ser negativo. Se muestran por separado ventas con y sin coste y la cobertura como fracción de ventas con coste conocido sobre ventas totales, a cuatro decimales (`NULL` si el total es cero). Es una **estimación a coste actual**, no rentabilidad histórica exacta. Moneda EUR, IVA y comparabilidad del precio ERP con el coste proveedor: **pendientes de confirmación comercial**. Hasta entonces no presentar estas cifras como facturación fiscal o beneficio definitivo.
 
 ## Productos históricos
 
-F4 conserva el ID de un producto que desaparece del CSV, lo marca histórico y limpia atributos comerciales, coste y stock. F6 crea/reutiliza el mismo ID para un SKU de pedido sin producto comercial, con atributos desconocidos a `NULL`; si reaparece en catálogo, lo promociona. Estas transiciones, FKs y retirada de pedidos pasaron contra MySQL con fixtures sintéticas. Medir cobertura de margen corresponde a F8.
+F4 conserva el ID de un producto que desaparece del CSV, lo marca histórico y limpia atributos comerciales, coste y stock. F6 crea/reutiliza el mismo ID para un SKU de pedido sin producto comercial, con atributos desconocidos a `NULL`; si reaparece en catálogo, lo promociona. Estas transiciones, FKs y retirada de pedidos pasaron contra MySQL con fixtures sintéticas. F8 incluye las ventas históricas y separa sus importes del margen con coste conocido; la carga real a 2026-09-25 tiene cobertura monetaria de `0.9036`.
 
 ## Idempotencia
 
@@ -159,7 +161,7 @@ No publicar URL secreta del webhook, tokens, identificadores sensibles de conexi
 
 ## Dashboard
 
-URL local/comando: **TBD**. Evidencia de catálogo, filtros, gráfico desde abril de 2025, KPIs, canal, top10, categorías, margen/cobertura y bajo stock: **TBD**. Captura real sin secretos: **TBD**. Comprobar coherencia con SQL y tratamiento visible de NULL/mes actual parcial: **TBD**.
+URL local/comando e interfaz: **TBD (F9)**. Las consultas SQL de F8 para KPIs, serie mensual, canales, top 10, categorías, margen/cobertura y bajo stock están implementadas y verificadas; aún no hay página ni gráfico. Captura real sin secretos: **TBD**. Comprobar coherencia visual con SQL y tratamiento visible de NULL/mes actual parcial: **TBD (F9)**.
 
 ## Resultados de ejecución
 
@@ -217,6 +219,44 @@ Contraste directo de las celdas originales, XML/stock y consultas SQL; sin copia
 
 Las devoluciones negativas se prueban con fixtures sintéticas. No hay líneas negativas aceptadas en esta carga real: las ocho cantidades negativas originales pertenecen a COMPLETADO/CANCELADO, y se rechazan por cantidad incompatible.
 
+## Resultados analíticos F8
+
+El 25/09/2026 se cargaron las cuatro fuentes originales **una vez** en `f4_test_analytics_real`, MySQL 8.0.46 temporal sin volumen del usuario, con `run_id=d670414d-c73d-409d-ab0b-d0a34df20113` en estado `completed`. Se observaron 159 productos (115 comerciales y 44 históricos), 358 pedidos y 1.101 líneas, coherentes con F7. Se fijó `as_of=2026-09-25` para que el resultado sea reproducible; la base temporal de esta comprobación no se presenta como la BD del usuario.
+
+| Métrica operativa F8 | Resultado de esa carga |
+| --- | ---: |
+| Facturación / pedidos elegibles / ticket medio | 1.381.450,43 / 269 / 5.135,50 |
+| Pedidos elegibles parciales | 23 |
+| Ventas B2B / B2C / marketplace | 485.666,36 / 391.949,69 / 503.834,38 |
+| Margen conocido estimado | −2.954.287,69 |
+| Ventas con coste / sin coste / cobertura | 1.248.262,11 / 133.188,32 / 0,9036 |
+| Facturación agosto 2026 (mes anterior completo) | 56.696,84 |
+| Productos vigentes con stock conocido <5 y ventas desde 2026-06-25 | 12 |
+| Meses de la serie abril 2025–septiembre 2026 | 18; septiembre marcado parcial |
+
+Un cálculo independiente en Python leyó las líneas MySQL sin usar el SQL de `AnalyticsQueries` y aplicó `Decimal`/redondeo por línea. Coincidieron exactamente facturación, pedidos/parciales, cada mes y sus unidades, canales, categorías por `category_key`, top 10, margen conocido, importe sin coste, mes anterior y conjunto/unidades de bajo stock. La suma por canal y por categoría es 1.381.450,43 en ambos casos. El top 10 se ordena por facturación descendente y SKU ascendente en empate. En la fila 3 del CSV original, `PRV-2104`, cantidad 1 y precio `91,75`, la BD conserva `91.7500` con descuento cero; aporta 91,75 a abril de 2025. No se copiaron nombres de clientes a la evidencia.
+
+La serie observada pasa de 106.943,03 y 295 unidades en julio de 2025 a 2.682,07 y 11 unidades en agosto; la BD contiene 14 pedidos/41 líneas elegibles en julio y 2 pedidos/5 líneas elegibles en agosto. También hay 2 pedidos cancelados en agosto. El descenso está en el origen aceptado, pero **no se atribuye a estacionalidad ni a una causa comercial** sin confirmación.
+
+El margen negativo está dominado por dos SKU con coste actual muy superior al PVP y al precio de pedido. Para `PRV-2013`, el catálogo original tiene coste `34400,16` en fila 97 y `318.52` en fila 109; conforme a la regla F3 ganó la primera fila válida, el coste neto quedó 28.208,1312 y la segunda se auditó como `CONFLICTING_PRODUCT_SKU`. Su contribución al margen es −3.242.476,26. `PRV-2061` sigue el mismo patrón: costes originales `2532,60` (fila 23) y `23.45` (fila 126), neto elegido 2.254,0140 y contribución −227.755,29. F8 no cambia la deduplicación ni sustituye costes: el origen y la semántica comercial de esos importes requieren revisión antes de interpretar el margen como rentabilidad. EUR/IVA siguen sin confirmarse.
+
+Para revisar en DBeaver el total a la misma fecha, esta consulta de solo lectura reproduce el filtro y el redondeo de F8; el resto del SQL canónico está en [`queries.py`](src/analytics/queries.py):
+
+```sql
+WITH eligible AS (
+    SELECT o.id AS order_id,
+           ROUND(l.quantity * l.unit_price * (1 - l.discount), 2) AS amount
+    FROM orders o JOIN order_lines l ON l.order_id = o.id
+    WHERE o.status IN ('ENVIADO', 'COMPLETADO') AND l.quantity > 0
+      AND o.order_date BETWEEN '2025-04-01' AND '2026-09-25'
+)
+SELECT COALESCE(SUM(amount), 0) AS facturacion_operativa,
+       COUNT(DISTINCT order_id) AS pedidos_elegibles
+FROM eligible;
+```
+
+Las seis pruebas sintéticas de [`test_analytics.py`](tests/integration/test_analytics.py) cubren los casos difíciles sin usar ni modificar las fuentes reales: dos almacenes sin doble conteo, redondeo individual de medio céntimo, histórico sin coste, margen negativo, meses vacíos/actual parcial, límites de fecha y mes natural anterior incluso cambio de año, estados excluidos, empate del top 10 y categorías con mayúsculas distintas. La ventana de tres meses ajusta 31 de mayo a 28/29 de febrero y excluye stock `NULL` o igual a 5.
+
 ## Rechazos
 
 Consulta de revisión: `SELECT source, record_locator, entity_key, reason_code, field_name, action FROM rejections WHERE run_id = ? ORDER BY id` (sustituir `?` por parámetro del cliente). El nombre `rejections` incluye también deduplicaciones, campos descartados y avisos; no usar COUNT(*) de toda la tabla como contador de filas rechazadas.
@@ -248,12 +288,12 @@ Catálogo tiene 19 incidencias de rechazo y pedidos 34, porque una fila puede te
 | F7 inicial (v1): ETL completo y segunda ejecución | `F4_TEST_DB_PORT=… F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; dos llamadas reales a `run_etl` en otra BD temporal vacía | 329 tests: 303 unitarios y 26 MySQL. F7 añade cinco casos E2E y una regresión de cliente con diferente capitalización. Cargas reales: 151 productos, 206 almacenes, 277 pedidos y 786 líneas idénticos; contadores e integridad correctos. |
 | Corrección F6–F7: ADR 004 | Suite completa en MySQL temporal, Ruff y dos cargas reales v2 | 333 tests pasan (307 unitarios, 26 MySQL). 159 productos, 206 almacenes, 358 pedidos y 1.101 líneas idénticos entre cargas. Cero huérfanos, contadores conciliados y las 81 cabeceras restauradas. |
 | F7: fallos y concurrencia | `tests/integration/test_etl.py` en MySQL 8, fuentes sintéticas | Última página 500 agotada y error real de FK tras escribir las cuatro tablas: negocio anterior íntegro, run failed durable, sin histórico ficticiamente creado en auditoría. Otro lector ve la versión previa antes del rollback. Segundo escritor rechazado antes de crear run durante extracción; tras liberar lock, nueva carga completada. |
-| SQL/conciliación de métricas | TBD | TBD |
+| F8: SQL/conciliación de métricas | MySQL 8 temporal; `F4_TEST_DB_PORT=… F4_TEST_DB_NAME=f4_test_analytics F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; una carga real aislada y recálculo independiente con `as_of=2026-09-25`; Ruff | 339 tests pasan (307 sin BD, 32 MySQL), lint/formato correctos. Las consultas y el cálculo independiente coinciden en total, 18 meses/unidades, canales, categorías, top 10, margen, mes anterior y bajo stock. La comprobación real no alteró el volumen del usuario. |
 | Web en navegador | TBD | TBD |
 | Make con ejecución real y destinos | TBD | TBD |
 | Arranque desde cero y secretos | TBD | TBD |
 
-Trazabilidad de aceptación: A01 (cuatro fuentes y fallos), A02 (dos precios contrastados con origen), A03 (FKs e históricos), A04 (localizadores/contadores/rechazos) y A05 (repetición completa más corrección de líneas probada en F6) quedan verificados bajo las reglas vigentes. F8 no se ha iniciado; ninguna cifra de facturación o margen está acreditada por estas pruebas.
+Trazabilidad de aceptación: A01 (cuatro fuentes y fallos), A02 (dos precios contrastados con origen), A03 (FKs e históricos), A04 (localizadores/contadores/rechazos) y A05 (repetición completa más corrección de líneas probada en F6) quedan verificados bajo las reglas vigentes. F8 acredita las consultas SQL de A07 y A08 bajo las decisiones documentadas; mostrar A07 en el dashboard es tarea F9. El margen estimado no equivale a beneficio confirmado por los conflictos de coste y la base fiscal pendiente.
 
 ## Qué cambiaría con cinco millones de líneas
 
@@ -271,7 +311,7 @@ Por validar: ausencia de ID de línea y coste histórico; base fiscal/zona de ne
 
 ## Uso de IA
 
-Se usó Codex para inspeccionar el repositorio, redactar la planificación e implementar F0–F7. F1–F3 incorporaron reglas puras y Ruff; F4–F6 añadieron persistencia, stock y pedidos con pruebas MySQL y cargas parciales reales. F7 añadió pruebas de integración completa, un caso unitario que explicita la comparación actual de cliente, dos cargas reales de las cuatro fuentes y contraste de muestras contra origen. No modificó reglas de negocio, fuentes ni el volumen del usuario; corrigió el mensaje de error del CLI que aún mencionaba F5 y documentación desactualizada. El responsable deberá revisar y poder explicar las decisiones y resultados. Después de F7, el usuario confirmó equivalencia de capitalización del cliente: se implementó ADR 004, se versionaron reglas v2 y se repitieron suite y dos cargas reales. La deduplicación de las ocho repeticiones idénticas se mantuvo como decisión para la prueba.
+Se usó Codex para inspeccionar el repositorio, redactar la planificación e implementar F0–F8. F1–F3 incorporaron reglas puras y Ruff; F4–F6 añadieron persistencia, stock y pedidos con pruebas MySQL y cargas parciales reales. F7 añadió pruebas de integración completa, un caso unitario que explicita la comparación actual de cliente, dos cargas reales de las cuatro fuentes y contraste de muestras contra origen. No modificó reglas de negocio, fuentes ni el volumen del usuario; corrigió el mensaje de error del CLI que aún mencionaba F5 y documentación desactualizada. El responsable deberá revisar y poder explicar las decisiones y resultados. Después de F7, el usuario confirmó equivalencia de capitalización del cliente: se implementó ADR 004, se versionaron reglas v2 y se repitieron suite y dos cargas reales. La deduplicación de las ocho repeticiones idénticas se mantuvo como decisión para la prueba. F8 añadió consultas SQL, seis pruebas MySQL sintéticas y contraste de métricas con una carga real aislada; detectó categorías con distinta capitalización y costes conflictivos con efecto material sobre el margen, documentados arriba.
 
 Uso durante implementación, tareas asistidas, decisiones revisadas personalmente, validación y errores detectados: **TBD**. No atribuir aprobaciones o verificaciones humanas que no han ocurrido.
 

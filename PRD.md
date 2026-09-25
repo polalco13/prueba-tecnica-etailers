@@ -93,15 +93,15 @@ Todos los estados describen trabajo futuro, no resultados ejecutados.
 | Codificaciones y datos sucios (precios, EAN, columnas, duplicados, fechas, nulos) | R02/R05; DATA_RULES; F1–F3/F6 | Planificado |
 | Tarifas y prioridad de precio neto | R03; DATA_RULES; F3–F4 | Planificado |
 | API autenticada, paginación, errores/límites y cruces de SKU | R04; TECH_SPEC; F5 | Planificado |
-| Cantidades, estados, canales y definición de facturación | R05; DATA_RULES; F6/F8 | Planificado |
+| Cantidades, estados, canales y definición de facturación | R05; DATA_RULES; F6/F8 | ETL F6–F7 y SQL F8 verificados; criterio comercial por confirmar |
 | MySQL relacionado y productos históricos | R06; TECH_SPEC; ADR 003; F4/F6 | Planificado |
 | Rechazos con fuente, fila y motivo | R07; DATA_RULES; F2–F7 | Planificado |
 | Catálogo, búsqueda y filtro de categoría | R08; TECH_SPEC; F9 | Planificado |
-| Evolución mensual de facturación y unidades desde abril de 2025 | R09; TECH_SPEC; F8–F9 | Planificado |
-| Facturación, pedidos y ticket medio | R10; TECH_SPEC; F8–F9 | Planificado |
-| Canal, top 10 y categoría | R11; TECH_SPEC; F8–F9 | Planificado |
-| Margen bruto | R12; TECH_SPEC; F8–F9 | Planificado |
-| Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | Planificado |
+| Evolución mensual de facturación y unidades desde abril de 2025 | R09; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
+| Facturación, pedidos y ticket medio | R10; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
+| Canal, top 10 y categoría | R11; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
+| Margen bruto | R12; TECH_SPEC; F8–F9 | SQL F8 verificado; comparabilidad de costes por confirmar; interfaz F9 pendiente |
+| Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
 | Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Planificado |
 | Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | Planificado |
 | Idempotencia | R16; ADR 002; F4/F6–F7 | Planificado |

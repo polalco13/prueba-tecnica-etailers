@@ -1,6 +1,6 @@
 # Plan de implementación y estrategia Git
 
-Estado actualizado tras F7: F0–F5 integradas; F6–F7 implementadas y verificadas en `feature/orders`, pendientes de PR 3 e integración. F8 y siguientes no iniciadas. F7 verificó las cuatro fuentes reales dos veces en MySQL temporal, con igualdad de negocio y contadores conciliados; los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
+Estado actualizado en F8: F0–F7 integradas en `main`; las consultas F8 están implementadas y verificadas en `feature/dashboard`, pendientes de integración junto con F9. F9 y siguientes no iniciadas. F7 verificó las cuatro fuentes reales dos veces en MySQL temporal; F8 contrastó SQL contra casos sintéticos y una carga real aislada. Los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
 
 ## Orden y alcance
 
@@ -175,4 +175,4 @@ Antes de cada merge: tests de la fase y regresiones afectadas, diff/secretos rev
 
 Ejemplo de solicitud futura: «Implementa únicamente F1 siguiendo AGENTS y los documentos de planificación. Antes del cambio identifica archivos, razón y criterio; prueba las reglas y resume evidencias y pendientes. No avances a F2». Una fase puede dividirse en tareas aún más pequeñas si no cabe en un diff revisable.
 
-El siguiente paso es revisar e integrar PR 3 de F6–F7, incluida la corrección de cliente del ADR 004 y sus evidencias con reglas v2. El usuario confirmó equivalencia entre mayúsculas/minúsculas. Se mantiene la deduplicación para el dataset entregado, con sus límites en ADR 002. Después podrá solicitarse F8 por separado en `feature/dashboard`. No atribuir confirmación comercial a los supuestos que siguen abiertos.
+F8 queda implementada en `feature/dashboard` con SQL común y pruebas MySQL. La siguiente tarea, solo cuando se solicite, es F9 en esta rama: conectar el catálogo y el panel a esas consultas y verificar la interfaz. PR 4 está previsto al terminar F9; no atribuir confirmación comercial a EUR/IVA o a los costes conflictivos del origen.
