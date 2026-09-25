@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="panel error" role="alert">
+  <p class="eyebrow">Datos no disponibles</p>
+  <h1>No se pudo cargar el panel</h1>
+  <p>{{ message }}</p>
+  <p>Los importes no se muestran hasta recuperar la consulta.</p>
+  <a class="button" href="/">Volver a intentar</a>
+</section>
+{% endblock %}

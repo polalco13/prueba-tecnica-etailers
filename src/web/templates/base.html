@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nortesur · Panel de negocio</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+  <header class="topbar"><div class="shell nav">
+    <a class="brand" href="/">NORTESUR <span>Panel de negocio</span></a>
+    <nav aria-label="Principal"><a href="#resumen">Resumen</a><a href="#catalogo">Catálogo</a></nav>
+  </div></header>
+  <main class="shell">{% block content %}{% endblock %}</main>
+  <footer class="shell">Distribuciones Nortesur · Datos consolidados de catálogo, tarifas, pedidos y stock.</footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
