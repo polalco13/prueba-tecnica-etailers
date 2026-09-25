@@ -1,6 +1,6 @@
 # Plan de producto — Integración y automatizaciones
 
-Estado: requisitos con ETL F0–F7, consultas F8 y web F9 implementados y verificados según SOLUCION. Make sigue pendiente; F8–F9 esperan integración en main. Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
+Estado: F0–F9 implementadas, verificadas e integradas en main. F10 tiene código local de resumen/envío probado; escenario Make y destinos reales pendientes, A09 sin acreditar. Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
 
 En estos documentos, **R** significa requisito explícito del README; **D**, decisión técnica propuesta; **S**, supuesto pendiente de validar. Una propuesta no constituye una regla de negocio confirmada. El encargo de planificación exige tests y mayor detalle de robustez aunque el README los considere extras.
 
@@ -102,8 +102,8 @@ Los estados distinguen evidencia técnica ejecutada y trabajo pendiente; no impl
 | Canal, top 10 y categoría | R11; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
 | Margen bruto | R12; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados; comparabilidad de costes por confirmar |
 | Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
-| Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Planificado |
-| Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | Planificado |
+| Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Cliente y contrato locales probados; escenario/destinos pendientes |
+| Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | Código/guía implementados; blueprint exportado y capturas pendientes |
 | Idempotencia | R16; ADR 002; F4/F6–F7 | Verificada en F7 con fuentes congeladas |
 | SOLUCION.md y análisis de cinco millones de líneas | R17; plantilla SOLUCION; F12 | Planificado |
 | GitHub, ramas, commits, PR y main funcional | R18; IMPLEMENTATION_PLAN; F0–F12 | Planificado |

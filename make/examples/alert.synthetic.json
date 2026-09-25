@@ -1,0 +1,39 @@
+{
+  "schema_version": "etl-summary-v1",
+  "run_id": "00000000-0000-4000-8000-000000000002",
+  "status": "completed",
+  "finished_at": "2026-09-25T10:00:00.000000Z",
+  "rules_version": "catalog-stock-orders-v2",
+  "as_of": "2026-09-25",
+  "business_timezone": "Europe/Madrid",
+  "products_loaded": 1,
+  "rows": {
+    "catalog_csv": {
+      "rows_read": 2, "rows_accepted": 1, "rows_rejected": 1, "rows_deduplicated": 0,
+      "quality_warnings": 0, "discarded_fields": 0, "products_loaded": 1
+    },
+    "stock_api": {
+      "rows_read": 1, "rows_accepted": 1, "rows_rejected": 0, "rows_deduplicated": 0,
+      "quality_warnings": 0, "discarded_fields": 0
+    },
+    "orders_csv": {
+      "rows_read": 2, "rows_accepted": 1, "rows_rejected": 0, "rows_deduplicated": 1,
+      "quality_warnings": 0, "discarded_fields": 0,
+      "orders_loaded": 1, "partial_orders": 0, "historical_products_created": 0
+    }
+  },
+  "rows_rejected": 1,
+  "rejected_by_reason": [
+    {"source": "catalog_csv", "reason_code": "NON_POSITIVE_PRICE", "rows": 1}
+  ],
+  "revenue_previous_month": "36.00",
+  "previous_month": "2026-08",
+  "currency": null,
+  "tax_basis": "unconfirmed",
+  "low_stock_count": 1,
+  "low_stock_products": [
+    {"sku": "SYNTHETIC-001", "name": "Producto sintético", "stock_total": 0, "recent_units": 2}
+  ],
+  "rejection_threshold": 0,
+  "alert_required": true
+}

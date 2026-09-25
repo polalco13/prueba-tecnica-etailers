@@ -1,6 +1,6 @@
 # Especificación técnica propuesta
 
-Estado: ETL implementado hasta F6 y validado end-to-end en F7; consultas SQL analíticas implementadas y verificadas en F8. Web implementada y verificada en F9; Make sigue siendo diseño pendiente. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
+Estado: F0–F9 integradas en main. F10 tiene resumen persistido, cliente HTTP y reenvío implementados y probados localmente; el escenario Make y los destinos reales siguen pendientes. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
 
 ## Inspección y límites de evidencia
 
@@ -183,6 +183,10 @@ El Compose actual tiene valores de demostración literales: no está configurado
 Validar variables al arrancar, no registrar DSNs con contraseña ni URL completa del webhook. Logs: run_id, fase, fuente, motivo, conteos, duración y error saneado. Sin payloads completos de clientes en logs. Datos de prueba/real separados; prohibido TRUNCATE o `down -v` sobre el entorno del usuario.
 
 ## Make y entrega externa
+
+**Concreción F10 local:** `etl-summary-v1` se calcula antes del commit bajo el lock del ETL y se guarda en `etl_runs.make_summary` junto con el negocio. Después del commit, el cliente hace un único POST sin redirects/proxies y sin registrar la URL, incluido el log INFO de HTTPX. La migración `004_make_delivery` añade resumen, intentos, error saneado y fechas de entrega. `MAKE_WEBHOOK_URL` vacía desactiva el envío; `MAKE_TIMEOUT=10` (1–60 s por operación), `MAKE_REJECTION_THRESHOLD=0` (0–1.000.000). La configuración es opcional y no cambia `.env` existente.
+
+`python -m src.etl --resend-make RUN_ID` recupera exactamente el JSON guardado, bajo lock por run, sin recalcular métricas. Runs accepted requieren `--force` para otro POST. Estados `not_applicable/pending/accepted/failed/uncertain`; HTTP aceptado no prueba destinos. Salidas CLI 0/1/2 separan publicación/recepción, fallo ETL y fallo de notificación. Un timeout se deja uncertain y un error HTTP failed; no se reintentan automáticamente por la ambigüedad del efecto remoto. Solo runs completed son enviables en v1; fallos completos quedan en auditoría local. Contrato, escenario pendiente y ejemplos sintéticos en [make/README](make/README.md); justificación y límites en [ADR 005](docs/adr/005-persisted-make-delivery.md). No hay todavía blueprint ni evidencia de recepción en Make.
 
 D: resumen posterior al commit con `schema_version`, `run_id`, estado/fecha, productos válidos de catálogo presentes en el lote (no affected_rows de MySQL), `rows_read`, `rows_accepted`, `rows_rejected` y `rows_deduplicated` por fuente, `rejected_by_reason`, avisos y campos descartados por separado, facturación del último mes y lista/conteo de bajo stock. En una fuente completada, `rows_read = rows_accepted + rows_rejected + rows_deduplicated`; los avisos/campos descartados no se suman a esa igualdad. Mismo run_id al reintentar entrega; resumen guardado en etl_runs para reenviarlo sin repetir ETL.
 
