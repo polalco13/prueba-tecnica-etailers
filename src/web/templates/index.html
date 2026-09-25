@@ -29,7 +29,7 @@
 </section>
 <div class="two-columns">
   <section class="panel section"><p class="eyebrow">Origen de las ventas</p><h2>Ventas por canal</h2><div class="table-scroll"><table id="channels"><thead><tr><th>Canal</th><th class="num">Facturación</th><th class="num">Unidades</th></tr></thead><tbody>
-    {% for row in channels %}<tr><td>{{ row.label }}</td><td class="num">{{ row.revenue|number }}</td><td class="num">{{ row.units|number(0) }}</td></tr>{% endfor %}
+    {% for row in channels %}<tr><td>{{ row.label }}</td><td class="num">{{ row.revenue|number }}</td><td class="num">{{ row.units|number(0) }}</td></tr>{% else %}<tr><td colspan="3" class="empty">Sin ventas por canal.</td></tr>{% endfor %}
   </tbody></table></div></section>
   <section class="panel section"><p class="eyebrow">Composición del negocio</p><h2>Ventas por categoría</h2><div class="table-scroll"><table id="categories"><thead><tr><th>Categoría actual</th><th class="num">Facturación</th></tr></thead><tbody>
     {% for row in categories %}<tr><td>{{ row.label }}</td><td class="num">{{ row.revenue|number }}</td></tr>{% else %}<tr><td colspan="2" class="empty">Sin ventas por categoría.</td></tr>{% endfor %}
