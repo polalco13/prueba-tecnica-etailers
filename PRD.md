@@ -89,13 +89,13 @@ Todos los estados describen trabajo futuro, no resultados ejecutados.
 
 | Requisito README | Documento/Fase | Estado |
 | --- | --- | --- |
-| ETL cuatro fuentes | R01; TECH_SPEC; F1–F7 | Planificado |
-| Codificaciones y datos sucios (precios, EAN, columnas, duplicados, fechas, nulos) | R02/R05; DATA_RULES; F1–F3/F6 | Planificado |
-| Tarifas y prioridad de precio neto | R03; DATA_RULES; F3–F4 | Planificado |
-| API autenticada, paginación, errores/límites y cruces de SKU | R04; TECH_SPEC; F5 | Planificado |
+| ETL cuatro fuentes | R01; TECH_SPEC; F1–F7 | Verificado en F7 |
+| Codificaciones y datos sucios (precios, EAN, columnas, duplicados, fechas, nulos) | R02/R05; DATA_RULES; F1–F3/F6 | Verificado en F1–F7 |
+| Tarifas y prioridad de precio neto | R03; DATA_RULES; F3–F4 | Verificado en F3–F7; semántica comercial pendiente |
+| API autenticada, paginación, errores/límites y cruces de SKU | R04; TECH_SPEC; F5 | Verificado en F5–F7 |
 | Cantidades, estados, canales y definición de facturación | R05; DATA_RULES; F6/F8 | ETL F6–F7 y SQL F8 verificados; criterio comercial por confirmar |
-| MySQL relacionado y productos históricos | R06; TECH_SPEC; ADR 003; F4/F6 | Planificado |
-| Rechazos con fuente, fila y motivo | R07; DATA_RULES; F2–F7 | Planificado |
+| MySQL relacionado y productos históricos | R06; TECH_SPEC; ADR 003; F4/F6 | Verificado en F6–F7 |
+| Rechazos con fuente, fila y motivo | R07; DATA_RULES; F2–F7 | Verificado en F7 |
 | Catálogo, búsqueda y filtro de categoría | R08; TECH_SPEC; F9 | Planificado |
 | Evolución mensual de facturación y unidades desde abril de 2025 | R09; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
 | Facturación, pedidos y ticket medio | R10; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
@@ -104,7 +104,7 @@ Todos los estados describen trabajo futuro, no resultados ejecutados.
 | Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | SQL F8 verificado; interfaz F9 pendiente |
 | Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Planificado |
 | Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | Planificado |
-| Idempotencia | R16; ADR 002; F4/F6–F7 | Planificado |
+| Idempotencia | R16; ADR 002; F4/F6–F7 | Verificada en F7 con fuentes congeladas |
 | SOLUCION.md y análisis de cinco millones de líneas | R17; plantilla SOLUCION; F12 | Planificado |
 | GitHub, ramas, commits, PR y main funcional | R18; IMPLEMENTATION_PLAN; F0–F12 | Planificado |
 | .gitignore y secretos | R19; AGENTS; F0/F12 | Planificado |

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesto. El encargo de planificación exige evitar float para dinero; los detalles de precisión/redondeo son decisiones propuestas.
+Implementado para normalización/persistencia en F1–F7 y para métricas SQL en F8; las pruebas MySQL verifican redondeo de importes y costes por línea, incluido medio céntimo. EUR, IVA y comparabilidad comercial siguen pendientes de confirmación.
 
 ## Contexto
 
