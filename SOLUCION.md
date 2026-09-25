@@ -240,6 +240,8 @@ La serie observada pasa de 106.943,03 y 295 unidades en julio de 2025 a 2.682,07
 
 El margen negativo está dominado por dos SKU con coste actual muy superior al PVP y al precio de pedido. Para `PRV-2013`, el catálogo original tiene coste `34400,16` en fila 97 y `318.52` en fila 109; conforme a la regla F3 ganó la primera fila válida, el coste neto quedó 28.208,1312 y la segunda se auditó como `CONFLICTING_PRODUCT_SKU`. Su contribución al margen es −3.242.476,26. `PRV-2061` sigue el mismo patrón: costes originales `2532,60` (fila 23) y `23.45` (fila 126), neto elegido 2.254,0140 y contribución −227.755,29. F8 no cambia la deduplicación ni sustituye costes: el origen y la semántica comercial de esos importes requieren revisión antes de interpretar el margen como rentabilidad. EUR/IVA siguen sin confirmarse.
 
+**Decisión pendiente para valorar más adelante:** confirmar con el proveedor qué fila/coste corresponde a cada uno de esos SKU y si coste y precio de pedido son importes unitarios en la misma moneda y base de IVA. Hasta recibir esa información, la propuesta para F9 es presentar el KPI como «margen estimado a coste actual», mostrar cobertura y un aviso visible sobre los dos costes conflictivos y la base fiscal sin confirmar. Esto aún no es una decisión comercial ni una interfaz implementada. Si se confirma un error de origen, habrá que revisar la política de selección de catálogo en F2/F3, versionar la regla y repetir ETL y pruebas; no sustituir por la segunda fila ni excluir ventas del margen silenciosamente.
+
 Para revisar en DBeaver el total a la misma fecha, esta consulta de solo lectura reproduce el filtro y el redondeo de F8; el resto del SQL canónico está en [`queries.py`](src/analytics/queries.py):
 
 ```sql
