@@ -120,7 +120,7 @@ Las fases preparan primero reglas puras y después persistencia, integración, S
 
 ## F10 — Integración Make
 
-**Corte actual:** bloque local implementado (migración 004, `etl-summary-v1`, envío después del commit y reenvío). Pruebas HTTP simuladas y MySQL ejecutadas; preparación del escenario, ejemplos y correo en `make/README.md`. El navegador disponible muestra login y falta webhook configurado. El siguiente corte es montar/probar/exportar el escenario real con accesos y destinatario confirmados; no crear un blueprint ficticio ni cerrar PR 5 como F10 completa antes de acreditar A09.
+**Corte actual:** bloque local implementado (migración 004, `etl-summary-v1`, envío después del commit y reenvío), pruebas HTTP simuladas/MySQL ejecutadas. El 26/09 el usuario preparó acceso/destinos, configuró el webhook y ejecutó en Make la ruta de histórico con datos sintéticos; evidencia y tratamiento del bundle vacío en `make/README.md`. Pendientes contenido de fila, deduplicación, correo, envío ETL real y exportación. No cerrar PR 5 como F10 completa antes de acreditar A09.
 
 - **Objetivo:** una ejecución real del ETL distribuida a destinos útiles.
 - **Tareas:** contrato/versionado del resumen guardado, cliente webhook posterior al commit y reenvío por run_id; escenario webhook, router/filtro, email condicional e histórico siempre en Sheets; umbral explícito, deduplicación de histórico. Confirmar cuentas, conexiones y destinatario sin versionar secretos. Exportar blueprint real, capturas del escenario y ejecución de destinos; documentar disparador/decisiones. El envío de correos por herramientas requiere instrucción explícita del usuario: preparar primero destinatario y contenido de prueba revisables.

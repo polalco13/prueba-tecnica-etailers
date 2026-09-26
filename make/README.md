@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local implementado y probado; escenario real y A09 pendientes. No hay todavía un blueprint exportado ni capturas de destinos. No confundir pruebas HTTP simuladas con una ejecución de Make.
+**Estado:** código local implementado y probado; el 26/09/2026 el usuario ejecutó en Make la ruta de histórico con un ejemplo sintético y aportó su captura. Contenido de la fila y deduplicación aún por verificar; ruta de correo, ETL real, blueprint y A09 pendientes. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -69,9 +69,27 @@ Por fuente: `read = accepted + rejected + deduplicated`. `quality_warnings` y `d
 
 Columnas recomendadas para la hoja: `run_id`, `finished_at`, `status`, `as_of`, `products_loaded`, `rows_rejected`, `rows_json`, `rejected_by_reason_json`, `previous_month`, `revenue_previous_month`, `low_stock_count`, `low_stock_products_json`, `rejection_threshold`, `alert_required`, `email_sent_at`. Guardar el importe como texto para conservar sus dos decimales; no recalcular dinero en Make. Los objetos/listas pueden serializarse como JSON para no perder métricas de fuente.
 
+### Ruta de histórico montada en la cuenta de prueba
+
+`Search Rows [3]` busca exactamente el `run_id` del webhook, con límite 1. `Array aggregator [7]` usa Search Rows como fuente, agrega `run_id (A)` y `Row number`, deja Group by vacío y no detiene una agregación vacía. Se observó que una búsqueda sin filas emite un bundle con campos vacíos: el agregador produce una lista de longitud 1. Por tanto, **no usar `length(array) = 0` como criterio de inserción** en esta configuración.
+
+El filtro «Ejecución nueva» obtiene el número de fila del primer resultado, con valor 0 si está vacío:
+
+```text
+{{ifempty(get(7.array; "1.__ROW_NUMBER__"); 0)}}
+Numeric operators: Equal to
+0
+```
+
+El 7 es el ID del agregador observado; adaptar esa referencia si cambia al montar otro escenario. Pegar la expresión con sus dobles llaves o construirla con funciones/fichas: texto literal como `length(7.Array[])` no es una fórmula.
+
+Después del filtro, tres módulos `JSON > Transform to JSON` convierten por separado `rows` [10], `rejected_by_reason[]` [13] y `low_stock_products[]` [14] del webhook. Cada campo Object contiene una sola ficha. Sus respectivas salidas JSON se mapean a las columnas G, H y L de `Add a Row [9]`; las demás columnas usan los campos simples del webhook y `email_sent_at` queda vacío. Sheets usa entrada Raw.
+
+La [captura aportada por el usuario](capturas/f10-synthetic-history-first-run.png) muestra el primer envío atravesando el filtro y finalizando Add a Row sin errores visibles. No acredita todavía el contenido de la hoja, el bloqueo de duplicados ni el correo. Las instrucciones de repetir el mismo `run_id` y contrastar la fila siguen pendientes de resultado.
+
 ## Correo preparado, aún no enviado
 
-Destinatario y conexión de salida: **pendientes de confirmar**. Asunto propuesto:
+El usuario indicó Gmail y un destinatario propio de prueba en la conversación; no se versiona su dirección. La conexión de salida y la ejecución del correo siguen pendientes. Asunto propuesto:
 
 ```text
 [ETL Nortesur] Revisión de la carga {{run_id}}
@@ -103,7 +121,7 @@ La autorización debe concretar destinatario y prueba antes de disparar un webho
 - Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
 - Exportar desde Make `escenario.blueprint.json`, revisar/sanitizar URLs de webhook, conexiones, identificadores privados, destinatarios y muestras de clientes. Guardar capturas del escenario y de una ejecución en `capturas/`, sin secretos. Documentar qué conexiones hay que recrear al importar.
 
-No existe todavía `escenario.blueprint.json` porque no se ha exportado un escenario real. El acceso revisado en esta tarea mostró la pantalla de login; falta completar estas verificaciones para cerrar F10/A09. F11 no se ha iniciado.
+No existe todavía `escenario.blueprint.json` porque no se ha exportado. El usuario ya inició sesión, conectó Sheets y probó la ruta de histórico con datos sintéticos; falta completar las verificaciones de arriba para cerrar F10/A09. F11 no se ha iniciado.
 
 ## Referencias y decisión técnica
 
