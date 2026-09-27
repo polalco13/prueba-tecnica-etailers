@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. La fila real y su marca de correo están contrastadas; A09 acreditado. El reenvío del mismo run real también está observado: histórico/correo bloqueados. Los tres rechazos previstos del filtro inicial ya están observados. Quedan recuperación e importación; F10 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. La fila real y su marca de correo están contrastadas; A09 acreditado. El reenvío del mismo run real también está observado: histórico/correo bloqueados. Los tres rechazos previstos del filtro inicial ya están observados. Importación del archivo confirmada por el usuario; configuración/ejecución del escenario importado sin verificar. Queda la prueba de recuperación; F10 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -146,7 +146,7 @@ El usuario ejecutó `--resend-make c1a93f67-6990-4748-8efa-c18bc6777b42 --force`
 ## Validación pendiente de la cuenta
 
 - Simular un fallo del destino y documentar recuperación/riesgo residual. Los casos de versión incorrecta, estado inválido y run_id ausente ya se observaron bloqueados sin ejecutar destinos.
-- Comprobar la importación de la copia saneada en un escenario desactivado con conexiones propias. La validación local del JSON no acredita una importación en Make.
+- La importación del archivo está confirmada por el usuario. Antes de ejecutar el escenario importado, asignar y comprobar sus conexiones propias; no se ha acreditado su configuración/ejecución. La cuenta y conexiones del escenario original sí tienen evidencia de ejecución.
 
 ## Blueprint exportado y revisión del 27/09/2026
 
@@ -159,6 +159,10 @@ Dos correcciones **confirmadas en la segunda exportación**:
 1. Google Sheets **Add a Row [9]** contiene **Value input option = Raw**, valor `RAW` en el JSON. [Make documenta](https://apps.make.com/google-sheets-modules) que User entered interpreta números/fechas y Raw conserva los valores recibidos. Update a Cell [17] ya usa Raw. El importe visible `36.00` de las pruebas previas no demuestra que la celda se guardara como texto.
 2. La conexión **Webhook [1] → Router [2]** contiene el filtro **Resumen válido** con tres condiciones AND: `1.schema_version` **Text operators: Equal to** `etl-summary-v1`; `1.status` **Text operators: Equal to** `completed`; `1.run_id` **Basic operators: Exists**. Elegir las fichas del webhook; no escribir los nombres como texto literal. [Exists comprueba que el campo esté informado](https://help.make.com/filtering). Su presencia/configuración se comprueba en el export; las pruebas guiadas de versión incorrecta, estado inválido y run_id ausente ya se observaron bloqueadas, por separado, antes del router.
 
+### Importación confirmada por el usuario
+
+El 27/09/2026, tras la guía para crear un escenario nuevo y desactivado e importar `make/escenario.blueprint.json`, el usuario respondió «ha funcionado». Se registra su confirmación textual de importación del archivo guiado. No se aportó una captura ni confirmación de las conexiones, ajustes finales o ejecución del escenario nuevo. La ejecución real documentada corresponde al escenario original. El agente solo registró la confirmación y revisó documentación.
+
 ### Conexiones al importar
 
 Importar el archivo desde el menú **Import blueprint** de un escenario nuevo y desactivado. [Make requiere configurar las conexiones propias tras importar](https://help.make.com/blueprints); esta copia no contiene accesos reutilizables.
@@ -166,7 +170,7 @@ Importar el archivo desde el menú **Import blueprint** de un escenario nuevo y 
 1. Crear/seleccionar un Custom webhook en [1]. Usar su URL únicamente en la configuración local privada; la estructura de campos queda en el blueprint.
 2. Autorizar Google Sheets y seleccionar la misma hoja/tab `ejecuciones` en [3], [9], [15] y [17]. Preparar las quince cabeceras en el orden documentado, A–O; verificar búsquedas A, mapeos A–N y actualización O. Las conexiones y `spreadsheetId` están sin asignar.
 3. Autorizar Gmail [16], introducir un destinatario de prueba propio y revisar asunto/cuerpo. La lista de destinatarios se deja vacía deliberadamente.
-4. Comprobar que se conservan el filtro inicial, ambas entradas Raw y **Process data in order**; guardar y probar de forma controlada antes de activarlo. La importación aún no se ha ejecutado; no se declara este archivo probado dentro de Make.
+4. Comprobar que se conservan el filtro inicial, ambas entradas Raw y **Process data in order**; guardar y probar de forma controlada antes de activarlo. El usuario confirmó la importación del archivo; configuración y ejecución de esta copia siguen sin acreditarse.
 
 A09 queda acreditado con ejecución real, ambos destinos y fila final contrastada. F10 sigue pendiente de las verificaciones indicadas. F11 no se ha iniciado.
 
