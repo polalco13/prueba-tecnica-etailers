@@ -1,0 +1,1958 @@
+{
+  "name": "New scenario",
+  "flow": [
+    {
+      "id": 1,
+      "module": "gateway:CustomWebHook",
+      "version": 1,
+      "parameters": {
+        "maxResults": 1
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        },
+        "setupValidation": {
+          "version": 1,
+          "configuration": "1d29d20f2cb045ec",
+          "result": {
+            "valid": true,
+            "fields": []
+          }
+        },
+        "restore": {
+          "parameters": {}
+        },
+        "parameters": [
+          {
+            "name": "hook",
+            "type": "hook:gateway-webhook",
+            "label": "Webhook",
+            "required": true
+          },
+          {
+            "name": "maxResults",
+            "type": "number",
+            "label": "Maximum number of results"
+          }
+        ],
+        "interface": [
+          {
+            "name": "schema_version",
+            "type": "text"
+          },
+          {
+            "name": "run_id",
+            "type": "text"
+          },
+          {
+            "name": "status",
+            "type": "text"
+          },
+          {
+            "name": "finished_at",
+            "type": "text"
+          },
+          {
+            "name": "rules_version",
+            "type": "text"
+          },
+          {
+            "name": "as_of",
+            "type": "text"
+          },
+          {
+            "name": "business_timezone",
+            "type": "text"
+          },
+          {
+            "name": "products_loaded",
+            "type": "number"
+          },
+          {
+            "name": "rows",
+            "type": "collection",
+            "spec": [
+              {
+                "name": "catalog_csv",
+                "type": "collection",
+                "spec": [
+                  {
+                    "name": "rows_read",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_accepted",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_rejected",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_deduplicated",
+                    "type": "number"
+                  },
+                  {
+                    "name": "quality_warnings",
+                    "type": "number"
+                  },
+                  {
+                    "name": "discarded_fields",
+                    "type": "number"
+                  },
+                  {
+                    "name": "products_loaded",
+                    "type": "number"
+                  }
+                ]
+              },
+              {
+                "name": "stock_api",
+                "type": "collection",
+                "spec": [
+                  {
+                    "name": "rows_read",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_accepted",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_rejected",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_deduplicated",
+                    "type": "number"
+                  },
+                  {
+                    "name": "quality_warnings",
+                    "type": "number"
+                  },
+                  {
+                    "name": "discarded_fields",
+                    "type": "number"
+                  }
+                ]
+              },
+              {
+                "name": "orders_csv",
+                "type": "collection",
+                "spec": [
+                  {
+                    "name": "rows_read",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_accepted",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_rejected",
+                    "type": "number"
+                  },
+                  {
+                    "name": "rows_deduplicated",
+                    "type": "number"
+                  },
+                  {
+                    "name": "quality_warnings",
+                    "type": "number"
+                  },
+                  {
+                    "name": "discarded_fields",
+                    "type": "number"
+                  },
+                  {
+                    "name": "orders_loaded",
+                    "type": "number"
+                  },
+                  {
+                    "name": "partial_orders",
+                    "type": "number"
+                  },
+                  {
+                    "name": "historical_products_created",
+                    "type": "number"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "rows_rejected",
+            "type": "number"
+          },
+          {
+            "name": "rejected_by_reason",
+            "type": "array",
+            "spec": {
+              "type": "collection",
+              "spec": [
+                {
+                  "name": "source",
+                  "type": "text"
+                },
+                {
+                  "name": "reason_code",
+                  "type": "text"
+                },
+                {
+                  "name": "rows",
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "name": "revenue_previous_month",
+            "type": "text"
+          },
+          {
+            "name": "previous_month",
+            "type": "text"
+          },
+          {
+            "name": "currency",
+            "type": "text"
+          },
+          {
+            "name": "tax_basis",
+            "type": "text"
+          },
+          {
+            "name": "low_stock_count",
+            "type": "number"
+          },
+          {
+            "name": "low_stock_products",
+            "type": "array",
+            "spec": {
+              "type": "collection",
+              "spec": [
+                {
+                  "name": "sku",
+                  "type": "text"
+                },
+                {
+                  "name": "name",
+                  "type": "text"
+                },
+                {
+                  "name": "stock_total",
+                  "type": "number"
+                },
+                {
+                  "name": "recent_units",
+                  "type": "number"
+                }
+              ]
+            }
+          },
+          {
+            "name": "rejection_threshold",
+            "type": "number"
+          },
+          {
+            "name": "alert_required",
+            "type": "boolean"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "filter": {
+        "name": "Resumen válido",
+        "conditions": [
+          [
+            {
+              "a": "{{1.schema_version}}",
+              "o": "text:equal",
+              "b": "etl-summary-v1"
+            },
+            {
+              "a": "{{1.status}}",
+              "o": "text:equal",
+              "b": "completed"
+            },
+            {
+              "a": "{{1.run_id}}",
+              "o": "exist"
+            }
+          ]
+        ]
+      },
+      "mapper": null,
+      "metadata": {
+        "designer": {
+          "x": 317,
+          "y": -5
+        }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 3,
+              "module": "google-sheets:filterRows",
+              "version": 2,
+              "parameters": {},
+              "mapper": {
+                "from": "drive",
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING",
+                "limit": "1",
+                "spreadsheetId": "",
+                "sheetId": "ejecuciones",
+                "includesHeaders": true,
+                "tableFirstRow": "A1:Z1",
+                "filter": [
+                  [
+                    {
+                      "a": "A",
+                      "o": "text:equal",
+                      "b": "{{1.run_id}}"
+                    }
+                  ]
+                ],
+                "sortOrder": "asc"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 617,
+                  "y": -155
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "add2da0653815b65",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {},
+                  "expect": {
+                    "from": {
+                      "label": "Select from My Drive"
+                    },
+                    "valueRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted value"
+                    },
+                    "dateTimeRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted string"
+                    },
+                    "sheetId": {
+                      "mode": "chose",
+                      "label": "ejecuciones"
+                    },
+                    "includesHeaders": {
+                      "mode": "chose",
+                      "label": "Yes"
+                    },
+                    "tableFirstRow": {
+                      "label": "A-Z"
+                    },
+                    "orderBy": {
+                      "mode": "chose",
+                      "label": "Empty"
+                    },
+                    "sortOrder": {
+                      "mode": "chose",
+                      "label": "Ascending"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "Search Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "valueRenderOption",
+                    "type": "select",
+                    "label": "Value render option",
+                    "validate": {
+                      "enum": [
+                        "FORMATTED_VALUE",
+                        "UNFORMATTED_VALUE",
+                        "FORMULA"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "dateTimeRenderOption",
+                    "type": "select",
+                    "label": "Date and time render option",
+                    "validate": {
+                      "enum": [
+                        "SERIAL_NUMBER",
+                        "FORMATTED_STRING"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "limit",
+                    "type": "uinteger",
+                    "label": "Limit"
+                  },
+                  {
+                    "name": "spreadsheetId",
+                    "type": "select",
+                    "label": "Spreadsheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "sheetId",
+                    "type": "select",
+                    "label": "Sheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "includesHeaders",
+                    "type": "select",
+                    "label": "Table contains headers",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "tableFirstRow",
+                    "type": "select",
+                    "label": "Column range",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "A1:Z1",
+                        "A1:BZ1",
+                        "A1:CZ1",
+                        "A1:DZ1",
+                        "A1:MZ1",
+                        "A1:ZZ1",
+                        "A1:AZZ1",
+                        "A1:BZZ1",
+                        "A1:CZZ1",
+                        "A1:DZZ1",
+                        "A1:MZZ1",
+                        "A1:ZZZ1"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "filter",
+                    "type": "filter",
+                    "label": "Filter",
+                    "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                  },
+                  {
+                    "name": "orderBy",
+                    "type": "select",
+                    "label": "Order by"
+                  },
+                  {
+                    "name": "sortOrder",
+                    "type": "select",
+                    "label": "Sort order",
+                    "validate": {
+                      "enum": [
+                        "asc",
+                        "desc"
+                      ]
+                    }
+                  }
+                ],
+                "interface": [
+                  {
+                    "name": "__IMTLENGTH__",
+                    "label": "Total number of bundles",
+                    "type": "uinteger"
+                  },
+                  {
+                    "name": "__IMTINDEX__",
+                    "label": "Bundle order position",
+                    "type": "uinteger"
+                  },
+                  {
+                    "name": "__ROW_NUMBER__",
+                    "label": "Row number",
+                    "type": "number"
+                  },
+                  {
+                    "name": "__SPREADSHEET_ID__",
+                    "label": "Spreadsheet ID",
+                    "type": "text"
+                  },
+                  {
+                    "name": "__SHEET__",
+                    "label": "Sheet",
+                    "type": "text"
+                  },
+                  {
+                    "name": "0",
+                    "label": "run_id (A)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "1",
+                    "label": "finished_at (B)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "2",
+                    "label": "status (C)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "3",
+                    "label": "as_of (D)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "4",
+                    "label": "products_loaded (E)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "5",
+                    "label": "rows_rejected (F)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "6",
+                    "label": "rows_json (G)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "7",
+                    "label": "rejected_by_reason_json (H)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "8",
+                    "label": "previous_month (I)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "9",
+                    "label": "revenue_previous_month (J)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "10",
+                    "label": "low_stock_count (K)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "11",
+                    "label": "low_stock_products_json (L)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "12",
+                    "label": "rejection_threshold (M)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "13",
+                    "label": "alert_required (N)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "14",
+                    "label": "email_sent_at (O)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "15",
+                    "label": "(P)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "16",
+                    "label": "(Q)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "17",
+                    "label": "(R)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "18",
+                    "label": "(S)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "19",
+                    "label": "(T)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "20",
+                    "label": "(U)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "21",
+                    "label": "(V)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "22",
+                    "label": "(W)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "23",
+                    "label": "(X)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "24",
+                    "label": "(Y)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "25",
+                    "label": "(Z)",
+                    "type": "text"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 7,
+              "module": "builtin:BasicAggregator",
+              "version": 1,
+              "parameters": {
+                "feeder": 3
+              },
+              "mapper": {
+                "0": "{{3.`0`}}",
+                "__ROW_NUMBER__": "{{3.`__ROW_NUMBER__`}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 900,
+                  "y": -300
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "f2a6ff4d75557ed0",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "extra": {
+                    "feeder": {
+                      "label": "Google Sheets - Search Rows [3]"
+                    },
+                    "target": {
+                      "label": "Custom"
+                    }
+                  }
+                },
+                "advanced": true
+              }
+            },
+            {
+              "id": 10,
+              "module": "json:TransformToJSON",
+              "version": 1,
+              "parameters": {
+                "space": ""
+              },
+              "filter": {
+                "name": "Ejecución nueva",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{ifempty(get(7.array; \"1.__ROW_NUMBER__\"); 0)}}",
+                      "o": "number:equal",
+                      "b": "0"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "object": "{{1.rows}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1200,
+                  "y": -300
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "cd79fccd0caf4c9e",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {
+                    "space": {
+                      "label": "Empty"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "space",
+                    "type": "select",
+                    "label": "Indentation",
+                    "validate": {
+                      "enum": [
+                        "tab",
+                        "2",
+                        "4"
+                      ]
+                    }
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "object",
+                    "type": "any",
+                    "label": "Object"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 13,
+              "module": "json:TransformToJSON",
+              "version": 1,
+              "parameters": {
+                "space": ""
+              },
+              "mapper": {
+                "object": "{{1.rejected_by_reason}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1461,
+                  "y": -302
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "9ff33da4f2c05bf4",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {
+                    "space": {
+                      "label": "Empty"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "space",
+                    "type": "select",
+                    "label": "Indentation",
+                    "validate": {
+                      "enum": [
+                        "tab",
+                        "2",
+                        "4"
+                      ]
+                    }
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "object",
+                    "type": "any",
+                    "label": "Object"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 14,
+              "module": "json:TransformToJSON",
+              "version": 1,
+              "parameters": {
+                "space": ""
+              },
+              "mapper": {
+                "object": "{{1.low_stock_products}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1750,
+                  "y": -307
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "4720bdf4e891a1d3",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {
+                    "space": {
+                      "label": "Empty"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "space",
+                    "type": "select",
+                    "label": "Indentation",
+                    "validate": {
+                      "enum": [
+                        "tab",
+                        "2",
+                        "4"
+                      ]
+                    }
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "object",
+                    "type": "any",
+                    "label": "Object"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 9,
+              "module": "google-sheets:addRow",
+              "version": 2,
+              "parameters": {},
+              "mapper": {
+                "mode": "select",
+                "insertUnformatted": false,
+                "valueInputOption": "RAW",
+                "insertDataOption": "INSERT_ROWS",
+                "from": "drive",
+                "spreadsheetId": "",
+                "sheetId": "ejecuciones",
+                "includesHeaders": true,
+                "useColumnHeaders": false,
+                "values": {
+                  "0": "{{1.run_id}}",
+                  "1": "{{1.finished_at}}",
+                  "2": "{{1.status}}",
+                  "3": "{{1.as_of}}",
+                  "4": "{{1.products_loaded}}",
+                  "5": "{{1.rows_rejected}}",
+                  "6": "{{10.json}}",
+                  "7": "{{13.json}}",
+                  "8": "{{1.previous_month}}",
+                  "9": "{{1.revenue_previous_month}}",
+                  "10": "{{1.low_stock_count}}",
+                  "11": "{{14.json}}",
+                  "12": "{{1.rejection_threshold}}",
+                  "13": "{{1.alert_required}}"
+                }
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2118,
+                  "y": -301
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "5218118eaa27114c",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {},
+                  "expect": {
+                    "mode": {
+                      "label": "Search by path"
+                    },
+                    "insertUnformatted": {
+                      "mode": "chose"
+                    },
+                    "valueInputOption": {
+                      "mode": "chose",
+                      "label": "Raw"
+                    },
+                    "insertDataOption": {
+                      "mode": "chose",
+                      "label": "Insert rows"
+                    },
+                    "from": {
+                      "label": "My Drive"
+                    },
+                    "sheetId": {
+                      "label": "ejecuciones"
+                    },
+                    "includesHeaders": {
+                      "label": "Yes"
+                    },
+                    "useColumnHeaders": {
+                      "label": "No"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "mode",
+                    "type": "select",
+                    "label": "Search Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "select",
+                        "fromAll",
+                        "map"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "insertUnformatted",
+                    "type": "boolean",
+                    "label": "Unformatted",
+                    "required": true
+                  },
+                  {
+                    "name": "valueInputOption",
+                    "type": "select",
+                    "label": "Value input option",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "USER_ENTERED",
+                        "RAW"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "insertDataOption",
+                    "type": "select",
+                    "label": "Insert data option",
+                    "validate": {
+                      "enum": [
+                        "INSERT_ROWS",
+                        "OVERWRITE"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "Drive",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share",
+                        "team"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "spreadsheetId",
+                    "type": "file",
+                    "label": "Spreadsheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "sheetId",
+                    "type": "select",
+                    "label": "Sheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "includesHeaders",
+                    "type": "select",
+                    "label": "Table contains headers",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "useColumnHeaders",
+                    "type": "select",
+                    "label": "Use column headers as IDs of the columns",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "values",
+                    "type": "collection",
+                    "label": "Values in columns",
+                    "metadata": [
+                      [
+                        [
+                          "run_id",
+                          "finished_at",
+                          "status",
+                          "as_of",
+                          "products_loaded",
+                          "rows_rejected",
+                          "rows_json",
+                          "rejected_by_reason_json",
+                          "previous_month",
+                          "revenue_previous_month",
+                          "low_stock_count",
+                          "low_stock_products_json",
+                          "rejection_threshold",
+                          "alert_required",
+                          "email_sent_at"
+                        ]
+                      ]
+                    ],
+                    "spec": [
+                      {
+                        "name": "0",
+                        "type": "text",
+                        "label": "run_id (A)"
+                      },
+                      {
+                        "name": "1",
+                        "type": "text",
+                        "label": "finished_at (B)"
+                      },
+                      {
+                        "name": "2",
+                        "type": "text",
+                        "label": "status (C)"
+                      },
+                      {
+                        "name": "3",
+                        "type": "text",
+                        "label": "as_of (D)"
+                      },
+                      {
+                        "name": "4",
+                        "type": "text",
+                        "label": "products_loaded (E)"
+                      },
+                      {
+                        "name": "5",
+                        "type": "text",
+                        "label": "rows_rejected (F)"
+                      },
+                      {
+                        "name": "6",
+                        "type": "text",
+                        "label": "rows_json (G)"
+                      },
+                      {
+                        "name": "7",
+                        "type": "text",
+                        "label": "rejected_by_reason_json (H)"
+                      },
+                      {
+                        "name": "8",
+                        "type": "text",
+                        "label": "previous_month (I)"
+                      },
+                      {
+                        "name": "9",
+                        "type": "text",
+                        "label": "revenue_previous_month (J)"
+                      },
+                      {
+                        "name": "10",
+                        "type": "text",
+                        "label": "low_stock_count (K)"
+                      },
+                      {
+                        "name": "11",
+                        "type": "text",
+                        "label": "low_stock_products_json (L)"
+                      },
+                      {
+                        "name": "12",
+                        "type": "text",
+                        "label": "rejection_threshold (M)"
+                      },
+                      {
+                        "name": "13",
+                        "type": "text",
+                        "label": "alert_required (N)"
+                      },
+                      {
+                        "name": "14",
+                        "type": "text",
+                        "label": "email_sent_at (O)"
+                      },
+                      {
+                        "name": "15",
+                        "type": "text",
+                        "label": "(P)"
+                      },
+                      {
+                        "name": "16",
+                        "type": "text",
+                        "label": "(Q)"
+                      },
+                      {
+                        "name": "17",
+                        "type": "text",
+                        "label": "(R)"
+                      },
+                      {
+                        "name": "18",
+                        "type": "text",
+                        "label": "(S)"
+                      },
+                      {
+                        "name": "19",
+                        "type": "text",
+                        "label": "(T)"
+                      },
+                      {
+                        "name": "20",
+                        "type": "text",
+                        "label": "(U)"
+                      },
+                      {
+                        "name": "21",
+                        "type": "text",
+                        "label": "(V)"
+                      },
+                      {
+                        "name": "22",
+                        "type": "text",
+                        "label": "(W)"
+                      },
+                      {
+                        "name": "23",
+                        "type": "text",
+                        "label": "(X)"
+                      },
+                      {
+                        "name": "24",
+                        "type": "text",
+                        "label": "(Y)"
+                      },
+                      {
+                        "name": "25",
+                        "type": "text",
+                        "label": "(Z)"
+                      }
+                    ]
+                  }
+                ],
+                "advanced": true
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 15,
+              "module": "google-sheets:filterRows",
+              "version": 2,
+              "parameters": {},
+              "filter": {
+                "name": "Hay alerta",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{1.alert_required}}",
+                      "o": "boolean:equal",
+                      "b": "true"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "from": "drive",
+                "valueRenderOption": "FORMATTED_VALUE",
+                "dateTimeRenderOption": "FORMATTED_STRING",
+                "limit": "1",
+                "spreadsheetId": "",
+                "sheetId": "ejecuciones",
+                "includesHeaders": true,
+                "tableFirstRow": "A1:Z1",
+                "filter": [
+                  [
+                    {
+                      "a": "A",
+                      "o": "text:equal",
+                      "b": "{{1.run_id}}"
+                    }
+                  ]
+                ],
+                "sortOrder": "asc"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 741,
+                  "y": 216
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "eda768c01e0c9bf8",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {},
+                  "expect": {
+                    "from": {
+                      "label": "Select from My Drive"
+                    },
+                    "valueRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted value"
+                    },
+                    "dateTimeRenderOption": {
+                      "mode": "chose",
+                      "label": "Formatted string"
+                    },
+                    "sheetId": {
+                      "mode": "chose",
+                      "label": "ejecuciones"
+                    },
+                    "includesHeaders": {
+                      "mode": "chose",
+                      "label": "Yes"
+                    },
+                    "tableFirstRow": {
+                      "label": "A-Z"
+                    },
+                    "orderBy": {
+                      "mode": "chose"
+                    },
+                    "sortOrder": {
+                      "mode": "chose",
+                      "label": "Ascending"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "Search Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "valueRenderOption",
+                    "type": "select",
+                    "label": "Value render option",
+                    "validate": {
+                      "enum": [
+                        "FORMATTED_VALUE",
+                        "UNFORMATTED_VALUE",
+                        "FORMULA"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "dateTimeRenderOption",
+                    "type": "select",
+                    "label": "Date and time render option",
+                    "validate": {
+                      "enum": [
+                        "SERIAL_NUMBER",
+                        "FORMATTED_STRING"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "limit",
+                    "type": "uinteger",
+                    "label": "Limit"
+                  },
+                  {
+                    "name": "spreadsheetId",
+                    "type": "select",
+                    "label": "Spreadsheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "sheetId",
+                    "type": "select",
+                    "label": "Sheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "includesHeaders",
+                    "type": "select",
+                    "label": "Table contains headers",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        true,
+                        false
+                      ]
+                    }
+                  },
+                  {
+                    "name": "tableFirstRow",
+                    "type": "select",
+                    "label": "Column range",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "A1:Z1",
+                        "A1:BZ1",
+                        "A1:CZ1",
+                        "A1:DZ1",
+                        "A1:MZ1",
+                        "A1:ZZ1",
+                        "A1:AZZ1",
+                        "A1:BZZ1",
+                        "A1:CZZ1",
+                        "A1:DZZ1",
+                        "A1:MZZ1",
+                        "A1:ZZZ1"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "filter",
+                    "type": "filter",
+                    "label": "Filter",
+                    "options": "rpc://google-sheets/2/rpcGetFilterKeys?includesHeaders=true"
+                  },
+                  {
+                    "name": "orderBy",
+                    "type": "select",
+                    "label": "Order by"
+                  },
+                  {
+                    "name": "sortOrder",
+                    "type": "select",
+                    "label": "Sort order",
+                    "validate": {
+                      "enum": [
+                        "asc",
+                        "desc"
+                      ]
+                    }
+                  }
+                ],
+                "interface": [
+                  {
+                    "name": "__IMTLENGTH__",
+                    "label": "Total number of bundles",
+                    "type": "uinteger"
+                  },
+                  {
+                    "name": "__IMTINDEX__",
+                    "label": "Bundle order position",
+                    "type": "uinteger"
+                  },
+                  {
+                    "name": "__ROW_NUMBER__",
+                    "label": "Row number",
+                    "type": "number"
+                  },
+                  {
+                    "name": "__SPREADSHEET_ID__",
+                    "label": "Spreadsheet ID",
+                    "type": "text"
+                  },
+                  {
+                    "name": "__SHEET__",
+                    "label": "Sheet",
+                    "type": "text"
+                  },
+                  {
+                    "name": "0",
+                    "label": "run_id (A)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "1",
+                    "label": "finished_at (B)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "2",
+                    "label": "status (C)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "3",
+                    "label": "as_of (D)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "4",
+                    "label": "products_loaded (E)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "5",
+                    "label": "rows_rejected (F)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "6",
+                    "label": "rows_json (G)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "7",
+                    "label": "rejected_by_reason_json (H)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "8",
+                    "label": "previous_month (I)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "9",
+                    "label": "revenue_previous_month (J)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "10",
+                    "label": "low_stock_count (K)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "11",
+                    "label": "low_stock_products_json (L)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "12",
+                    "label": "rejection_threshold (M)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "13",
+                    "label": "alert_required (N)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "14",
+                    "label": "email_sent_at (O)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "15",
+                    "label": "(P)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "16",
+                    "label": "(Q)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "17",
+                    "label": "(R)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "18",
+                    "label": "(S)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "19",
+                    "label": "(T)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "20",
+                    "label": "(U)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "21",
+                    "label": "(V)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "22",
+                    "label": "(W)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "23",
+                    "label": "(X)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "24",
+                    "label": "(Y)",
+                    "type": "text"
+                  },
+                  {
+                    "name": "25",
+                    "label": "(Z)",
+                    "type": "text"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 16,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": {},
+              "filter": {
+                "name": "Correo pendiente",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{15.`__ROW_NUMBER__`}}",
+                      "o": "number:greater",
+                      "b": "0"
+                    },
+                    {
+                      "a": "{{15.`14`}}",
+                      "o": "notexist"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "to": [],
+                "subject": "[PRUEBA ETL Nortesur] Alerta de carga {{1.run_id}}",
+                "bodyType": "collection",
+                "contents": [
+                  {
+                    "text": "Resumen de la ejecución del ETL.\n\nEjecución: {{1.run_id}}\nProductos cargados: {{1.products_loaded}}\nFilas rechazadas: {{1.rows_rejected}}\nUmbral de rechazos: {{1.rejection_threshold}}\nProductos bajo mínimos: {{1.low_stock_count}}\n\nMotivos de rechazo:\n{{15.`7`}}\n\nDetalle de bajo stock:\n{{15.`11`}}\n\nFacturación de {{1.previous_month}}:{{1.revenue_previous_month}}\nMoneda y base fiscal pendientes de confirmar.",
+                    "image": {}
+                  }
+                ]
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1041,
+                  "y": 216
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "379cd6beabdf4365",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {},
+                  "expect": {
+                    "to": {
+                      "mode": "chose",
+                      "items": [
+                        null
+                      ]
+                    },
+                    "bodyType": {
+                      "label": "Collection of contents (text, images, etc.)"
+                    },
+                    "attachments": {
+                      "mode": "chose"
+                    },
+                    "from": {
+                      "mode": "chose"
+                    },
+                    "cc": {
+                      "mode": "chose"
+                    },
+                    "bcc": {
+                      "mode": "chose"
+                    },
+                    "emailHeaders": {
+                      "mode": "chose"
+                    },
+                    "contents": {
+                      "mode": "chose",
+                      "items": [
+                        null
+                      ]
+                    },
+                    "signature": {
+                      "mode": "edit"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google-email",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "to",
+                    "type": "array",
+                    "label": "To",
+                    "required": true,
+                    "spec": {
+                      "type": "email",
+                      "label": "Recipient email address",
+                      "required": true,
+                      "validate": true,
+                      "name": "value"
+                    }
+                  },
+                  {
+                    "name": "subject",
+                    "type": "text",
+                    "label": "Subject"
+                  },
+                  {
+                    "name": "bodyType",
+                    "type": "select",
+                    "label": "Body type",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "rawHtml",
+                        "collection"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "attachments",
+                    "type": "array",
+                    "label": "Attachments",
+                    "spec": {
+                      "spec": [
+                        {
+                          "name": "filename",
+                          "type": "filename",
+                          "label": "File name",
+                          "required": true,
+                          "semantic": "file:name"
+                        },
+                        {
+                          "name": "data",
+                          "type": "buffer",
+                          "label": "Data",
+                          "required": true,
+                          "semantic": "file:data"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Attachment",
+                      "name": "value"
+                    }
+                  },
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "From"
+                  },
+                  {
+                    "name": "cc",
+                    "type": "array",
+                    "label": "CC recipients",
+                    "spec": {
+                      "type": "email",
+                      "label": "Recipient email address",
+                      "name": "value"
+                    }
+                  },
+                  {
+                    "name": "bcc",
+                    "type": "array",
+                    "label": "BCC recipients",
+                    "spec": {
+                      "type": "email",
+                      "label": "Recipient email address",
+                      "name": "value"
+                    }
+                  },
+                  {
+                    "name": "emailHeaders",
+                    "type": "array",
+                    "label": "Additional email headers",
+                    "spec": {
+                      "spec": [
+                        {
+                          "name": "key",
+                          "type": "text",
+                          "label": "Key",
+                          "required": true
+                        },
+                        {
+                          "name": "value",
+                          "type": "text",
+                          "label": "Value"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Email header",
+                      "name": "value"
+                    }
+                  },
+                  {
+                    "name": "contents",
+                    "type": "array",
+                    "label": "Body contents",
+                    "spec": {
+                      "spec": [
+                        {
+                          "name": "text",
+                          "type": "text",
+                          "label": "Text"
+                        },
+                        {
+                          "name": "image",
+                          "spec": [
+                            {
+                              "name": "filename",
+                              "type": "filename",
+                              "label": "File name",
+                              "semantic": "file:name"
+                            },
+                            {
+                              "name": "data",
+                              "type": "buffer",
+                              "label": "Data",
+                              "semantic": "file:data"
+                            },
+                            {
+                              "name": "width",
+                              "type": "uinteger",
+                              "label": "Width"
+                            },
+                            {
+                              "name": "height",
+                              "type": "uinteger",
+                              "label": "Height"
+                            }
+                          ],
+                          "type": "collection",
+                          "label": "Image"
+                        }
+                      ],
+                      "type": "collection",
+                      "label": "Content",
+                      "name": "value"
+                    }
+                  },
+                  {
+                    "name": "signature",
+                    "type": "select",
+                    "label": "Signature content"
+                  }
+                ]
+              }
+            },
+            {
+              "id": 17,
+              "module": "google-sheets:updateCell",
+              "version": 2,
+              "parameters": {},
+              "mapper": {
+                "select": "list",
+                "cell": "O{{15.`__ROW_NUMBER__`}}",
+                "value": "{{formatDate(now; \"YYYY-MM-DD HH:mm:ss\"; \"UTC\")}} UTC",
+                "valueInputOption": "RAW",
+                "from": "drive",
+                "spreadsheetId": "",
+                "sheetId": "ejecuciones"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1341,
+                  "y": 216
+                },
+                "setupValidation": {
+                  "version": 1,
+                  "configuration": "e0e9e64e46059666",
+                  "result": {
+                    "valid": true,
+                    "fields": []
+                  }
+                },
+                "restore": {
+                  "parameters": {},
+                  "expect": {
+                    "select": {
+                      "label": "Search by path"
+                    },
+                    "valueInputOption": {
+                      "mode": "chose",
+                      "label": "Raw"
+                    },
+                    "from": {
+                      "label": "My Drive"
+                    },
+                    "sheetId": {
+                      "label": "ejecuciones"
+                    }
+                  }
+                },
+                "parameters": [
+                  {
+                    "name": "__IMTCONN__",
+                    "type": "account:google",
+                    "label": "Connection",
+                    "required": true
+                  }
+                ],
+                "expect": [
+                  {
+                    "name": "select",
+                    "type": "select",
+                    "label": "Search Method",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "list",
+                        "fromAll",
+                        "map"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "cell",
+                    "type": "text",
+                    "label": "Cell",
+                    "required": true
+                  },
+                  {
+                    "name": "value",
+                    "type": "text",
+                    "label": "Value"
+                  },
+                  {
+                    "name": "valueInputOption",
+                    "type": "select",
+                    "label": "Value input option",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "USER_ENTERED",
+                        "RAW"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "from",
+                    "type": "select",
+                    "label": "Drive",
+                    "required": true,
+                    "validate": {
+                      "enum": [
+                        "drive",
+                        "share",
+                        "team"
+                      ]
+                    }
+                  },
+                  {
+                    "name": "spreadsheetId",
+                    "type": "file",
+                    "label": "Spreadsheet Name",
+                    "required": true
+                  },
+                  {
+                    "name": "sheetId",
+                    "type": "select",
+                    "label": "Sheet Name",
+                    "required": true
+                  }
+                ],
+                "advanced": true
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "instant": true,
+    "version": 1,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": true,
+      "slots": null,
+      "confidential": false,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    },
+    "zone": "eu1.make.com",
+    "notes": []
+  }
+}

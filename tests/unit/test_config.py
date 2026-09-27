@@ -132,3 +132,43 @@ def test_stock_options_defaults_and_overrides(settings_env: dict[str, str]) -> N
     settings_env.update({"STOCK_PER_PAGE": "100", "STOCK_ATTEMPTS": "3"})
     assert load_settings(None, settings_env).stock.per_page == 100
     assert load_settings(None, settings_env).stock.attempts == 3
+
+
+def test_make_is_disabled_by_default_and_hides_webhook(settings_env: dict[str, str]) -> None:
+    assert load_settings(None, settings_env).make.webhook_url == ""
+    settings_env.update(
+        {
+            "MAKE_WEBHOOK_URL": "https://example.invalid/secret-webhook",
+            "MAKE_TIMEOUT": "15",
+            "MAKE_REJECTION_THRESHOLD": "10",
+        }
+    )
+    settings = load_settings(None, settings_env)
+    assert settings.make.timeout == 15
+    assert settings.make.rejection_threshold == 10
+    assert "secret-webhook" not in repr(settings)
+
+
+@pytest.mark.parametrize(
+    "key,value",
+    [
+        ("MAKE_WEBHOOK_URL", "http://example.invalid/secret"),
+        ("MAKE_WEBHOOK_URL", "https://secret@example.invalid/hook"),
+        ("MAKE_WEBHOOK_URL", "https://example.invalid/hook?secret=1"),
+        ("MAKE_WEBHOOK_URL", "https://example.invalid/hook#secret"),
+        ("MAKE_WEBHOOK_URL", "https://example.invalid:bad/hook"),
+        ("MAKE_WEBHOOK_URL", "https://example.invalid/"),
+        ("MAKE_TIMEOUT", "0"),
+        ("MAKE_TIMEOUT", "61"),
+        ("MAKE_TIMEOUT", "bad-secret"),
+        ("MAKE_REJECTION_THRESHOLD", "-1"),
+        ("MAKE_REJECTION_THRESHOLD", "1.5"),
+    ],
+)
+def test_make_configuration_errors_are_sanitized(
+    settings_env: dict[str, str], key: str, value: str
+) -> None:
+    settings_env[key] = value
+    with pytest.raises(ConfigError, match=key) as error:
+        load_settings(None, settings_env)
+    assert value not in str(error.value)
