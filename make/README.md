@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local implementado y probado; histórico, correo sintético y bloqueo de reenvío verificados por el usuario. La segunda exportación del 27/09/2026 acredita procesamiento secuencial, filtro inicial completo y entrada Raw, y se conserva saneada. Faltan pruebas de rechazo del contrato, recuperación, importación y envío del ETL real: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local implementado y probado; histórico, correo sintético y bloqueo de reenvío verificados por el usuario. La segunda exportación del 27/09/2026 acredita procesamiento secuencial, filtro inicial completo y entrada Raw, y se conserva saneada. Faltan los otros casos de rechazo del contrato, recuperación, importación y envío del ETL real: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -127,9 +127,13 @@ La autorización debe concretar destinatario y prueba antes de disparar un webho
 
 El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, el usuario aportó la [captura sin alerta](capturas/f10-synthetic-no-alert.png). El run del ejemplo termina en `0001`, tiene duplicados, rechazos 0, umbral 0, bajo stock 0 y ambas listas vacías. El filtro del histórico deja pasar el bundle y los tres JSON/Add a Row completan la operación; «Hay alerta» deja pasar 0 bundles y el resto de esa ruta no se ejecuta. Esto verifica el bloqueo del correo en el límite `rows_rejected = threshold = 0` sin bajo stock. La [tabla de Sheets aportada después](capturas/f10-synthetic-sheets-verified.md) confirma las quince cabeceras, ambas filas y todos los valores/JSON de los ejemplos: run `0001` con FALSE, listas `[]` y O vacía; run `0002` con TRUE y fecha UTC en O. Se verificó la igualdad de contadores de cada fuente y el importe visible `36.00`; la transcripción no permite comprobar el tipo interno de la celda.
 
+## Rechazo de versión inválida observado
+
+El 27/09/2026 el usuario aportó la [captura del filtro inicial bloqueando la ejecución](capturas/f10-invalid-schema-blocked.png), tras la prueba guiada que carga `summary.synthetic.json` y sustituye `schema_version` por `version-invalida`. El webhook completa su operación y «Resumen válido» deja pasar 0 bundles; el router y los módulos de Sheets/JSON/Gmail posteriores no se ejecutan. La captura no muestra el payload: la identificación del caso procede del comando guiado anterior. No acredita los casos de estado inválido/run_id ausente ni una carga real del ETL. Se conserva la imagen original sin edición; no contiene destinatarios ni URL del webhook visibles.
+
 ## Validación pendiente de la cuenta
 
-- Probar que el filtro inicial rechaza un resumen con versión/estado inválidos o run_id ausente, sin ejecutar destinos. Simular un fallo del destino y documentar recuperación/riesgo residual.
+- Completar los casos de estado inválido y run_id ausente, sin ejecutar destinos; la versión incorrecta ya se observó bloqueada. Simular un fallo del destino y documentar recuperación/riesgo residual.
 - Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
 - Comprobar la importación de la copia saneada en un escenario desactivado con conexiones propias. La validación local del JSON no acredita una importación en Make.
 
@@ -142,7 +146,7 @@ La revisión confirma `metadata.scenario.sequential=true`, histórico primero, b
 Dos correcciones **confirmadas en la segunda exportación**:
 
 1. Google Sheets **Add a Row [9]** contiene **Value input option = Raw**, valor `RAW` en el JSON. [Make documenta](https://apps.make.com/google-sheets-modules) que User entered interpreta números/fechas y Raw conserva los valores recibidos. Update a Cell [17] ya usa Raw. El importe visible `36.00` de las pruebas previas no demuestra que la celda se guardara como texto.
-2. La conexión **Webhook [1] → Router [2]** contiene el filtro **Resumen válido** con tres condiciones AND: `1.schema_version` **Text operators: Equal to** `etl-summary-v1`; `1.status` **Text operators: Equal to** `completed`; `1.run_id` **Basic operators: Exists**. Elegir las fichas del webhook; no escribir los nombres como texto literal. [Exists comprueba que el campo esté informado](https://help.make.com/filtering). Su presencia/configuración se comprueba en el export; aún falta probar el rechazo de resúmenes inválidos en Make sin llegar a los destinos.
+2. La conexión **Webhook [1] → Router [2]** contiene el filtro **Resumen válido** con tres condiciones AND: `1.schema_version` **Text operators: Equal to** `etl-summary-v1`; `1.status` **Text operators: Equal to** `completed`; `1.run_id` **Basic operators: Exists**. Elegir las fichas del webhook; no escribir los nombres como texto literal. [Exists comprueba que el campo esté informado](https://help.make.com/filtering). Su presencia/configuración se comprueba en el export; la prueba guiada de versión incorrecta ya se observó bloqueada; estado inválido y run_id ausente siguen pendientes de comprobación en Make.
 
 ### Conexiones al importar
 
