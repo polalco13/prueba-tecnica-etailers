@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local implementado y probado; el usuario verificó el contenido del histórico y el 27/09/2026 aportó evidencia del correo sintético recibido, Gmail/Update a Cell completados y reenvío bloqueado por ambos filtros. Pendientes revisión del valor de `email_sent_at`, casos sin alerta, recuperación, envío del ETL real y blueprint: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local implementado y probado; el usuario verificó el contenido del histórico y el 27/09/2026 aportó evidencia del correo sintético recibido, Gmail/Update a Cell completados y reenvío bloqueado por ambos filtros. Pendientes configuración secuencial/filtro inicial, recuperación, envío del ETL real y blueprint: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -97,7 +97,7 @@ La segunda ruta del router usa `alert_required = true`, sin fallback, y corre de
 {{formatDate(now; "YYYY-MM-DD HH:mm:ss"; "UTC")}} UTC
 ```
 
-Usar entrada Raw. El usuario confirmó la corrección de Cell tras haber mapeado inicialmente el contenido de `email_sent_at`; la captura de ejecución muestra Gmail [16] y Update a Cell [17] completados. La [captura de repetición del 27/09/2026](capturas/f10-synthetic-alert-repeat.png) muestra «Ejecución nueva» y «Correo pendiente» dejando pasar 0 bundles: Add a Row, Gmail y Update a Cell no se ejecutan de nuevo. Acredita el bloqueo del reenvío manual guiado; falta comprobar directamente el valor escrito en O. El procesamiento secuencial y el filtro inicial de contrato se han indicado, pero su configuración no se ha acreditado con captura/exportación; esta repetición manual no prueba concurrencia.
+Usar entrada Raw. El usuario confirmó la corrección de Cell tras haber mapeado inicialmente el contenido de `email_sent_at`; la captura de ejecución muestra Gmail [16] y Update a Cell [17] completados. La [captura de repetición del 27/09/2026](capturas/f10-synthetic-alert-repeat.png) muestra «Ejecución nueva» y «Correo pendiente» dejando pasar 0 bundles: Add a Row, Gmail y Update a Cell no se ejecutan de nuevo. Acredita el bloqueo del reenvío manual guiado. La [tabla aportada por el usuario](capturas/f10-synthetic-sheets-verified.md) confirma una fila por run y la marca `2026-09-27 14:10:01 UTC` solo en la alerta. El procesamiento secuencial y el filtro inicial de contrato se han indicado, pero su configuración no se ha acreditado con captura/exportación; esta repetición manual no prueba concurrencia.
 
 Para una futura prueba de ETL real, sustituir el asunto y la identificación sintética del cuerpo por contenido acorde con la fuente utilizada, y revisar el destino. Plantilla prevista para datos del ETL:
 
@@ -125,12 +125,10 @@ La autorización debe concretar destinatario y prueba antes de disparar un webho
 
 ## Prueba sin alerta ejecutada
 
-El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, el usuario aportó la [captura sin alerta](capturas/f10-synthetic-no-alert.png). El run del ejemplo termina en `0001`, tiene duplicados, rechazos 0, umbral 0, bajo stock 0 y ambas listas vacías. El filtro del histórico deja pasar el bundle y los tres JSON/Add a Row completan la operación; «Hay alerta» deja pasar 0 bundles y el resto de esa ruta no se ejecuta. Esto verifica el bloqueo del correo en el límite `rows_rejected = threshold = 0` sin bajo stock. Falta revisar directamente la nueva fila, los JSON vacíos y las marcas de envío de ambas filas en Sheets.
+El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, el usuario aportó la [captura sin alerta](capturas/f10-synthetic-no-alert.png). El run del ejemplo termina en `0001`, tiene duplicados, rechazos 0, umbral 0, bajo stock 0 y ambas listas vacías. El filtro del histórico deja pasar el bundle y los tres JSON/Add a Row completan la operación; «Hay alerta» deja pasar 0 bundles y el resto de esa ruta no se ejecuta. Esto verifica el bloqueo del correo en el límite `rows_rejected = threshold = 0` sin bajo stock. La [tabla de Sheets aportada después](capturas/f10-synthetic-sheets-verified.md) confirma las quince cabeceras, ambas filas y todos los valores/JSON de los ejemplos: run `0001` con FALSE, listas `[]` y O vacía; run `0002` con TRUE y fecha UTC en O. Se verificó la igualdad de contadores de cada fuente y la conservación del texto `36.00`.
 
 ## Validación pendiente de la cuenta
 
-- Revisar la fila del ejemplo sin alerta en Sheets: run terminado en `0001`, duplicados >0, rechazos 0, bajo stock 0, listas `[]` y O vacía. Make ya acredita Add a Row completado y ruta de correo bloqueada.
-- Revisar directamente el valor de `email_sent_at` en O. La repetición manual del run sintético ya dejó histórico y Gmail bloqueados, después del primer correo recibido.
 - Acreditar el procesamiento secuencial y el filtro inicial de contrato. Simular un fallo del destino y documentar recuperación/riesgo residual.
 - Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
 - Exportar desde Make `escenario.blueprint.json`, revisar/sanitizar URLs de webhook, conexiones, identificadores privados, destinatarios y muestras de clientes. Guardar capturas del escenario y de una ejecución en `capturas/`, sin secretos. Documentar qué conexiones hay que recrear al importar.
