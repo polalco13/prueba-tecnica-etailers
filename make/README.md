@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local implementado y probado; el usuario verificó el contenido del histórico y el 27/09/2026 aportó evidencia del correo sintético recibido y de Gmail/Update a Cell completados. Pendientes revisión de `email_sent_at`, repetición sin otro correo, casos sin alerta, recuperación, envío del ETL real y blueprint: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local implementado y probado; el usuario verificó el contenido del histórico y el 27/09/2026 aportó evidencia del correo sintético recibido, Gmail/Update a Cell completados y reenvío bloqueado por ambos filtros. Pendientes revisión del valor de `email_sent_at`, casos sin alerta, recuperación, envío del ETL real y blueprint: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -97,7 +97,7 @@ La segunda ruta del router usa `alert_required = true`, sin fallback, y corre de
 {{formatDate(now; "YYYY-MM-DD HH:mm:ss"; "UTC")}} UTC
 ```
 
-Usar entrada Raw. El usuario confirmó la corrección de Cell tras haber mapeado inicialmente el contenido de `email_sent_at`; la captura de ejecución muestra Gmail [16] y Update a Cell [17] completados. Falta comprobar el valor escrito en O y que otro POST del mismo run no envía otro correo. El procesamiento secuencial y el filtro inicial de contrato se han indicado, pero su configuración no se ha acreditado con captura/exportación.
+Usar entrada Raw. El usuario confirmó la corrección de Cell tras haber mapeado inicialmente el contenido de `email_sent_at`; la captura de ejecución muestra Gmail [16] y Update a Cell [17] completados. La [captura de repetición del 27/09/2026](capturas/f10-synthetic-alert-repeat.png) muestra «Ejecución nueva» y «Correo pendiente» dejando pasar 0 bundles: Add a Row, Gmail y Update a Cell no se ejecutan de nuevo. Acredita el bloqueo del reenvío manual guiado; falta comprobar directamente el valor escrito en O. El procesamiento secuencial y el filtro inicial de contrato se han indicado, pero su configuración no se ha acreditado con captura/exportación; esta repetición manual no prueba concurrencia.
 
 Para una futura prueba de ETL real, sustituir el asunto y la identificación sintética del cuerpo por contenido acorde con la fuente utilizada, y revisar el destino. Plantilla prevista para datos del ETL:
 
@@ -126,7 +126,7 @@ La autorización debe concretar destinatario y prueba antes de disparar un webho
 ## Validación pendiente de la cuenta
 
 - Prueba sintética identificada: duplicados >0, rechazos 0, sin bajo stock → una fila de histórico y ningún email.
-- Revisar el valor de `email_sent_at` en O y repetir el run sintético después de marcarlo → una sola fila y ningún correo nuevo. El primer correo sintético ya se recibió; la captura acredita bloqueo de reinserción antes de ese envío.
+- Revisar directamente el valor de `email_sent_at` en O. La repetición manual del run sintético ya dejó histórico y Gmail bloqueados, después del primer correo recibido.
 - Prueba controlada del límite exacto del umbral sin bajo stock → ningún email. La alerta recibida tenía ambas causas de alerta; consignarlo al valorar su cobertura.
 - Acreditar el procesamiento secuencial y el filtro inicial de contrato. Simular un fallo del destino y documentar recuperación/riesgo residual.
 - Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
