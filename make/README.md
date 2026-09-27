@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local implementado y probado; el 26/09/2026 el usuario ejecutó en Make la ruta de histórico con un ejemplo sintético y aportó su captura. Contenido de la fila y deduplicación aún por verificar; ruta de correo, ETL real, blueprint y A09 pendientes. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local implementado y probado; el usuario verificó el contenido del histórico y el 27/09/2026 aportó evidencia del correo sintético recibido y de Gmail/Update a Cell completados. Pendientes revisión de `email_sent_at`, repetición sin otro correo, casos sin alerta, recuperación, envío del ETL real y blueprint: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -58,7 +58,7 @@ Los ejemplos [normal](examples/summary.synthetic.json) y [con alerta](examples/a
 
 Por fuente: `read = accepted + rejected + deduplicated`. `quality_warnings` y `discarded_fields` no se suman a esta igualdad. No enviar campos `raw_excerpt`, clientes ni líneas completas. Los fallos completos del ETL quedan en auditoría local y no generan resumen v1 ni un mensaje de éxito con ceros.
 
-## Montaje real pendiente
+## Configuración del escenario
 
 1. Iniciar sesión en Make y crear un escenario `Nortesur — resumen ETL`. Crear `Webhooks > Custom webhook`. Definir la estructura con el ejemplo sintético; no conectar un envío real mientras los destinos no estén revisados.
 2. Validar `schema_version = etl-summary-v1`, `status = completed` y `run_id` no vacío. Activar procesamiento secuencial (**Process data in order**) para que dos reenvíos no hagan simultáneamente buscar/añadir la misma fila.
@@ -85,11 +85,21 @@ El 7 es el ID del agregador observado; adaptar esa referencia si cambia al monta
 
 Después del filtro, tres módulos `JSON > Transform to JSON` convierten por separado `rows` [10], `rejected_by_reason[]` [13] y `low_stock_products[]` [14] del webhook. Cada campo Object contiene una sola ficha. Sus respectivas salidas JSON se mapean a las columnas G, H y L de `Add a Row [9]`; las demás columnas usan los campos simples del webhook y `email_sent_at` queda vacío. Sheets usa entrada Raw.
 
-La [captura aportada por el usuario](capturas/f10-synthetic-history-first-run.png) muestra el primer envío atravesando el filtro y finalizando Add a Row sin errores visibles. No acredita todavía el contenido de la hoja, el bloqueo de duplicados ni el correo. Las instrucciones de repetir el mismo `run_id` y contrastar la fila siguen pendientes de resultado.
+La [captura del primer histórico](capturas/f10-synthetic-history-first-run.png), aportada el 26/09/2026, muestra el envío atravesando el filtro y finalizando Add a Row. El texto de Sheets aportado después contiene una sola fila del run sintético `00000000-0000-4000-8000-000000000002`: los valores y los tres JSON coinciden con `alert.synthetic.json`, incluido `36.00`. Se detectó una cabecera duplicada en J1; el usuario confirmó su corrección a `revenue_previous_month`. La [captura del envío de alerta](capturas/f10-synthetic-alert-first-mail.png), aportada el 27/09/2026, muestra «Ejecución nueva» bloqueando la reinserción. No es todavía una prueba de repetición del correo ya marcado.
 
-## Correo preparado, aún no enviado
+## Correo sintético recibido y configuración de envío
 
-El usuario indicó Gmail y un destinatario propio de prueba en la conversación; no se versiona su dirección. La conexión de salida y la ejecución del correo siguen pendientes. Asunto propuesto:
+El usuario indicó Gmail y un destinatario propio de prueba en la conversación; no se versiona su dirección. Configuró la conexión y ejecutó manualmente el POST sintético. El 27/09/2026 aportó una captura del correo recibido: run terminado en `0002`, un producto, un rechazo, umbral 0, un producto bajo mínimos, motivo `NON_POSITIVE_PRICE`, detalle `SYNTHETIC-001` y facturación de 2026-08 `36.00`. Asunto usado: `[PRUEBA ETL Nortesur] Alerta de carga {{run_id}}`; cuerpo identificado expresamente como prueba sintética. La captura de Gmail no se incorpora porque incluye datos personales.
+
+La segunda ruta del router usa `alert_required = true`, sin fallback, y corre después del histórico. `Search Rows [15]` busca el mismo run con límite 1. El filtro «Correo pendiente» exige `Row number > 0` **AND** `email_sent_at (O) Does not exist`. `Gmail [16]` mapea los campos simples del webhook y los JSON de motivos/bajo stock desde H/L de esta búsqueda. `Update a Cell [17]` va después de Gmail: Cell contiene la letra O seguida del **Row number** de Search Rows [15], y Value contiene:
+
+```text
+{{formatDate(now; "YYYY-MM-DD HH:mm:ss"; "UTC")}} UTC
+```
+
+Usar entrada Raw. El usuario confirmó la corrección de Cell tras haber mapeado inicialmente el contenido de `email_sent_at`; la captura de ejecución muestra Gmail [16] y Update a Cell [17] completados. Falta comprobar el valor escrito en O y que otro POST del mismo run no envía otro correo. El procesamiento secuencial y el filtro inicial de contrato se han indicado, pero su configuración no se ha acreditado con captura/exportación.
+
+Para una futura prueba de ETL real, sustituir el asunto y la identificación sintética del cuerpo por contenido acorde con la fuente utilizada, y revisar el destino. Plantilla prevista para datos del ETL:
 
 ```text
 [ETL Nortesur] Revisión de la carga {{run_id}}
@@ -116,12 +126,13 @@ La autorización debe concretar destinatario y prueba antes de disparar un webho
 ## Validación pendiente de la cuenta
 
 - Prueba sintética identificada: duplicados >0, rechazos 0, sin bajo stock → una fila de histórico y ningún email.
-- Prueba de alerta autorizada: rechazos por encima del umbral o bajo stock → histórico y email. En el límite exacto del umbral, sin bajo stock, no hay alerta.
-- Repetición del mismo run → una sola fila; correo ya marcado no se repite. Simular un fallo del destino y documentar recuperación/riesgo residual.
+- Revisar el valor de `email_sent_at` en O y repetir el run sintético después de marcarlo → una sola fila y ningún correo nuevo. El primer correo sintético ya se recibió; la captura acredita bloqueo de reinserción antes de ese envío.
+- Prueba controlada del límite exacto del umbral sin bajo stock → ningún email. La alerta recibida tenía ambas causas de alerta; consignarlo al valorar su cobertura.
+- Acreditar el procesamiento secuencial y el filtro inicial de contrato. Simular un fallo del destino y documentar recuperación/riesgo residual.
 - Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
 - Exportar desde Make `escenario.blueprint.json`, revisar/sanitizar URLs de webhook, conexiones, identificadores privados, destinatarios y muestras de clientes. Guardar capturas del escenario y de una ejecución en `capturas/`, sin secretos. Documentar qué conexiones hay que recrear al importar.
 
-No existe todavía `escenario.blueprint.json` porque no se ha exportado. El usuario ya inició sesión, conectó Sheets y probó la ruta de histórico con datos sintéticos; falta completar las verificaciones de arriba para cerrar F10/A09. F11 no se ha iniciado.
+No existe todavía `escenario.blueprint.json` porque no se ha exportado. El usuario ya inició sesión, conectó Sheets/Gmail y verificó histórico y recepción de correo con datos sintéticos; falta completar las verificaciones de arriba para cerrar F10/A09. F11 no se ha iniciado.
 
 ## Referencias y decisión técnica
 
