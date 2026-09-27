@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementación local F10: resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado. El usuario configuró conexiones y destinatario propio y verificó histórico/correo, ausencia de alerta y reenvío con datos sintéticos. Blueprint real saneado y capturas disponibles; la segunda exportación acredita procesamiento secuencial, filtro inicial y entrada Raw. Primera ejecución ETL real acreditada con publicación, ambos destinos completados y correo recibido; fila final y marca UTC contrastadas, con A09 acreditado. Pendientes reenvío de ese run, otros casos de rechazo del contrato, recuperación e importación; detalles en [make/README](../../make/README.md).
+Implementación local F10: resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado. El usuario configuró conexiones y destinatario propio y verificó histórico/correo, ausencia de alerta y reenvío con datos sintéticos. Blueprint real saneado y capturas disponibles; la segunda exportación acredita procesamiento secuencial, filtro inicial y entrada Raw. Primera ejecución ETL real acreditada con publicación, ambos destinos completados y correo recibido; fila final y marca UTC contrastadas, con A09 acreditado. Reenvío posterior del mismo run real observado sin ejecutar Add a Row/Gmail/Update a Cell. Pendientes otros casos de rechazo del contrato, recuperación e importación; detalles en [make/README](../../make/README.md).
 
 ## Contexto
 

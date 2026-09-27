@@ -74,10 +74,33 @@ Suma 73 filas/motivos frente a 72 filas rechazadas: una fila puede tener varios 
 | PRV-2112 | 3 | 2 |
 | PRV-2074 | 3 | 1 |
 
+## Reenvío manual del mismo run (27/09/2026)
+
+El usuario ejecutó el comando siguiente después de contrastar los destinos y la marca de correo:
+
+```bash
+.venv/bin/python -m src.etl --resend-make c1a93f67-6990-4748-8efa-c18bc6777b42 --force
+```
+
+El log aportado registra a las `17:53:55,949` «Resumen recibido por HTTP; destinos pendientes de verificar en Make» para ese mismo UUID. No se observa una nueva carga de fuentes: el comando reutiliza el resumen persistido. No se aportó un código numérico de salida ni una consulta SQL de sus metadatos de entrega.
+
+La [captura posterior](f10-real-etl-repeat.png) muestra:
+
+| Filtro | Bundles que pasan |
+| --- | --- |
+| Resumen válido | 1 |
+| Ejecución nueva | 0 |
+| Hay alerta | 1 |
+| Correo pendiente | 0 |
+
+Search Rows [3], Array aggregator [7] y Search Rows [15] completan una operación. Los tres módulos JSON [10,13,14], Add a Row [9], Gmail [16] y Update a Cell [17] no se ejecutan. Acredita el bloqueo de reinserción y de otro envío de correo en esta ejecución del escenario, además de que la marca no se vuelve a escribir. La captura no contiene las celdas de Sheets posteriores a la prueba: no es una nueva lectura de O ni una comprobación de todas las escrituras posibles fuera de este escenario. Tampoco es una prueba de concurrencia.
+
+Se conserva la imagen original sin edición, sin URL del webhook ni datos de conexiones/destinatarios visibles. El agente registró la evidencia y revisó documentación; no ejecutó este reenvío ni otro POST.
+
 ## Alcance de la verificación
 
 Los logs prueban la publicación anterior al POST y la captura acredita la ejecución correcta de ambos destinos; la recepción del correo deja de depender de la aceptación HTTP como única evidencia. Sus cifras coinciden con los contadores aportados y con los importes/conteos de la validación SQL previa F8, sin asumir que las entradas o la fecha analítica sean idénticas.
 
 El texto de Sheets aportado después confirma las quince celdas de [una sola fila del run real](f10-real-sheets-verified.md), `status=completed`, `as_of=2026-09-27` y `finished_at=2026-09-27T15:34:50.365441Z`. Los contadores y los tres JSON coinciden con las evidencias anteriores. O contiene `2026-09-27 15:34:53 UTC` (17:34:53 Europe/Madrid), posterior a finished_at y coherente con la recepción visible a las 17:34. La marca no mide de forma independiente la hora de entrega del servidor de correo.
 
-El run_id enlaza publicación, ambos destinos, correo recibido y fila final: A09 queda acreditado. No se ha consultado la BD del usuario ni ejecutado un POST adicional en esta revisión. El texto no acredita el tipo interno de las celdas, la repetición de este run real, la importación del blueprint ni recuperación tras un fallo de destino. Los casos sintéticos anteriores de bloqueo de reenvío y ausencia de alerta se conservan por separado. F10 sigue abierta por las verificaciones restantes; F11 no iniciado.
+El run_id enlaza publicación, ambos destinos, correo recibido, fila final y reenvío bloqueado: A09 queda acreditado. No se ha consultado la BD del usuario ni ejecutado un POST adicional en esta revisión. El texto no acredita el tipo interno de las celdas; tampoco se ha verificado la importación del blueprint ni recuperación tras un fallo de destino. Los casos sintéticos anteriores de bloqueo de reenvío y ausencia de alerta se conservan por separado. F10 sigue abierta por las verificaciones restantes; F11 no iniciado.
