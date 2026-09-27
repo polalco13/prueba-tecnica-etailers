@@ -123,11 +123,14 @@ Revisar el dashboard y las incidencias de este run.
 
 La autorización debe concretar destinatario y prueba antes de disparar un webhook capaz de enviar este email; lo exige AGENTS. No hace falta incluir ni mandar el correo de entrega final del README durante F10.
 
+## Prueba sin alerta ejecutada
+
+El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, el usuario aportó la [captura sin alerta](capturas/f10-synthetic-no-alert.png). El run del ejemplo termina en `0001`, tiene duplicados, rechazos 0, umbral 0, bajo stock 0 y ambas listas vacías. El filtro del histórico deja pasar el bundle y los tres JSON/Add a Row completan la operación; «Hay alerta» deja pasar 0 bundles y el resto de esa ruta no se ejecuta. Esto verifica el bloqueo del correo en el límite `rows_rejected = threshold = 0` sin bajo stock. Falta revisar directamente la nueva fila, los JSON vacíos y las marcas de envío de ambas filas en Sheets.
+
 ## Validación pendiente de la cuenta
 
-- Prueba sintética identificada: duplicados >0, rechazos 0, sin bajo stock → una fila de histórico y ningún email.
+- Revisar la fila del ejemplo sin alerta en Sheets: run terminado en `0001`, duplicados >0, rechazos 0, bajo stock 0, listas `[]` y O vacía. Make ya acredita Add a Row completado y ruta de correo bloqueada.
 - Revisar directamente el valor de `email_sent_at` en O. La repetición manual del run sintético ya dejó histórico y Gmail bloqueados, después del primer correo recibido.
-- Prueba controlada del límite exacto del umbral sin bajo stock → ningún email. La alerta recibida tenía ambas causas de alerta; consignarlo al valorar su cobertura.
 - Acreditar el procesamiento secuencial y el filtro inicial de contrato. Simular un fallo del destino y documentar recuperación/riesgo residual.
 - Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
 - Exportar desde Make `escenario.blueprint.json`, revisar/sanitizar URLs de webhook, conexiones, identificadores privados, destinatarios y muestras de clientes. Guardar capturas del escenario y de una ejecución en `capturas/`, sin secretos. Documentar qué conexiones hay que recrear al importar.
