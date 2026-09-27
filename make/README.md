@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. La fila real y su marca de correo están contrastadas; A09 acreditado. El reenvío del mismo run real también está observado: histórico/correo bloqueados. Quedan otros casos de rechazo del contrato, recuperación e importación; F10 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. La fila real y su marca de correo están contrastadas; A09 acreditado. El reenvío del mismo run real también está observado: histórico/correo bloqueados. Los tres rechazos previstos del filtro inicial ya están observados. Quedan recuperación e importación; F10 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -127,11 +127,13 @@ La autorización debe concretar destinatario y prueba antes de disparar un webho
 
 El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, el usuario aportó la [captura sin alerta](capturas/f10-synthetic-no-alert.png). El run del ejemplo termina en `0001`, tiene duplicados, rechazos 0, umbral 0, bajo stock 0 y ambas listas vacías. El filtro del histórico deja pasar el bundle y los tres JSON/Add a Row completan la operación; «Hay alerta» deja pasar 0 bundles y el resto de esa ruta no se ejecuta. Esto verifica el bloqueo del correo en el límite `rows_rejected = threshold = 0` sin bajo stock. La [tabla de Sheets aportada después](capturas/f10-synthetic-sheets-verified.md) confirma las quince cabeceras, ambas filas y todos los valores/JSON de los ejemplos: run `0001` con FALSE, listas `[]` y O vacía; run `0002` con TRUE y fecha UTC en O. Se verificó la igualdad de contadores de cada fuente y el importe visible `36.00`; la transcripción no permite comprobar el tipo interno de la celda.
 
-## Rechazo de versión y estado inválidos observado
+## Pruebas de rechazo del filtro inicial observadas
 
 El 27/09/2026 el usuario aportó la [captura del filtro inicial bloqueando la ejecución](capturas/f10-invalid-schema-blocked.png), tras la prueba guiada que carga `summary.synthetic.json` y sustituye `schema_version` por `version-invalida`. El webhook completa su operación y «Resumen válido» deja pasar 0 bundles; el router y los módulos de Sheets/JSON/Gmail posteriores no se ejecutan. La captura no muestra el payload: la identificación del caso procede del comando guiado anterior. No acredita los casos de estado inválido/run_id ausente ni una carga real del ETL. Se conserva la imagen original sin edición; no contiene destinatarios ni URL del webhook visibles.
 
-Después, el usuario aportó la [captura del estado inválido bloqueado](capturas/f10-invalid-status-blocked.png), tras la guía que carga el mismo ejemplo sin alerta y cambia únicamente `status` a `failed` en memoria antes del POST. Webhook [1] completa una operación; «Resumen válido» deja pasar 0 bundles y ningún módulo posterior se ejecuta. Se acredita el bloqueo observado en esta prueba sintética; la identificación de la entrada procede de la guía, porque la captura no muestra el payload ni se aportó un nuevo log de terminal. El comando guiado no modifica la fixture ni el estado de un run en MySQL. La imagen original se conserva sin edición y sin datos privados visibles. El agente no hizo un POST para esta revisión. El caso de run_id ausente sigue pendiente.
+Después, el usuario aportó la [captura del estado inválido bloqueado](capturas/f10-invalid-status-blocked.png), tras la guía que carga el mismo ejemplo sin alerta y cambia únicamente `status` a `failed` en memoria antes del POST. Webhook [1] completa una operación; «Resumen válido» deja pasar 0 bundles y ningún módulo posterior se ejecuta. Se acredita el bloqueo observado en esta prueba sintética; la identificación de la entrada procede de la guía, porque la captura no muestra el payload ni se aportó un nuevo log de terminal. El comando guiado no modifica la fixture ni el estado de un run en MySQL. La imagen original se conserva sin edición y sin datos privados visibles. El agente no hizo un POST para esta revisión. Esta captura no comprueba run_id ausente; el caso posterior se documenta a continuación.
+
+La [captura posterior sin run_id](capturas/f10-missing-run-id-blocked.png) corresponde a la guía que carga `summary.synthetic.json`, conserva `schema_version=etl-summary-v1` y `status=completed`, y elimina únicamente `run_id` en memoria antes del POST. Webhook [1] completa una operación y «Resumen válido» deja pasar 0 bundles; ningún módulo posterior se ejecuta. Se acredita el bloqueo observado en la prueba sintética, con identificación de la entrada por la guía: la captura no muestra el payload ni se aportó un resultado de terminal. Se conserva la imagen original sin edición y sin datos privados visibles. El agente no ejecutó el POST ni modificó fixtures/BD. Con esto quedan observados los tres casos previstos del filtro, por separado.
 
 ## Primera ejecución del ETL real conectada con Make
 
@@ -143,7 +145,7 @@ El usuario ejecutó `--resend-make c1a93f67-6990-4748-8efa-c18bc6777b42 --force`
 
 ## Validación pendiente de la cuenta
 
-- Completar el caso de run_id ausente, sin ejecutar destinos; versión y estado incorrectos ya se observaron bloqueados. Simular un fallo del destino y documentar recuperación/riesgo residual.
+- Simular un fallo del destino y documentar recuperación/riesgo residual. Los casos de versión incorrecta, estado inválido y run_id ausente ya se observaron bloqueados sin ejecutar destinos.
 - Comprobar la importación de la copia saneada en un escenario desactivado con conexiones propias. La validación local del JSON no acredita una importación en Make.
 
 ## Blueprint exportado y revisión del 27/09/2026
@@ -155,7 +157,7 @@ La revisión confirma `metadata.scenario.sequential=true`, histórico primero, b
 Dos correcciones **confirmadas en la segunda exportación**:
 
 1. Google Sheets **Add a Row [9]** contiene **Value input option = Raw**, valor `RAW` en el JSON. [Make documenta](https://apps.make.com/google-sheets-modules) que User entered interpreta números/fechas y Raw conserva los valores recibidos. Update a Cell [17] ya usa Raw. El importe visible `36.00` de las pruebas previas no demuestra que la celda se guardara como texto.
-2. La conexión **Webhook [1] → Router [2]** contiene el filtro **Resumen válido** con tres condiciones AND: `1.schema_version` **Text operators: Equal to** `etl-summary-v1`; `1.status` **Text operators: Equal to** `completed`; `1.run_id` **Basic operators: Exists**. Elegir las fichas del webhook; no escribir los nombres como texto literal. [Exists comprueba que el campo esté informado](https://help.make.com/filtering). Su presencia/configuración se comprueba en el export; las pruebas guiadas de versión y estado incorrectos ya se observaron bloqueadas; run_id ausente sigue pendiente de comprobación en Make.
+2. La conexión **Webhook [1] → Router [2]** contiene el filtro **Resumen válido** con tres condiciones AND: `1.schema_version` **Text operators: Equal to** `etl-summary-v1`; `1.status` **Text operators: Equal to** `completed`; `1.run_id` **Basic operators: Exists**. Elegir las fichas del webhook; no escribir los nombres como texto literal. [Exists comprueba que el campo esté informado](https://help.make.com/filtering). Su presencia/configuración se comprueba en el export; las pruebas guiadas de versión incorrecta, estado inválido y run_id ausente ya se observaron bloqueadas, por separado, antes del router.
 
 ### Conexiones al importar
 
