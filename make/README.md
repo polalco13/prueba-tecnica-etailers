@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. Quedan contraste de la fila real/marca de correo, otros casos de rechazo del contrato, recuperación e importación; F10 sigue abierta y A09 pendiente del contraste final. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. La fila real y su marca de correo están contrastadas; A09 acreditado. Quedan reenvío de ese run, otros casos de rechazo del contrato, recuperación e importación; F10 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -133,12 +133,12 @@ El 27/09/2026 el usuario aportó la [captura del filtro inicial bloqueando la ej
 
 ## Primera ejecución del ETL real conectada con Make
 
-El 27/09/2026 el usuario ejecutó el ETL y aportó logs y capturas para el run `c1a93f67-6990-4748-8efa-c18bc6777b42`. Se publicó el negocio antes del POST, y la [captura del escenario](capturas/f10-real-etl-destinations.png) muestra histórico/alerta y escritura de la marca completados. La captura del correo recibido contiene el mismo UUID, 115 productos, 72 rechazados, umbral 0, 12 productos bajo mínimos y facturación de agosto `56696.84`; no se versiona por contener datos personales. [Transcripción y alcance](capturas/f10-real-etl-evidence.md): contadores por fuente conciliados, diez motivos que suman 73 filas/motivos y doce entradas de bajo stock conocidas. No confundir estos datos con los ejemplos sintéticos. Falta contrastar la fila completa de Sheets y el valor escrito en O; no se ha consultado la BD del usuario ni ejecutado un POST adicional para esta revisión.
+El 27/09/2026 el usuario ejecutó el ETL y aportó logs y capturas para el run `c1a93f67-6990-4748-8efa-c18bc6777b42`. Se publicó el negocio antes del POST, y la [captura del escenario](capturas/f10-real-etl-destinations.png) muestra histórico/alerta y escritura de la marca completados. La captura del correo recibido contiene el mismo UUID, 115 productos, 72 rechazados, umbral 0, 12 productos bajo mínimos y facturación de agosto `56696.84`; no se versiona por contener datos personales. [Transcripción y alcance](capturas/f10-real-etl-evidence.md): contadores por fuente conciliados, diez motivos que suman 73 filas/motivos y doce entradas de bajo stock conocidas. No confundir estos datos con los ejemplos sintéticos. La [fila completa de Sheets](capturas/f10-real-sheets-verified.md) confirma una sola fila, status completed, `as_of=2026-09-27`, todos los contadores/JSON y O con `2026-09-27 15:34:53 UTC` (17:34:53 Europe/Madrid). A09 queda acreditado; no se ha consultado la BD del usuario ni ejecutado un POST adicional para esta revisión.
 
 ## Validación pendiente de la cuenta
 
 - Completar los casos de estado inválido y run_id ausente, sin ejecutar destinos; la versión incorrecta ya se observó bloqueada. Simular un fallo del destino y documentar recuperación/riesgo residual.
-- Contrastar la fila completa de Sheets y su marca de correo para el run real `c1a93f67-6990-4748-8efa-c18bc6777b42`. Publicación, histórico/alerta completados y correo recibido ya tienen evidencia. No repetir el ETL para reenviar ese resumen; revisar primero los destinos y usar el mismo run_id.
+- Comprobar el reenvío del run real `c1a93f67-6990-4748-8efa-c18bc6777b42`: no añadir otra fila, no ejecutar Gmail y conservar O con `2026-09-27 15:34:53 UTC`. La fila completa, publicación y correo recibido ya están contrastados. Usar `--resend-make` con ese UUID y `--force` tras revisar los destinos; no ejecutar otra carga del ETL.
 - Comprobar la importación de la copia saneada en un escenario desactivado con conexiones propias. La validación local del JSON no acredita una importación en Make.
 
 ## Blueprint exportado y revisión del 27/09/2026
@@ -161,7 +161,7 @@ Importar el archivo desde el menú **Import blueprint** de un escenario nuevo y 
 3. Autorizar Gmail [16], introducir un destinatario de prueba propio y revisar asunto/cuerpo. La lista de destinatarios se deja vacía deliberadamente.
 4. Comprobar que se conservan el filtro inicial, ambas entradas Raw y **Process data in order**; guardar y probar de forma controlada antes de activarlo. La importación aún no se ha ejecutado; no se declara este archivo probado dentro de Make.
 
-F10 sigue pendiente de las verificaciones indicadas; A09 dispone ya de ejecución y recepción reales, pendiente del contraste final de Sheets. F11 no se ha iniciado.
+A09 queda acreditado con ejecución real, ambos destinos y fila final contrastada. F10 sigue pendiente de las verificaciones indicadas. F11 no se ha iniciado.
 
 ## Referencias y decisión técnica
 
