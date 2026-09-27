@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementación local F10: resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado. El usuario configuró conexiones y destinatario propio y verificó histórico/correo, ausencia de alerta y reenvío con datos sintéticos. Blueprint real saneado y capturas disponibles; la segunda exportación acredita procesamiento secuencial, filtro inicial y entrada Raw. Primera ejecución ETL real acreditada con publicación, ambos destinos completados y correo recibido; fila final y marca UTC contrastadas, con A09 acreditado. Reenvío posterior del mismo run real observado sin ejecutar Add a Row/Gmail/Update a Cell. Los tres rechazos previstos del filtro inicial ya están observados por separado. Importación del archivo confirmada textualmente por el usuario, sin prueba de configuración/ejecución de la copia. Recuperación pendiente; detalles en [make/README](../../make/README.md).
+Implementada y verificada en F10, cerrada técnicamente en `feature/make-integration` y pendiente de integración en main. Resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado; ETL real distribuido a Sheets/Gmail, fila/marca y reenvío bloqueado acreditados. A09 satisfecho; blueprint saneado, capturas y guía disponibles. El usuario decidió terminar las pruebas manuales. Recuperación de destinos y configuración/ejecución de la copia importada no verificadas; importación del archivo confirmada textualmente. [Límites de cierre](../../make/README.md#cierre-y-límites-de-verificación).
 
 ## Contexto
 
@@ -26,4 +26,4 @@ La carga confirmada debe sobrevivir a un fallo de Make. Un reenvío días despu�
 
 ## Consecuencias
 
-La migración `004_make_delivery` añade metadatos sin modificar tablas de negocio. Es necesario aplicarla explícitamente; no actualiza volúmenes por sí sola. Un resumen con problemas de generación hace rollback de la publicación completa, conservando la anterior. Un fallo de HTTP posterior conserva la nueva publicación. La aceptación HTTP se audita separada de la verificación de destinos; F10 permanece parcial hasta completar la evidencia externa.
+La migración `004_make_delivery` añade metadatos sin modificar tablas de negocio. Es necesario aplicarla explícitamente; no actualiza volúmenes por sí sola. Un resumen con problemas de generación hace rollback de la publicación completa, conservando la anterior. Un fallo de HTTP posterior conserva la nueva publicación. La aceptación HTTP se audita separada de la verificación de destinos. F10 acredita su ejecución real y se cierra con los límites externos documentados; no promete recuperación de destinos probada ni entrega exactamente una vez.

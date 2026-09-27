@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. La fila real y su marca de correo están contrastadas; A09 acreditado. El reenvío del mismo run real también está observado: histórico/correo bloqueados. Los tres rechazos previstos del filtro inicial ya están observados. Importación del archivo confirmada por el usuario; configuración/ejecución del escenario importado sin verificar. Queda la prueba de recuperación; F10 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** F10 cerrada técnicamente en `feature/make-integration`, pendiente de integración en `main`. R14/R15 y A09 acreditados con código, blueprint real saneado, capturas, fila de Sheets y correo recibido desde el ETL real. El usuario confirmó la importación y decidió terminar las pruebas manuales con la evidencia disponible. Recuperación tras fallo de destino y configuración/ejecución de la copia importada no verificadas; límites detallados más abajo. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -143,10 +143,15 @@ El 27/09/2026 el usuario ejecutó el ETL y aportó logs y capturas para el run `
 
 El usuario ejecutó `--resend-make c1a93f67-6990-4748-8efa-c18bc6777b42 --force` y aportó el log de aceptación HTTP a las `17:53:55,949` y la [captura posterior](capturas/f10-real-etl-repeat.png). «Resumen válido» y «Hay alerta» dejan pasar 1 bundle; «Ejecución nueva» y «Correo pendiente» dejan pasar 0. Search Rows [3]/agregador [7]/Search Rows [15] completan una operación; JSON/Add a Row/Gmail/Update a Cell no se ejecutan. Acredita que ese reenvío del escenario no reinserta la fila, no manda otro correo ni vuelve a escribir la marca. No se aportó una nueva lectura de las celdas de Sheets, un código de salida numérico ni una prueba concurrente. [Detalle y alcance](capturas/f10-real-etl-evidence.md#reenvío-manual-del-mismo-run-27092026).
 
-## Validación pendiente de la cuenta
+## Cierre y límites de verificación
 
-- Simular un fallo del destino y documentar recuperación/riesgo residual. Los casos de versión incorrecta, estado inválido y run_id ausente ya se observaron bloqueados sin ejecutar destinos.
-- La importación del archivo está confirmada por el usuario. Antes de ejecutar el escenario importado, asignar y comprobar sus conexiones propias; no se ha acreditado su configuración/ejecución. La cuenta y conexiones del escenario original sí tienen evidencia de ejecución.
+El 27/09/2026 el usuario decidió finalizar las pruebas manuales. El alcance obligatorio de F10 satisface el README: webhook conectado al ETL, router/filtros, histórico en Sheets, alerta por Gmail, código de llamada, blueprint exportado, capturas y explicación. A09 queda acreditado por el run real y sus dos destinos contrastados. Los tres rechazos del filtro inicial, el caso sin alerta y el bloqueo del reenvío también están observados.
+
+- **Recuperación tras fallo de destino no ejecutada en Make.** No se provocó el error adicional de Sheets propuesto. Las pruebas locales anteriores verifican HTTP 500/timeout, negocio confirmado y reenvío del resumen inmutable con MySQL aislado y transporte HTTP simulado; esto no acredita recuperación de Sheets/Gmail en la cuenta real.
+- **Copia importada:** importación del archivo confirmada textualmente por el usuario; conexiones y ejecución de esa copia sin verificar. El escenario original sí tiene evidencia de ambos destinos. Asignar conexiones propias antes de ejecutar una importación.
+- **Duplicación residual:** el reenvío manual se observó bloqueado y el blueprint configura procesamiento secuencial; no se ejecutó una prueba concurrente externa. Si Gmail envía y falla la marca en Sheets, un reenvío puede repetir el correo. HTTP 2xx no acredita destinos ni entrega exactamente una vez.
+
+Estas limitaciones quedan documentadas sin atribuirles éxito. El cierre técnico de F10 no acredita el arranque limpio ni la entrega final de F12; tampoco inicia F11. La integración de la rama en `main` sigue pendiente.
 
 ## Blueprint exportado y revisión del 27/09/2026
 
@@ -172,7 +177,7 @@ Importar el archivo desde el menú **Import blueprint** de un escenario nuevo y 
 3. Autorizar Gmail [16], introducir un destinatario de prueba propio y revisar asunto/cuerpo. La lista de destinatarios se deja vacía deliberadamente.
 4. Comprobar que se conservan el filtro inicial, ambas entradas Raw y **Process data in order**; guardar y probar de forma controlada antes de activarlo. El usuario confirmó la importación del archivo; configuración y ejecución de esta copia siguen sin acreditarse.
 
-A09 queda acreditado con ejecución real, ambos destinos y fila final contrastada. F10 sigue pendiente de las verificaciones indicadas. F11 no se ha iniciado.
+A09 queda acreditado con ejecución real, ambos destinos y fila final contrastada. F10 queda cerrada técnicamente con los límites indicados; integración en `main` pendiente. F11 no se ha iniciado.
 
 ## Referencias y decisión técnica
 

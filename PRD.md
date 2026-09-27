@@ -1,6 +1,6 @@
 # Plan de producto — Integración y automatizaciones
 
-Estado: F0–F9 implementadas, verificadas e integradas en main. F10 tiene código local probado, blueprint real saneado, pruebas sintéticas y primera ejecución ETL real con ambos destinos y correo recibido. A09 acreditado con la fila final y su marca de correo contrastadas; quedan las verificaciones restantes de cierre F10. Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
+Estado: F0–F9 implementadas, verificadas e integradas en main. F10 cerrada técnicamente en `feature/make-integration`, pendiente de integración: R14/R15 y A09 acreditados con código, blueprint y ejecución ETL real distribuida a Sheets/Gmail. Recuperación de destinos y ejecución de la copia importada no verificadas; [límites de cierre](make/README.md#cierre-y-límites-de-verificación). Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
 
 En estos documentos, **R** significa requisito explícito del README; **D**, decisión técnica propuesta; **S**, supuesto pendiente de validar. Una propuesta no constituye una regla de negocio confirmada. El encargo de planificación exige tests y mayor detalle de robustez aunque el README los considere extras.
 
@@ -103,7 +103,7 @@ Los estados distinguen evidencia técnica ejecutada y trabajo pendiente; no impl
 | Margen bruto | R12; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados; comparabilidad de costes por confirmar |
 | Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
 | Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Cliente probado; Sheets/Gmail completados y correo recibido desde ETL real, además de pruebas sintéticas |
-| Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | Código/guía, blueprint real saneado, capturas sintéticas/ETL real y fila final contrastada disponibles; A09 acreditado, otras verificaciones pendientes |
+| Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | F10 cerrada técnicamente: artefactos disponibles y A09 acreditado; integración en main pendiente y límites de pruebas externas documentados |
 | Idempotencia | R16; ADR 002; F4/F6–F7 | Verificada en F7 con fuentes congeladas |
 | SOLUCION.md y análisis de cinco millones de líneas | R17; plantilla SOLUCION; F12 | Planificado |
 | GitHub, ramas, commits, PR y main funcional | R18; IMPLEMENTATION_PLAN; F0–F12 | Planificado |
