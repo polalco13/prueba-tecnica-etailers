@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local implementado y probado; histórico, correo sintético y bloqueo de reenvío verificados por el usuario. La segunda exportación del 27/09/2026 acredita procesamiento secuencial, filtro inicial completo y entrada Raw, y se conserva saneada. Faltan los otros casos de rechazo del contrato, recuperación, importación y envío del ETL real: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local probado; pruebas sintéticas y primera ejecución del ETL real conectada con Sheets/Gmail acreditadas por el usuario el 27/09/2026. Blueprint real saneado con procesamiento secuencial, filtro inicial y entrada Raw confirmados. Quedan contraste de la fila real/marca de correo, otros casos de rechazo del contrato, recuperación e importación; F10 sigue abierta y A09 pendiente del contraste final. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -131,17 +131,21 @@ El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, 
 
 El 27/09/2026 el usuario aportó la [captura del filtro inicial bloqueando la ejecución](capturas/f10-invalid-schema-blocked.png), tras la prueba guiada que carga `summary.synthetic.json` y sustituye `schema_version` por `version-invalida`. El webhook completa su operación y «Resumen válido» deja pasar 0 bundles; el router y los módulos de Sheets/JSON/Gmail posteriores no se ejecutan. La captura no muestra el payload: la identificación del caso procede del comando guiado anterior. No acredita los casos de estado inválido/run_id ausente ni una carga real del ETL. Se conserva la imagen original sin edición; no contiene destinatarios ni URL del webhook visibles.
 
+## Primera ejecución del ETL real conectada con Make
+
+El 27/09/2026 el usuario ejecutó el ETL y aportó logs y capturas para el run `c1a93f67-6990-4748-8efa-c18bc6777b42`. Se publicó el negocio antes del POST, y la [captura del escenario](capturas/f10-real-etl-destinations.png) muestra histórico/alerta y escritura de la marca completados. La captura del correo recibido contiene el mismo UUID, 115 productos, 72 rechazados, umbral 0, 12 productos bajo mínimos y facturación de agosto `56696.84`; no se versiona por contener datos personales. [Transcripción y alcance](capturas/f10-real-etl-evidence.md): contadores por fuente conciliados, diez motivos que suman 73 filas/motivos y doce entradas de bajo stock conocidas. No confundir estos datos con los ejemplos sintéticos. Falta contrastar la fila completa de Sheets y el valor escrito en O; no se ha consultado la BD del usuario ni ejecutado un POST adicional para esta revisión.
+
 ## Validación pendiente de la cuenta
 
 - Completar los casos de estado inválido y run_id ausente, sin ejecutar destinos; la versión incorrecta ya se observó bloqueada. Simular un fallo del destino y documentar recuperación/riesgo residual.
-- Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
+- Contrastar la fila completa de Sheets y su marca de correo para el run real `c1a93f67-6990-4748-8efa-c18bc6777b42`. Publicación, histórico/alerta completados y correo recibido ya tienen evidencia. No repetir el ETL para reenviar ese resumen; revisar primero los destinos y usar el mismo run_id.
 - Comprobar la importación de la copia saneada en un escenario desactivado con conexiones propias. La validación local del JSON no acredita una importación en Make.
 
 ## Blueprint exportado y revisión del 27/09/2026
 
 [escenario.blueprint.json](escenario.blueprint.json) procede de la segunda exportación real `make-etl.json` aportada por el usuario; sustituye la copia saneada de `nortesur-make.json`. Ambos originales se conservan sin modificar fuera del repositorio. Se retiraron el identificador del webhook, identificadores/etiquetas personales de conexiones, identificadores/selecciones de la hoja y destinatario. No se fabricaron conexiones alternativas. Se conservan módulos, IDs, versiones, rutas, filtros, fórmulas, estructura del webhook y ajustes funcionales del export. Frente a la primera copia, los únicos cambios funcionales son el filtro inicial y la entrada Raw en Add a Row.
 
-La revisión confirma `metadata.scenario.sequential=true`, histórico primero, búsquedas exactas por run con límite 1, filtro del bundle vacío, serialización de G/H/L y marca `O{{15.__ROW_NUMBER__}}` posterior al correo con entrada Raw. El cuerpo exportado empieza por «Resumen de la ejecución del ETL.»; el asunto mantiene `[PRUEBA ETL Nortesur]`. Las capturas previas acreditan pruebas sintéticas, no la ejecución de esta versión del cuerpo con datos reales.
+La revisión confirma `metadata.scenario.sequential=true`, histórico primero, búsquedas exactas por run con límite 1, filtro del bundle vacío, serialización de G/H/L y marca `O{{15.__ROW_NUMBER__}}` posterior al correo con entrada Raw. El cuerpo exportado empieza por «Resumen de la ejecución del ETL.»; el asunto mantiene `[PRUEBA ETL Nortesur]`. Las capturas anteriores acreditan pruebas sintéticas. La evidencia posterior del [ETL real](capturas/f10-real-etl-evidence.md) confirma recepción de este cuerpo con el nuevo UUID y cifras reales de la carga.
 
 Dos correcciones **confirmadas en la segunda exportación**:
 
@@ -157,7 +161,7 @@ Importar el archivo desde el menú **Import blueprint** de un escenario nuevo y 
 3. Autorizar Gmail [16], introducir un destinatario de prueba propio y revisar asunto/cuerpo. La lista de destinatarios se deja vacía deliberadamente.
 4. Comprobar que se conservan el filtro inicial, ambas entradas Raw y **Process data in order**; guardar y probar de forma controlada antes de activarlo. La importación aún no se ha ejecutado; no se declara este archivo probado dentro de Make.
 
-F10/A09 sigue pendiente de las verificaciones indicadas. F11 no se ha iniciado.
+F10 sigue pendiente de las verificaciones indicadas; A09 dispone ya de ejecución y recepción reales, pendiente del contraste final de Sheets. F11 no se ha iniciado.
 
 ## Referencias y decisión técnica
 

@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementación local F10: resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado. El usuario configuró conexiones y destinatario propio y verificó histórico/correo, ausencia de alerta y reenvío con datos sintéticos. Blueprint real saneado y capturas disponibles; la segunda exportación acredita procesamiento secuencial, filtro inicial y entrada Raw. Pendientes rechazo de contratos inválidos, recuperación, importación y envío ETL real. No se declara A09 cumplido; detalles en [make/README](../../make/README.md).
+Implementación local F10: resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado. El usuario configuró conexiones y destinatario propio y verificó histórico/correo, ausencia de alerta y reenvío con datos sintéticos. Blueprint real saneado y capturas disponibles; la segunda exportación acredita procesamiento secuencial, filtro inicial y entrada Raw. Primera ejecución ETL real acreditada con publicación, ambos destinos completados y correo recibido; pendientes contraste de la fila final, otros casos de rechazo del contrato, recuperación e importación. A09 dispone de evidencia real pendiente del contraste final; detalles en [make/README](../../make/README.md).
 
 ## Contexto
 

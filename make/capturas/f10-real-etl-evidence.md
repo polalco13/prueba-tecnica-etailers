@@ -1,0 +1,81 @@
+# ETL real → Make — evidencia aportada por el usuario
+
+El 27/09/2026 el usuario ejecutó `.venv/bin/python -m src.etl` desde el proyecto y aportó los logs de terminal, la [captura del escenario](f10-real-etl-destinations.png) y una captura del correo recibido. Esta última no se versiona porque contiene nombre, dirección y fotografía personales. Los datos siguientes son una transcripción de esas evidencias; no son una fixture ni una nueva ejecución realizada por el agente.
+
+Run: `c1a93f67-6990-4748-8efa-c18bc6777b42`.
+
+## Logs aportados
+
+La migración informó a las 17:34:14 que `004_make_delivery` ya estaba aplicada. Los siguientes eventos incluyen el mismo run_id; las horas se conservan como aparecieron en terminal, sin atribuirles un offset que el log no muestra:
+
+| Hora del log | Evento |
+| --- | --- |
+| 17:34:47,936 | Stock descargado: 5 páginas y 230 filas |
+| 17:34:47,953 | Extracción validada: 115 productos |
+| 17:34:50,394 | Catálogo, tarifas, stock y pedidos publicados |
+| 17:34:50,588 | Resumen recibido por HTTP; destinos pendientes de verificar en Make |
+| 17:34:50,590 | Contadores finales por fuente |
+
+| Fuente | Leídas | Aceptadas | Rechazadas | Deduplicadas |
+| --- | --- | --- | --- | --- |
+| Catálogo CSV | 133 | 115 | 15 | 3 |
+| Stock API | 230 | 206 | 24 | 0 |
+| Pedidos CSV | 1142 | 1101 | 33 | 8 |
+
+Se cargaron 358 pedidos, 30 parciales. Por fuente se cumple `leídas = aceptadas + rechazadas + deduplicadas`; hay 72 filas rechazadas en total y 11 deduplicadas, contadas aparte.
+
+## Destinos y correo
+
+La captura del escenario muestra «Resumen válido», «Ejecución nueva», «Hay alerta» y «Correo pendiente» dejando pasar un bundle. Search Rows [3]/agregador [7]/JSON [10,13,14]/Add a Row [9] completan el histórico; Search Rows [15]/Gmail [16]/Update a Cell [17] completan la alerta y la escritura de su marca.
+
+El correo recibido tiene el mismo UUID en asunto y cuerpo, empieza por «Resumen de la ejecución del ETL.» y muestra:
+
+| Campo | Valor visible |
+| --- | --- |
+| Productos cargados | 115 |
+| Filas rechazadas | 72 |
+| Umbral de rechazos | 0 |
+| Productos bajo mínimos | 12 |
+| Mes anterior | 2026-08 |
+| Facturación del mes anterior | 56696.84 |
+| Moneda/base fiscal | Pendientes de confirmar |
+
+La alerta corresponde a la regla documentada: `72 > 0` y también hay bajo stock. Asunto conservado: `[PRUEBA ETL Nortesur] Alerta de carga …`; los datos proceden de esta ejecución del ETL, no de los ejemplos sintéticos.
+
+La distribución visible en el correo es:
+
+| Fuente | Motivo | Filas por motivo |
+| --- | --- | --- |
+| catalog_csv | AMBIGUOUS_NUMBER | 5 |
+| catalog_csv | CONFLICTING_PRODUCT_SKU | 3 |
+| catalog_csv | INVALID_COLUMN_COUNT | 2 |
+| catalog_csv | MISSING_REQUIRED_FIELD | 1 |
+| catalog_csv | NON_POSITIVE_PRICE | 4 |
+| orders_csv | INVALID_QUANTITY | 9 |
+| orders_csv | INVALID_QUANTITY_FOR_STATUS | 8 |
+| orders_csv | MISSING_ORDER_DATE | 1 |
+| orders_csv | MISSING_REQUIRED_FIELD | 16 |
+| stock_api | UNKNOWN_PRODUCT_SKU | 24 |
+
+Suma 73 filas/motivos frente a 72 filas rechazadas: una fila puede tener varios motivos distintos. El detalle de bajo stock contiene doce entradas visibles, todas con stock físico inferior a 5 y unidades recientes positivas:
+
+| SKU | Stock físico | Unidades recientes |
+| --- | --- | --- |
+| PRV-2056 | 0 | 12 |
+| PRV-2081 | 0 | 4 |
+| PRV-2111 | 1 | 50 |
+| PRV-2110 | 1 | 25 |
+| PRV-2061 | 1 | 5 |
+| PRV-2118 | 1 | 5 |
+| PRV-2028 | 1 | 3 |
+| PRV-2075 | 1 | 3 |
+| PRV-2083 | 3 | 7 |
+| PRV-2068 | 3 | 5 |
+| PRV-2112 | 3 | 2 |
+| PRV-2074 | 3 | 1 |
+
+## Alcance de la verificación
+
+Los logs prueban la publicación anterior al POST y la captura acredita la ejecución correcta de ambos destinos; la recepción del correo deja de depender de la aceptación HTTP como única evidencia. Sus cifras coinciden con los contadores aportados y con los importes/conteos de la validación SQL previa F8, sin asumir que las entradas o la fecha analítica sean idénticas.
+
+La captura del escenario no muestra las quince celdas de la fila final ni el valor escrito en O. Falta contrastar esa fila completa de Sheets, `as_of` y su marca UTC, así como el resumen persistido en MySQL si se aporta. El run_id permite enlazar las evidencias; no se ha consultado la BD del usuario en esta revisión. Tampoco acredita la repetición de este run real, la importación del blueprint ni recuperación tras un fallo de destino. Los casos sintéticos anteriores de bloqueo de reenvío y ausencia de alerta se conservan por separado. F11 no iniciado.
