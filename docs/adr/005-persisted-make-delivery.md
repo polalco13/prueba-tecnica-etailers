@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementación local F10: resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado. El usuario configuró conexiones y destinatario propio y verificó histórico/correo, ausencia de alerta y reenvío con datos sintéticos. Blueprint real saneado y capturas disponibles; exportación acredita procesamiento secuencial. Pendientes filtro inicial, entrada Raw en Add a Row, exportación corregida, recuperación y envío ETL real. No se declara A09 cumplido; detalles en [make/README](../../make/README.md).
+Implementación local F10: resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado. El usuario configuró conexiones y destinatario propio y verificó histórico/correo, ausencia de alerta y reenvío con datos sintéticos. Blueprint real saneado y capturas disponibles; la segunda exportación acredita procesamiento secuencial, filtro inicial y entrada Raw. Pendientes rechazo de contratos inválidos, recuperación, importación y envío ETL real. No se declara A09 cumplido; detalles en [make/README](../../make/README.md).
 
 ## Contexto
 
@@ -22,7 +22,7 @@ La carga confirmada debe sobrevivir a un fallo de Make. Un reenvío días despu�
 - Revertir MySQL si falla Make: invalidaría datos ya confirmados y no puede deshacer un correo.
 - Recalcular al reenviar: produciría un resumen diferente para el mismo run.
 - Reintentar POST automáticamente ante cualquier fallo: puede duplicar efectos externos antes de que el operador revise el escenario.
-- Construir un blueprint ficticio: no acredita módulos, conexiones ni ejecución real; se conserva la exportación real del usuario saneada, con ajustes pendientes documentados, sin inventar cambios aplicados en la cuenta.
+- Construir un blueprint ficticio: no acredita módulos, conexiones ni ejecución real; se conserva la exportación real del usuario saneada, con la configuración corregida acreditada por el segundo archivo, sin inventar cambios aplicados en la cuenta.
 
 ## Consecuencias
 
