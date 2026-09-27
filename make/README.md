@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** código local implementado y probado; el usuario verificó el contenido del histórico y el 27/09/2026 aportó evidencia del correo sintético recibido, Gmail/Update a Cell completados y reenvío bloqueado por ambos filtros. Pendientes configuración secuencial/filtro inicial, recuperación, envío del ETL real y blueprint: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** código local implementado y probado; histórico, correo sintético y bloqueo de reenvío verificados por el usuario. El blueprint exportado el 27/09/2026 acredita procesamiento secuencial y se conserva saneado. Faltan el filtro inicial, entrada Raw en Add a Row, nueva exportación tras esas correcciones, recuperación y envío del ETL real: F10/A09 sigue abierta. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -83,7 +83,7 @@ Numeric operators: Equal to
 
 El 7 es el ID del agregador observado; adaptar esa referencia si cambia al montar otro escenario. Pegar la expresión con sus dobles llaves o construirla con funciones/fichas: texto literal como `length(7.Array[])` no es una fórmula.
 
-Después del filtro, tres módulos `JSON > Transform to JSON` convierten por separado `rows` [10], `rejected_by_reason[]` [13] y `low_stock_products[]` [14] del webhook. Cada campo Object contiene una sola ficha. Sus respectivas salidas JSON se mapean a las columnas G, H y L de `Add a Row [9]`; las demás columnas usan los campos simples del webhook y `email_sent_at` queda vacío. Sheets usa entrada Raw.
+Después del filtro, tres módulos `JSON > Transform to JSON` convierten por separado `rows` [10], `rejected_by_reason[]` [13] y `low_stock_products[]` [14] del webhook. Cada campo Object contiene una sola ficha. Sus respectivas salidas JSON se mapean a las columnas G, H y L de `Add a Row [9]`; las demás columnas usan los campos simples del webhook y `email_sent_at` queda vacío. Add a Row debe usar entrada Raw; la exportación recibida todavía tiene `USER_ENTERED`, pendiente de corregir. El texto pegado de la hoja permite contrastar el importe visible, pero no acredita su tipo interno.
 
 La [captura del primer histórico](capturas/f10-synthetic-history-first-run.png), aportada el 26/09/2026, muestra el envío atravesando el filtro y finalizando Add a Row. El texto de Sheets aportado después contiene una sola fila del run sintético `00000000-0000-4000-8000-000000000002`: los valores y los tres JSON coinciden con `alert.synthetic.json`, incluido `36.00`. Se detectó una cabecera duplicada en J1; el usuario confirmó su corrección a `revenue_previous_month`. La [captura del envío de alerta](capturas/f10-synthetic-alert-first-mail.png), aportada el 27/09/2026, muestra «Ejecución nueva» bloqueando la reinserción. No es todavía una prueba de repetición del correo ya marcado.
 
@@ -97,7 +97,7 @@ La segunda ruta del router usa `alert_required = true`, sin fallback, y corre de
 {{formatDate(now; "YYYY-MM-DD HH:mm:ss"; "UTC")}} UTC
 ```
 
-Usar entrada Raw. El usuario confirmó la corrección de Cell tras haber mapeado inicialmente el contenido de `email_sent_at`; la captura de ejecución muestra Gmail [16] y Update a Cell [17] completados. La [captura de repetición del 27/09/2026](capturas/f10-synthetic-alert-repeat.png) muestra «Ejecución nueva» y «Correo pendiente» dejando pasar 0 bundles: Add a Row, Gmail y Update a Cell no se ejecutan de nuevo. Acredita el bloqueo del reenvío manual guiado. La [tabla aportada por el usuario](capturas/f10-synthetic-sheets-verified.md) confirma una fila por run y la marca `2026-09-27 14:10:01 UTC` solo en la alerta. El procesamiento secuencial y el filtro inicial de contrato se han indicado, pero su configuración no se ha acreditado con captura/exportación; esta repetición manual no prueba concurrencia.
+Usar entrada Raw. El usuario confirmó la corrección de Cell tras haber mapeado inicialmente el contenido de `email_sent_at`; la captura de ejecución muestra Gmail [16] y Update a Cell [17] completados. La [captura de repetición del 27/09/2026](capturas/f10-synthetic-alert-repeat.png) muestra «Ejecución nueva» y «Correo pendiente» dejando pasar 0 bundles: Add a Row, Gmail y Update a Cell no se ejecutan de nuevo. Acredita el bloqueo del reenvío manual guiado. La [tabla aportada por el usuario](capturas/f10-synthetic-sheets-verified.md) confirma una fila por run y la marca `2026-09-27 14:10:01 UTC` solo en la alerta. El blueprint posterior acredita `sequential=true` y entrada Raw en Update a Cell; el filtro inicial sigue ausente. Esta repetición manual no prueba concurrencia.
 
 Para una futura prueba de ETL real, sustituir el asunto y la identificación sintética del cuerpo por contenido acorde con la fuente utilizada, y revisar el destino. Plantilla prevista para datos del ETL:
 
@@ -125,19 +125,41 @@ La autorización debe concretar destinatario y prueba antes de disparar un webho
 
 ## Prueba sin alerta ejecutada
 
-El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, el usuario aportó la [captura sin alerta](capturas/f10-synthetic-no-alert.png). El run del ejemplo termina en `0001`, tiene duplicados, rechazos 0, umbral 0, bajo stock 0 y ambas listas vacías. El filtro del histórico deja pasar el bundle y los tres JSON/Add a Row completan la operación; «Hay alerta» deja pasar 0 bundles y el resto de esa ruta no se ejecuta. Esto verifica el bloqueo del correo en el límite `rows_rejected = threshold = 0` sin bajo stock. La [tabla de Sheets aportada después](capturas/f10-synthetic-sheets-verified.md) confirma las quince cabeceras, ambas filas y todos los valores/JSON de los ejemplos: run `0001` con FALSE, listas `[]` y O vacía; run `0002` con TRUE y fecha UTC en O. Se verificó la igualdad de contadores de cada fuente y la conservación del texto `36.00`.
+El 27/09/2026, siguiendo la guía de envío manual de `summary.synthetic.json`, el usuario aportó la [captura sin alerta](capturas/f10-synthetic-no-alert.png). El run del ejemplo termina en `0001`, tiene duplicados, rechazos 0, umbral 0, bajo stock 0 y ambas listas vacías. El filtro del histórico deja pasar el bundle y los tres JSON/Add a Row completan la operación; «Hay alerta» deja pasar 0 bundles y el resto de esa ruta no se ejecuta. Esto verifica el bloqueo del correo en el límite `rows_rejected = threshold = 0` sin bajo stock. La [tabla de Sheets aportada después](capturas/f10-synthetic-sheets-verified.md) confirma las quince cabeceras, ambas filas y todos los valores/JSON de los ejemplos: run `0001` con FALSE, listas `[]` y O vacía; run `0002` con TRUE y fecha UTC en O. Se verificó la igualdad de contadores de cada fuente y el importe visible `36.00`; la transcripción no permite comprobar el tipo interno de la celda.
 
 ## Validación pendiente de la cuenta
 
-- Acreditar el procesamiento secuencial y el filtro inicial de contrato. Simular un fallo del destino y documentar recuperación/riesgo residual.
+- Corregir el filtro inicial y Add a Row según la revisión de abajo; volver a exportar. Simular un fallo del destino y documentar recuperación/riesgo residual.
 - Una carga real de las cuatro fuentes → verificar recepción **y** destinos; no basta con el log HTTP del ETL. Configurar destino de prueba antes de ejecutarla.
-- Exportar desde Make `escenario.blueprint.json`, revisar/sanitizar URLs de webhook, conexiones, identificadores privados, destinatarios y muestras de clientes. Guardar capturas del escenario y de una ejecución en `capturas/`, sin secretos. Documentar qué conexiones hay que recrear al importar.
+- Comprobar la importación de la copia saneada en un escenario desactivado con conexiones propias. La validación local del JSON no acredita una importación en Make.
 
-No existe todavía `escenario.blueprint.json` porque no se ha exportado. El usuario ya inició sesión, conectó Sheets/Gmail y verificó histórico y recepción de correo con datos sintéticos; falta completar las verificaciones de arriba para cerrar F10/A09. F11 no se ha iniciado.
+## Blueprint exportado y revisión del 27/09/2026
+
+[escenario.blueprint.json](escenario.blueprint.json) procede del archivo real `nortesur-make.json` aportado por el usuario; el original se conserva sin modificar fuera del repositorio. Se retiraron el identificador del webhook, identificadores/etiquetas personales de conexiones, identificadores/selecciones de la hoja y destinatario. No se fabricaron conexiones alternativas. Se conservan módulos, IDs, versiones, rutas, filtros, fórmulas, estructura del webhook y ajustes funcionales del export, incluidos los dos pendientes siguientes.
+
+La revisión confirma `metadata.scenario.sequential=true`, histórico primero, búsquedas exactas por run con límite 1, filtro del bundle vacío, serialización de G/H/L y marca `O{{15.__ROW_NUMBER__}}` posterior al correo con entrada Raw. El cuerpo exportado empieza por «Resumen de la ejecución del ETL.»; el asunto mantiene `[PRUEBA ETL Nortesur]`. Las capturas previas acreditan pruebas sintéticas, no la ejecución de esta versión del cuerpo con datos reales.
+
+Dos correcciones pendientes **en la cuenta de Make**:
+
+1. Abrir Google Sheets **Add a Row [9]**, mostrar ajustes avanzados si es necesario y cambiar **Value input option** de **User entered** a **Raw**. Actualmente el export contiene `USER_ENTERED`. [Make documenta](https://apps.make.com/google-sheets-modules) que User entered interpreta números/fechas y Raw conserva los valores recibidos. Update a Cell [17] ya usa Raw. El importe visible `36.00` de las pruebas previas no demuestra que la celda se guardara como texto.
+2. En la conexión **Webhook [1] → Router [2]**, añadir el filtro **Resumen válido** con tres condiciones AND: `1.schema_version` **Text operators: Equal to** `etl-summary-v1`; `1.status` **Text operators: Equal to** `completed`; `1.run_id` **Basic operators: Exists**. Elegir las fichas del webhook; no escribir los nombres como texto literal. [Exists comprueba que el campo esté informado](https://help.make.com/filtering). La exportación recibida no contiene ese filtro. Guardar el filtro y el escenario, probar rechazo de un resumen inválido sin llegar a los destinos y volver a exportar para actualizar la copia saneada.
+
+### Conexiones al importar
+
+Importar el archivo desde el menú **Import blueprint** de un escenario nuevo y desactivado. [Make requiere configurar las conexiones propias tras importar](https://help.make.com/blueprints); esta copia no contiene accesos reutilizables.
+
+1. Crear/seleccionar un Custom webhook en [1]. Usar su URL únicamente en la configuración local privada; la estructura de campos queda en el blueprint.
+2. Autorizar Google Sheets y seleccionar la misma hoja/tab `ejecuciones` en [3], [9], [15] y [17]. Preparar las quince cabeceras en el orden documentado, A–O; verificar búsquedas A, mapeos A–N y actualización O. Las conexiones y `spreadsheetId` están sin asignar.
+3. Autorizar Gmail [16], introducir un destinatario de prueba propio y revisar asunto/cuerpo. La lista de destinatarios se deja vacía deliberadamente.
+4. Aplicar las dos correcciones anteriores, comprobar **Process data in order**, guardar y probar de forma controlada antes de activarlo. La importación aún no se ha ejecutado; no se declara este archivo probado dentro de Make.
+
+F10/A09 sigue pendiente de las verificaciones indicadas. F11 no se ha iniciado.
 
 ## Referencias y decisión técnica
 
 - [Webhooks y confirmación HTTP de Make](https://help.make.com/webhooks).
 - [Procesamiento secuencial](https://help.make.com/scenario-settings).
 - [Exportar/importar blueprints y recrear conexiones](https://help.make.com/blueprints).
+- [Google Sheets: entrada Raw y User entered](https://apps.make.com/google-sheets-modules).
+- [Filtros y operador Exists](https://help.make.com/filtering).
 - [ADR 005](../docs/adr/005-persisted-make-delivery.md): persistencia, reenvío y límites de entrega.

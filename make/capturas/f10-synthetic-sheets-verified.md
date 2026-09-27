@@ -1,6 +1,6 @@
 # Sheets — contraste de las dos ejecuciones sintéticas
 
-Tabla transcrita del mensaje del usuario del 27/09/2026. Contiene las quince columnas de `ejecuciones` y las dos filas observadas después de las pruebas de alerta, reenvío y ausencia de alerta. No procede de una carga real del ETL; las fuentes son `alert.synthetic.json` y `summary.synthetic.json`. Se conserva el contenido JSON de las celdas como texto para contrastarlo con esos ejemplos.
+Tabla transcrita del mensaje del usuario del 27/09/2026. Contiene las quince columnas de `ejecuciones` y las dos filas observadas después de las pruebas de alerta, reenvío y ausencia de alerta. No procede de una carga real del ETL; las fuentes son `alert.synthetic.json` y `summary.synthetic.json`. Se conserva el contenido JSON de las celdas como texto para contrastarlo con esos ejemplos. La transcripción permite verificar valores visibles, pero no el tipo interno de las celdas. El blueprint recibido después muestra Add a Row con `USER_ENTERED`, pendiente de cambiar a Raw según [la revisión](../README.md).
 
 | run_id | finished_at | status | as_of | products_loaded | rows_rejected | rows_json | rejected_by_reason_json | previous_month | revenue_previous_month | low_stock_count | low_stock_products_json | rejection_threshold | alert_required | email_sent_at |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
