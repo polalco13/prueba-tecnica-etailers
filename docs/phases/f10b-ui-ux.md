@@ -1,6 +1,6 @@
 # F10b — Mejora UI/UX de la plataforma ejecutable
 
-**Estado:** implementada y verificada el 28/09/2026 en `feature/ui-ux`; pendiente de revisión/integración. Dependencia: F10 integrada en `main` mediante PR 5 (`ff53b1c`). Se ejecuta antes de F12; F11 continúa opcional.
+**Estado:** implementada, verificada e integrada mediante PR 6 (`aab89b9`). Dependencia: F10 integrada mediante PR 5 (`ff53b1c`). F11 continúa opcional. Las capturas comparativas se conservan en el historial Git; el paquete final usa solo las [capturas de entrega](../evidence/README.md).
 
 Esta fase responde a la petición del usuario de mejorar UI/UX con las skills instaladas. El [README](../../README.md) exige claridad y cifras correctas; la mejora visual es una ampliación solicitada. La implementación y la evidencia se resumen en [SOLUCION](../../SOLUCION.md) y [docs/evidence/f10b](../evidence/f10b/README.md).
 
@@ -41,7 +41,7 @@ Leer completos los cinco documentos obligatorios de AGENTS, consultar SOLUCION/A
 
 Ejecutar `impeccable context` sobre `src/web/templates/index.html`. La consulta de planificación encontró interfaz existente y ausencia de `PRODUCT.md`/`DESIGN.md`; volver a comprobarlo al ejecutar. La interfaz actual es el punto de partida. Para ajustes acotados, seguir el flujo de refinamiento de la skill. Si se necesita una nueva dirección visual o falta contexto esencial, seguir `init`/`shape` según sus instrucciones y obtener las respuestas necesarias antes de sustituirla. No inventar audiencia, marca o preferencias del usuario. Agrupar las preguntas materiales en una ronda breve, sin repetir decisiones ya disponibles.
 
-Guardar una referencia del panel y del catálogo con el mismo dataset, `run_id`, `as_of`, filtros y tamaños de ventana que se usarán después. Las [capturas F9](../evidence/README.md) sirven de contexto histórico; no equivalen a una nueva captura del estado actual.
+Guardar una referencia del panel y del catálogo con el mismo dataset, `run_id`, `as_of`, filtros y tamaños de ventana que se usarán después. Las capturas F9 del historial Git sirven de contexto histórico; no equivalen a una nueva captura del estado actual.
 
 ### 2. Revisión y propuesta acotada
 
@@ -84,7 +84,7 @@ Se ejecutaron las regresiones web afectadas contra MySQL aislado siguiendo [la g
 
 - Mejoras implementadas en la web y resumen de problemas resueltos con su motivo.
 - Revisión `Before | After | Why` y resultado de UX01–UX06, indicando límites reales.
-- Capturas auténticas antes/después en `docs/evidence/f10b/`, con un `README.md` que identifique publicación, filtros, tamaños y comprobaciones. Sin secretos ni datos de clientes; si no se puede capturar de forma segura, usar un entorno aislado claramente identificado, sin editar la imagen para fingir evidencia.
+- Capturas auténticas antes/después y registro de publicación, filtros, tamaños y comprobaciones. Las comparativas realizadas están en el historial Git; la entrega conserva una captura final. Sin secretos ni datos de clientes, ni imágenes editadas para fingir evidencia.
 - SOLUCION actualizada y diff revisable de la fase. Rama/PR e integración en `main` cuando se solicite el trabajo Git, sin fabricar historial ni números de PR.
 
 Solicitud para comenzar en un turno posterior:

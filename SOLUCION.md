@@ -1,418 +1,152 @@
-# Solución — documento vivo
+# Solución
 
-**Estado: F0–F10 integradas en `main`; F10 mediante PR 5 (`ff53b1c`), con R14/R15 y A09 acreditados con código, blueprint y ejecución ETL real en Sheets/Gmail, fila y marca contrastadas. F10b implementada y verificada en `feature/ui-ux`, pendiente de revisión/integración.** Recuperación tras fallo de destino y ejecución de la copia importada no verificadas; limitaciones documentadas. F11 no iniciado; F12 pendiente. `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+ETL de las cuatro fuentes originales → MySQL → catálogo y panel de negocio. Al terminar una carga, Make registra el resumen en Google Sheets y envía una alerta por Gmail cuando corresponde.
 
-Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
-
-## Resumen
-
-- Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
-- Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7); consultas analíticas probadas y contrastadas con una carga real aislada (F8); catálogo web paginado y dashboard con gráfico, métricas y avisos de calidad, comprobados en MySQL y navegador (F9); resumen persistido y envío posterior al commit a Make, histórico en Sheets, alerta Gmail y reenvío del mismo resumen con bloqueo de duplicados observado (F10).
-- Versión/commit entregado y enlace GitHub: **TBD**.
-- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A08: verificada en F9 y refinada en F10b. A09 de Make: acreditado con ejecución real y destinos contrastados; F10 integrada con límites explícitos. F12 sigue pendiente, sin declarar el ejercicio completo.
-
-## Arquitectura final
-
-El incremento implementado es CSV/XML/API de stock/CSV de pedidos → lectores y reglas Python → transacción InnoDB MySQL 8 (`products`, `stock_by_warehouse`, `orders`, `order_lines`, `etl_runs`, `rejections`) → consultas SQL de solo lectura en `src/analytics/queries.py` → FastAPI/Jinja2 y Chart.js local en `src/web/`. El catálogo usa `src/analytics/catalog.py`; los importes se calculan en SQL, no en JavaScript. Las incidencias de fallos se confirman por separado tras rollback; un advisory lock serializa escritores. Diagrama final con web y Make: **TBD**.
-
-## Requisitos de entorno
-
-- Entorno local comprobado en F0 (23/09/2026): Python 3.13.13, Docker 29.2.1 y Compose 2.38.2. MySQL respondió como 8.0.46. Se usa 3.13 porque la versión 3.12 propuesta no está disponible en este equipo; compatibilidad con otros Python **TBD**.
-- Dependencias resueltas y fijadas en `requirements.txt`; configuración de pytest y Ruff en `pyproject.toml`. La justificación de dependencias está más abajo. Instalación en otro equipo **TBD**.
-- Puertos/servicios del entorno provisto: MySQL host 3307 y API stock 3001; ambos estaban `healthy` en F0. Esta observación local no sustituye la comprobación desde cero de F12.
-- En F0 no había `MAKE_WEBHOOK_URL` ni conexiones Make verificadas. En F10 el usuario configuró la URL local y conectó Sheets/Gmail; el 27/09/2026 hay evidencia de correos sintético/ETL real recibidos y sus filas de Sheets contrastadas. Destinos y parámetros privados permanecen fuera de Git. El token local se usó en memoria para la comprobación autenticada; no se mostró ni publicó.
-- GitHub: `origin` está configurado y un `git push --dry-run` a `feature/etl-products` terminó correctamente; no se publicó esa rama por esta comprobación. La accesibilidad final del repositorio entregado se verificará en F12.
-- Zona horaria propuesta en F1: `Europe/Madrid` por defecto, configurable mediante `BUSINESS_TIMEZONE` y pendiente de confirmación comercial. Moneda y base fiscal: **TBD**.
+Repositorio: [prueba-tecnica-etailers](https://github.com/polalco13/prueba-tecnica-etailers). Código funcional en `main`; queda integrar esta rama documental y enviar la entrega. El [README](README.md) es el enunciado; [DATA_RULES](DATA_RULES.md) contiene las reglas detalladas y [TECH_SPEC](TECH_SPEC.md) la arquitectura.
 
 ## Cómo levantar desde cero
 
-Pasos de bootstrap comprobados en F0, que F12 debe repetir desde un clon limpio:
-
-1. Clonar repositorio y seleccionar versión de entrega: URL/commit **TBD**.
-2. Preparar `.env` a partir de `.env.example` solo si no existe. En F0 ya existía y se conservó. Mantenerlo local; no mostrar claves reales en ejemplos. F1 acepta opcionalmente `ORDERS_CSV_PATH` (por defecto `data/pedidos_historico.csv`), `BUSINESS_TIMEZONE` (por defecto `Europe/Madrid`) y `LOG_LEVEL` (por defecto `INFO`). Variables de fases posteriores: **TBD**.
-3. Comprobar que variables de la aplicación coinciden con servicios: Compose tiene valores demo literales y no interpola automáticamente todo `.env`. La conexión local de F0 confirmó que los valores actuales coinciden.
-4. El README proporciona `docker compose up -d` para MySQL/API. Después, comprobar `docker compose ps` y `curl --fail http://localhost:3001/health`. En F0 los servicios ya estaban en marcha: se comprobó `docker compose ps`, `/health` y una página autenticada, sin reiniciarlos ni imprimir el token. Se observó `/health` 200, 401 sin token y 200 con token (`data`: 5 elementos, `meta`: `page`, `per_page`, `total_records`, `total_pages`, `has_next`). El token se leyó desde `.env` mediante `python-dotenv` en memoria, no se pasó como literal de línea de comandos.
-5. Crear el entorno Python e instalar dependencias fijadas:
-
-   ```bash
-   python3.13 -m venv .venv
-   .venv/bin/python -m pip install -r requirements.txt
-   .venv/bin/python -m pip check
-   ```
-
-   En F0 se creó `.venv` local y se instalaron las versiones fijadas. La verificación de instalación desde `requirements.txt` y `pip check` consta en las pruebas realizadas. `.venv` y las cachés de herramientas están ignoradas por Git.
-6. Aplicar las migraciones con `.venv/bin/python -m src.db migrate` una vez que `.env` apunte al MySQL deseado. Registra `001_products_and_runs`, `002_stock`, `003_orders` y, desde F10, `004_make_delivery`; repetir informa «ya aplicadas». También actualiza volúmenes existentes sin borrarlos: `db/init` solo se ejecuta al inicializarlos. F10 añade cinco columnas de auditoría a `etl_runs`, sin modificar tablas de negocio; se verificó que puede retomarse sin perder resúmenes. La web y el ETL de esta rama requieren la migración 004 aunque Make esté desactivado. La base del usuario no se migró durante esta tarea; revisar/respaldar el destino antes de aplicarla allí.
-7. Arrancar web: `.venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000` y abrir http://127.0.0.1:8000. Mantener esa terminal abierta; `Ctrl+C` detiene la web. Lee la BD configurada en `.env`; no lanza el ETL al abrirla. Véase la comprobación manual F9 más abajo.
-8. Registrar validación desde clon/BD de pruebas nuevos, fecha y commit: **TBD**. No ejecutar pruebas destructivas sobre el volumen del usuario.
-
-El incremento F6 permite cargar las cuatro fuentes y F7 lo verificó en MySQL aislado; F9 añade la web; F10 acredita Make con ejecución real y queda cerrada técnicamente con los límites documentados. En F12 habrá que repetir el procedimiento desde un clon limpio.
-
-### Dependencias elegidas en F0
-
-`PyMySQL` proporciona el driver de MySQL que falta en la biblioteca estándar; `httpx` sirve tanto para la API como para el webhook y permite simular transporte en tests. `FastAPI`, `Uvicorn` y `Jinja2` sostendrán la página HTML propuesta, sin SPA ni ORM. `python-dotenv` permite cargar `.env` local sin ejecutarlo como shell ni sobrescribir variables; `pytest` verifica reglas futuras y `Ruff` configura un lint ligero. No se añade pandas, un segundo cliente HTTP ni un framework de migraciones. El uso de estas dependencias por módulos de aplicación queda pendiente de sus fases; F0 solo valida instalación/importación.
-
-## Cómo ejecutar el ETL
-
-- **Comando actual:** `.venv/bin/python -m src.etl` después de aplicar las migraciones. Usa también `ORDERS_CSV_PATH` (por defecto `data/pedidos_historico.csv`). Extrae las cuatro fuentes antes de abrir la transacción de negocio y publica pedidos, líneas e históricos junto con catálogo y stock. F10 guarda el resumen y, solo si `MAKE_WEBHOOK_URL` está configurada, lo envía después del commit. Configurar ese destino únicamente tras revisar el escenario y autorizar el correo de prueba.
-- Código `0`: publicación confirmada y Make desactivado/aceptado por HTTP; puede haber filas rechazadas. Código `1`: fallo o concurrencia del ETL sin publicar un lote parcial. Código `2`: ETL publicado, entrega no confirmada; no repetir la carga para recuperar la notificación. Revisar `etl_runs` y sus incidencias. La caída antes de obtener el lock o crear el run no genera auditoría de ejecución. HTTP aceptado no acredita destinos Make.
-- Repetir el mismo comando con los mismos CSV/XML y respuestas completas de stock mantiene los valores de negocio y añade un `etl_runs`/sus incidencias nuevos. Los SKU que faltan en una instantánea válida pasan a históricos, con precios y stock `NULL`; un catálogo vacío o sin productos válidos, o un fichero modificado durante la extracción, falla y conserva la versión anterior. Solo se admite un escritor mediante advisory lock MySQL. Una caída abrupta puede dejar un run `running` para revisión manual.
-- Parámetros opcionales de stock: `STOCK_PER_PAGE=50`, `STOCK_ATTEMPTS=5`, `STOCK_CONNECT_TIMEOUT=5`, `STOCK_READ_TIMEOUT=15`, `STOCK_REQUESTS_PER_MINUTE=30`, `STOCK_BUDGET_SECONDS=300`. Tiempos en segundos; límites y reintentos en [TECH_SPEC](TECH_SPEC.md#api-de-stock). F10 añade `MAKE_WEBHOOK_URL` (vacía por defecto), `MAKE_TIMEOUT=10` y `MAKE_REJECTION_THRESHOLD=0`. Reutiliza httpx y no añade dependencias.
-- Reenvío F10: `.venv/bin/python -m src.etl --resend-make RUN_ID`; reutiliza el JSON almacenado, sin ETL. Si ya figura accepted, no repite HTTP salvo `--force`, después de revisar Make. Detalles en [make/README](make/README.md).
-- Recuperación automática adicional: **TBD**.
-
-### Comprobación manual en la base del usuario (pendiente)
-
-Las comprobaciones F6/F7 se hicieron en MySQL temporal; esta tarea no migró ni recargó la base `catalogo` del usuario. Para llevar este incremento a esa base, con los servicios activos y `.env` apuntando a ella:
+Necesita Docker y Python 3.13. Verificado en macOS con Python 3.13.13, Compose 2.38.2 y MySQL 8.0.46.
 
 ```bash
+git clone https://github.com/polalco13/prueba-tecnica-etailers.git
+cd prueba-tecnica-etailers
+test -f .env || cp .env.example .env
+python3.13 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+docker compose up -d --wait
+curl --fail http://localhost:3001/health
 .venv/bin/python -m src.db migrate
-.venv/bin/python -m src.etl
-```
-
-Después, refrescar tablas en DBeaver. Deben aparecer `stock_by_warehouse`, `orders` y `order_lines`. Estas consultas permiten contrastar el último run y los totales; con las mismas fuentes se esperan los contadores de filas de la tabla de evidencias. El número de históricos creados depende de los que ya existieran en esa base:
-
-```sql
-SELECT id, status, phase, error_code, counters
-FROM etl_runs ORDER BY started_at DESC LIMIT 1;
-
-SELECT stock_status, COUNT(*) AS productos
-FROM products WHERE in_catalog = 1 GROUP BY stock_status;
-
-SELECT p.sku, p.stock_total, SUM(s.quantity) AS suma_almacenes,
-       SUM(s.reserved) AS reservado
-FROM products p JOIN stock_by_warehouse s ON s.product_id = p.id
-WHERE p.stock_status = 'known'
-GROUP BY p.id, p.sku, p.stock_total
-HAVING p.stock_total <> SUM(s.quantity);
-```
-
-La última consulta debe devolver cero filas. Las reservas permanecen aparte: no se restan de `stock_total`. Para revisar pedidos:
-
-```sql
-SELECT source_order_id, status, has_rejected_lines, COUNT(l.id) AS lineas
-FROM orders o LEFT JOIN order_lines l ON l.order_id = o.id
-GROUP BY o.id, source_order_id, status, has_rejected_lines
-ORDER BY source_order_id;
-```
-
-La comprobación visual en la base del usuario es opcional para revisar el resultado local; no sustituye las pruebas MySQL de F7–F8 ya ejecutadas. PR 3 de F6–F7 está integrada en `main`. F8 no modifica el esquema ni requiere recargar datos del usuario; si su base ya contiene F6, puede ejecutar las consultas de lectura con la misma definición de fecha.
-
-## Dashboard F9 y comprobación manual
-
-La web es de consulta: no migra ni carga datos, ni llama a la API de stock o Make. Reutiliza las consultas F8 sobre una misma conexión MySQL por petición. El catálogo comercial tiene 20 productos por página ordenados por SKU; los históricos aparecen en las ventas/rankings, pero no en este listado.
-
-Desde la carpeta del proyecto, con Docker activo y `.env` apuntando a la BD deseada:
-
-```bash
-docker compose up -d
-.venv/bin/python -m src.db migrate
-.venv/bin/python -m src.etl
+MAKE_WEBHOOK_URL= .venv/bin/python -m src.etl
 .venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000
 ```
 
-Los dos comandos centrales preparan/actualizan la BD: si ya tiene migraciones hasta `003_orders` y una carga completa v2, basta arrancar Uvicorn. La web abre en http://127.0.0.1:8000; se detiene con `Ctrl+C`. No necesita Node ni una CDN: Chart.js 4.5.1 se incluye con su licencia y [procedencia verificable](src/web/static/vendor/README.md). No se añaden dependencias Python a las fijadas en F0.
+Abrir http://127.0.0.1:8000. La primera carga tiene Make desactivado; para conectarlo, seguir [su configuración](make/README.md). La web consulta la publicación existente: no carga fuentes ni envía notificaciones.
 
-Pasos de revisión:
+Compose levanta MySQL en 3307 y stock en 3001 con credenciales demo del enunciado. Estos valores están escritos en Compose; editar `.env` no cambia automáticamente los servicios. Dependencias fijadas en [requirements.txt](requirements.txt): FastAPI/Jinja2 para HTML, PyMySQL para MySQL y httpx para ambas integraciones HTTP, sin ORM ni SPA. Chart.js se sirve [localmente](src/web/static/vendor/README.md), sin Node ni CDN.
 
-1. Comprueba «Última carga publicada», las cuatro tarjetas y los avisos. La fecha es UTC y corresponde a la última carga completada; un intento fallido posterior no sustituye la publicación. Un error de conexión/esquema devuelve HTTP 503 con mensaje, sin presentar ceros ficticios.
-2. En el gráfico, barras = facturación, línea = unidades, con ejes separados. Abre «Ver datos mensuales» para consultar los importes exactos; los meses sin ventas son cero y el mes actual es parcial. La tabla funciona incluso sin JavaScript.
-3. Revisa canales, categorías, cobertura del margen, top 10 e inventario bajo mínimos. «Sin categoría», «Histórico» y ventas sin coste se muestran explícitamente. Stock desconocido o inválido nunca aparece como cero.
-4. En «Catálogo», busca `destornillador` y selecciona «Herramienta manual»: con el origen actual se muestran PRV-2001 a PRV-2004; PRV-2002 tiene stock «Desconocido». Búsqueda por nombre/SKU/descripción y categoría se combinan; no filtran las estadísticas generales, como indica el formulario.
-5. Pulsa «Limpiar»: con estas fuentes hay 115 productos/6 páginas; «Siguiente» muestra la página 2 conservando los filtros si existen. Una búsqueda sin coincidencias muestra un mensaje. La búsqueda textual ignora mayúsculas y tildes mediante la collation de MySQL, trata `%`, `_` y `!` como caracteres literales; la categoría utiliza la clave normalizada del catálogo. Los valores SQL van parametrizados y el HTML se escapa.
+Aplicar siempre las migraciones hasta `004_make_delivery`, también con Make desactivado. El migrador actualiza bases existentes sin borrar datos; `db/init` no actualiza volúmenes previos. Revisar el destino antes de migrar. `Ctrl+C` detiene la web y `docker compose stop` conserva la base.
 
-**Evidencia real F9 (25/09/2026):** se creó una BD temporal `f4_test_web_real` y se ejecutó una carga de las cuatro fuentes originales, `run_id=76173378-fc01-4c34-b36b-7b45fda9ad58`, completada a las 10:52 UTC. La web mostró 1.381.450,43 de facturación, 269 pedidos (23 parciales), ticket 5.135,50, margen −2.954.287,69, cobertura 90,36 %, 18 meses y 12 productos bajo mínimos, coincidentes con F8. Navegador de escritorio y ancho móvil 390 px comprobados; consola sin errores/avisos JavaScript observados. Las [capturas](docs/evidence/README.md) contienen productos y cifras agregadas, sin clientes ni secretos. La BD temporal y el servidor de prueba se retiraron al terminar; la captura no acredita una carga en la BD del usuario.
-
-En la primera comprobación F9 con la configuración local, `schema_is_current` devolvió falso y la web mostró «Aplica las migraciones documentadas». F9 no migró ni recargó esa base. Para verla allí, ejecutar los pasos anteriores tras comprobar el destino de `.env`. PR 4 ya está integrada; costes/EUR/IVA siguen pendientes. En F10 es necesario aplicar también la migración 004.
-
-La suite emite un aviso de deprecación de Starlette al usar su TestClient con el `httpx` ya fijado; las pruebas pasan. No se añadió un segundo cliente HTTP ni se ocultó el aviso. Una futura actualización coordinada de dependencias deberá revisarlo.
-
-## F10 — Resumen persistido y cliente de entrega
-
-**F10 cerrada e integrada mediante PR 5 (`ff53b1c`).** La rama `feature/make-integration` nació del main que contiene PR 4. La migración 004 añade `make_summary`, `make_attempts`, `make_error_code`, `make_last_attempt_at` y `make_accepted_at` a `etl_runs`. Se genera `etl-summary-v1` dentro de la publicación atómica y se envía después del commit; un fallo de HTTP no revierte productos/pedidos/stock ni convierte el run completado en failed. El reenvío conserva fechas, umbral, métricas y `run_id` del JSON guardado, aunque el negocio cambie después. La decisión y los estados están en [ADR 005](docs/adr/005-persisted-make-delivery.md).
-
-El umbral inicial es 0, configurable; alerta si `rows_rejected > threshold` o hay productos bajo mínimos. Duplicados/avisos no disparan por sí solos la alerta. Se incluye facturación del mes natural anterior desde SQL F8 como texto con dos decimales y moneda/base fiscal sin confirmar. Solo los runs completed generan este contrato; los fallos completos permanecen en auditoría local. La URL secreta no se incluye en el resumen ni en logs de aplicación/HTTPX.
-
-**Verificación local anterior:** 397 tests pasan, incluidas 49 pruebas nuevas F10. Se probaron límite del umbral, duplicados sin alerta, contadores/razones, SQL del mes anterior/bajo stock, serialización, errores de configuración, 2xx/3xx/4xx/5xx, timeout, ausencia de redirecciones, URL oculta incluso con logging HTTPX activado, entrega posterior al commit observada desde otro lector, reenvío congelado, accepted sin nuevo POST salvo force, exclusión concurrente por run, rollback ante fallo al generar el resumen, fallo de auditoría de entrega sin invalidar el ETL y reanudación de migración. Ruff y formato correctos. Se mantiene el aviso de deprecación Starlette/TestClient de F9, sin añadir otro cliente HTTP.
-
-**Fuentes reales, receptor simulado:** el 25/09/2026 se cargaron las cuatro fuentes originales en la base temporal `f4_test_make_real` (MySQL 8.0.46), con `as_of=2026-09-25` y run `46dcbca6-1166-44e5-b7ca-e8a6bb4f6b93`. La API devolvió 230 observaciones en cinco páginas, con un reintento en la quinta. El resumen guardado contiene 115 productos, 72 filas rechazadas (15 catálogo + 24 stock + 33 pedidos), 56.696,84 del mes 2026-08 y 12 productos bajo mínimos; `alert_required=true`. Coincide con F8 y reconcilia los contadores por fuente. La distribución suma 73 filas/motivos distintos: puede superar las 72 filas, y no es el conteo de todas las incidencias de campos. El POST se comprobó exclusivamente con `httpx.MockTransport`: **no se contactó con Make ni se enviaron correos**. Ese accepted simulado no acredita A09. El contenedor temporal se retiró al terminar; no se migró ni recargó el volumen del usuario y no se cambió `.env` ni `data/`.
-
-**Avance externo 26/09/2026:** el usuario confirmó sesión Make, hoja `ejecuciones`, Gmail/destinatario de prueba y migración aplicada. Se comprobó sin imprimir secretos que la URL efectiva se carga de `.env` y pertenece a Make. El usuario ejecutó `post_summary` con `alert.synthetic.json`, obtuvo accepted y aportó una [captura](make/capturas/f10-synthetic-history-first-run.png) con la ruta de histórico completada hasta Add a Row. Una búsqueda vacía produjo un bundle vacío y una lista de longitud 1: se corrigió el criterio inicial de longitud por presencia de un número de fila real, documentado en [make/README](make/README.md). El envío es sintético y no ejecuta ni audita un run ETL en MySQL.
-
-**Avance externo 27/09/2026:** el texto de Sheets aportado contiene una sola fila para el run sintético terminado en `0002`; valores y tres JSON coinciden con el ejemplo, incluido `36.00`. Se señaló la cabecera J1 duplicada y el usuario confirmó su corrección a `revenue_previous_month`. Configuró la segunda ruta con `alert_required = true`, búsqueda por run [15], filtro de fila existente/correo pendiente, Gmail [16] y marca posterior en O mediante Update a Cell [17]. La [captura de ejecución](make/capturas/f10-synthetic-alert-first-mail.png) muestra «Ejecución nueva» bloqueando reinserción y Gmail/Update a Cell completados. La captura de Gmail aportada en la conversación confirma recepción y contenido del correo, expresamente sintético: un producto, un rechazo, umbral 0, un producto bajo mínimos, motivos/detalle e importe de 2026-08 correctos. Esa captura no se versiona porque contiene datos personales. La [captura del reenvío posterior](make/capturas/f10-synthetic-alert-repeat.png) acredita que ambos filtros dejan pasar 0 bundles y que Add a Row/Gmail/Update a Cell no se ejecutan otra vez. No es una prueba de concurrencia. La tabla de Sheets aportada después confirma la marca UTC de O y las filas de ambos ejemplos; la segunda exportación confirma procesamiento secuencial, filtro inicial y entrada Raw. En ese punto estaban pendientes los casos restantes de rechazo del contrato, recuperación, importación y envío de ETL real; la evidencia posterior de este último se detalla más abajo. F11 no iniciado.
-
-**Prueba sin alerta posterior (27/09/2026):** siguiendo la guía de envío de `summary.synthetic.json` (run terminado en `0001`, duplicados > 0, rechazos 0, umbral 0, bajo stock 0 y listas vacías), el usuario aportó la [captura de ejecución](make/capturas/f10-synthetic-no-alert.png). El histórico atravesó el filtro y completó los tres módulos JSON/Add a Row; «Hay alerta» dejó pasar 0 bundles y Search Rows [15]/Gmail/Update a Cell no se ejecutaron. Acredita la ruta sin correo, incluido el caso `rows_rejected = threshold = 0`; el contraste posterior de la tabla confirmó la nueva fila y ambas celdas O de Sheets. No es carga de fuentes reales ni cierre de A09.
-
-**Contraste de Sheets (27/09/2026):** se transcribió la [tabla aportada por el usuario](make/capturas/f10-synthetic-sheets-verified.md) y se compararon sus quince columnas con los dos JSON sintéticos. Todos los valores y los tres campos JSON coinciden; hay una fila por run, contadores conciliados e importe visible `36.00`. La transcripción no acredita el tipo interno de la celda; la primera exportación revela `USER_ENTERED` en Add a Row y la segunda confirma su cambio a Raw; no modifica el tipo de las celdas previas. Run `0002` conserva `2026-09-27 14:10:01 UTC` en O (16:10:01 Europe/Madrid, coherente con la captura de recepción); run `0001` tiene O vacía. No se ejecutó el ETL ni se contactó Make durante este contraste.
-
-**Revisión del blueprint (27/09/2026):** se guardó la [exportación real saneada](make/escenario.blueprint.json) recibida del usuario. Conserva módulos, IDs, filtros, fórmulas y ajustes; se retiraron identificadores/etiquetas personales de conexiones, vínculo del webhook, selección de la hoja y destinatario, sin modificar el original. Confirma procesamiento secuencial, orden de rutas, búsquedas por run y marca posterior al correo. La primera exportación reveló dos ajustes: filtro de contrato antes del router y entrada Raw en Add a Row [9]. El segundo archivo `make-etl.json` acredita ambos aplicados; se sustituyó la copia saneada conservando exactamente su lógica. La [guía](make/README.md) explica la configuración y las conexiones necesarias al importar. Se comprobó JSON válido y fidelidad salvo saneado, referencias de módulos y ausencia de los datos privados identificados. No se importó ni ejecutó en Make y no se enviaron correos en esta revisión; F10 sigue abierta.
-
-**Filtro inicial bloqueado (27/09/2026):** tras el comando guiado con `schema_version=version-invalida` sobre el ejemplo sin alerta, el usuario aportó la [captura](make/capturas/f10-invalid-schema-blocked.png): webhook completado, «Resumen válido» con 0 bundles y ningún módulo posterior ejecutado. Se acredita el bloqueo observado; la identificación de la entrada procede de la guía, no de un payload visible en la imagen. Esta captura no comprueba estado inválido ni run_id ausente; el caso de estado se documenta más abajo. No es ETL real ni cierre de A09; el agente solo conservó la captura y revisó documentación, sin contactar Make.
-
-**Primer ETL real → Make (27/09/2026):** el usuario ejecutó `.venv/bin/python -m src.etl` y aportó logs para `c1a93f67-6990-4748-8efa-c18bc6777b42`: cinco páginas/230 observaciones; publicación de catálogo, tarifas, stock y pedidos anterior a la aceptación HTTP; 115 productos, 72 rechazados (15 + 24 + 33), 11 deduplicados, 358 pedidos y 30 parciales. La [captura del escenario](make/capturas/f10-real-etl-destinations.png) muestra ambas rutas y marca posterior completadas. El correo recibido acredita el mismo UUID y cifras correctas, incluidos 12 bajo mínimos y `56696.84` de agosto; [transcripción](make/capturas/f10-real-etl-evidence.md) sin datos personales. La distribución de motivos suma 73 frente a 72 filas rechazadas, conforme a la semántica documentada. La [fila final de Sheets](make/capturas/f10-real-sheets-verified.md) confirma una sola fila, `status=completed`, `as_of=2026-09-27`, `finished_at=2026-09-27T15:34:50.365441Z`, todos los contadores/JSON y O con `2026-09-27 15:34:53 UTC` (17:34:53 Europe/Madrid). Las dos filas sintéticas conservan los valores anteriores. A09 queda acreditado; no se ha consultado el resumen persistido en MySQL para este run. F10 sigue abierta por las verificaciones restantes. El agente no ejecutó este ETL ni envió correos en la revisión. F11 no iniciado.
-
-**Reenvío del ETL real (27/09/2026):** el usuario ejecutó `--resend-make c1a93f67-6990-4748-8efa-c18bc6777b42 --force` y aportó aceptación HTTP a las `17:53:55,949` y [captura](make/capturas/f10-real-etl-repeat.png). «Resumen válido»/«Hay alerta» dejan pasar 1 bundle; «Ejecución nueva»/«Correo pendiente», 0. Las búsquedas y el agregador completan una operación; JSON/Add a Row/Gmail/Update a Cell no se ejecutan. Acredita el bloqueo de duplicados en ese reenvío, sin nueva carga de fuentes ni escritura de la marca por el escenario. No es una nueva lectura de O, una prueba concurrente ni una auditoría SQL de sus intentos. El agente solo conservó la imagen original y actualizó documentación; [alcance](make/capturas/f10-real-etl-evidence.md#reenvío-manual-del-mismo-run-27092026).
-
-**Estado inválido bloqueado (27/09/2026):** tras la guía que carga `summary.synthetic.json` y cambia únicamente `status` a `failed` en memoria, el usuario aportó la [captura](make/capturas/f10-invalid-status-blocked.png): Webhook [1] completa una operación y «Resumen válido» deja pasar 0 bundles, sin ningún módulo posterior ejecutado. La identificación del caso procede de la guía; la imagen no contiene el payload ni se aportó un nuevo resultado de terminal. Acredita el bloqueo observado con entrada sintética, sin modificar la fixture ni el estado de un run persistido. Esta captura no comprueba run_id ausente; su prueba posterior se documenta a continuación. Recuperación e importación siguen pendientes; el agente solo conservó la captura original y revisó documentación, sin contactar Make. F11 no iniciado.
-
-**Run_id ausente bloqueado (27/09/2026):** tras la guía que carga `summary.synthetic.json`, conserva versión/estado válidos y elimina únicamente `run_id` en memoria, el usuario aportó la [captura](make/capturas/f10-missing-run-id-blocked.png): Webhook [1] completa una operación y «Resumen válido» deja pasar 0 bundles, sin ningún módulo posterior ejecutado. La identificación del caso procede de la guía; la imagen no contiene el payload ni se aportó un resultado de terminal. La captura original se conserva sin edición y sin datos privados visibles. El agente no ejecutó un POST ni modificó fixtures/BD. Los tres rechazos previstos del filtro inicial quedan observados por separado; recuperación e importación siguen pendientes. F11 no iniciado.
-
-**Importación confirmada (27/09/2026):** el usuario respondió «ha funcionado» después de la guía para importar `make/escenario.blueprint.json` en un escenario nuevo y desactivado. Se registra la confirmación textual del archivo guiado, sin atribuirle captura, conexiones asignadas, ajustes finales o ejecución no aportados. La evidencia de destinos sigue correspondiendo al escenario original. El agente solo actualizó documentación; recuperación sigue pendiente.
-
-**Cierre acordado de F10 (27/09/2026):** el usuario decidió terminar las pruebas manuales y pidió revisar/cerrar esta fase. R14/R15 y A09 se satisfacen con el escenario original: webhook conectado al ETL, router/filtros, histórico Sheets, alerta Gmail, código de llamada, blueprint real saneado, capturas y explicación. La prueba adicional de fallo/recuperación de Sheets no se ejecutó; la configuración/ejecución de la copia importada tampoco está acreditada. El reenvío observado no prueba concurrencia externa ni entrega exactamente una vez; un correo puede repetirse si Gmail envía y falla la marca. Son [límites de verificación](make/README.md#cierre-y-límites-de-verificación), no pruebas aprobadas. F10 queda cerrada técnicamente en la rama, pendiente de integración en main. F11 no iniciado y F12 pendiente.
-
-**Comprobación local de cierre:** `pytest -q` sin las variables de la BD de pruebas ejecutó 347 pruebas y omitió 50; la colección de `tests/unit` confirmó 347 casos. Corrige el desglose documental anterior 346/51, manteniendo el total 397. `ruff check .` pasó y `ruff format --check .` informó 58 archivos ya formateados. El aviso de deprecación anterior se mantiene. No se repitió MySQL ni se lanzó ETL, POST o correo real para este cierre; se conserva la evidencia previa de la suite completa y los destinos del usuario.
-
-## F10b — Mejora UI/UX implementada
-
-F10 se integró después del cierre técnico descrito arriba mediante PR 5, merge `ff53b1c`; las referencias anteriores a integración pendiente corresponden al estado de aquellas verificaciones.
-
-El 27/09/2026 se añadió al [plan](IMPLEMENTATION_PLAN.md#f10b--mejora-uiux-de-la-plataforma-ejecutable) una fase intermedia solicitada por el usuario. La [guía de ejecución](docs/phases/f10b-ui-ux.md) define alcance, uso de `impeccable`/`emil-design-eng`, criterios UX01–UX06 y verificación acotada de la aplicación real.
-
-**Implementada en `feature/ui-ux`:** se refinó la cabecera y navegación por secciones, jerarquía de KPIs, avisos y detalle del margen, gráfico y tabla de respaldo, tablas accesibles, filtros activos, limpiar y paginación, estados vacíos/error y comportamiento responsive. Se conservaron las métricas, columnas, desconocidos, históricos y límites comerciales; no se añadieron cálculos monetarios en JavaScript. La revisión `Before | After | Why`, capturas auténticas y comandos ejecutados están en [docs/evidence/f10b/README.md](docs/evidence/f10b/README.md). F12 seguirá a la integración de F10b; F11 continúa opcional.
-
-| Criterio | Resultado de la revisión F10b |
-| --- | --- |
-| UX01 | Cumplido: periodo, última carga, KPIs, cobertura y avisos aparecen en la entrada; navegación directa a evolución, inventario y catálogo. |
-| UX02 | Cumplido: la comparación DOM de la misma publicación conserva cuatro KPIs, 18 mensualidades y las celdas de las seis tablas; gráfico y tabla exacta permanecen disponibles. |
-| UX03 | Cumplido: búsqueda + categoría, filtros activos, Limpiar y paginación verificados; los parámetros se conservaron al pasar a la página 2 y el resumen no cambió. |
-| UX04 | Cumplido en la revisión acotada: 1440 × 900 y 390 × 844 sin desbordamiento de página; tablas anchas se desplazan dentro de su región. |
-| UX05 | Cumplido en la revisión acotada: skip link, etiquetas, foco visible, regiones de tablas, `<details>` nativos, CSP sin JavaScript y texto ampliado al 200 % verificados. No es auditoría WCAG completa. |
-| UX06 | Cumplido: estados vacío/error conservan mensajes y acciones; desconocido, inválido, cero, histórico, margen negativo y supuestos EUR/IVA siguen diferenciados. |
-
-## Cómo ejecutar tests
-
-Las pruebas unitarias se ejecutan sin BD ni API real; las pruebas de integración F4–F10 requieren un MySQL 8 separado:
+## Ejecución e idempotencia
 
 ```bash
-.venv/bin/python -m pytest -q
-.venv/bin/ruff check src tests
-.venv/bin/ruff format --check src tests
+.venv/bin/python -m src.etl
 ```
 
-Sin `F4_TEST_DB_PORT`, los tests de integración se omiten. Para incluirlos, arrancar un contenedor temporal MySQL 8 **sin montar `mysql_data`**, con una base cuyo nombre empiece por `f4_test_`; pasar `F4_TEST_DB_PORT` y `F4_TEST_DB_PASSWORD` al proceso de pytest. Son opcionales `F4_TEST_DB_HOST` (127.0.0.1), `F4_TEST_DB_NAME` (`f4_test_catalog`) y `F4_TEST_DB_USER` (`f4_tester`). El test aplica la migración en esa base y crea solo datos sintéticos. No apuntarlo al volumen o base `catalogo` del usuario. Se conservan los nombres `F4_TEST_*` para todas las fases. Tras el bloque local F10 hay **397 tests** (347 sin BD y 50 de integración); F10 añade 49 a los 348 de F9. Sin BD se omiten los 50 de integración; esa ejecución sola no acredita persistencia ni entrega posterior al commit.
+Extrae y valida las cuatro fuentes antes de publicar en una transacción InnoDB. Una extracción incompleta o un fallo SQL conserva la publicación anterior; un lock MySQL impide escritores simultáneos. Fallos y rechazos se registran con `run_id`.
 
-Para repetir solo F7, con las variables anteriores configuradas:
+SKU único, ID de pedido único y firma de línea permiten repetir la instantánea sin duplicar negocio. Las entidades ausentes se reconcilian; productos referenciados pasan a históricos. Cada ejecución añade auditoría. La firma usa pedido, SKU, cantidad, precio y descuento: sin ID de origen, dos líneas legítimas idénticas son indistinguibles.
+
+Salida: **0** = publicación confirmada y Make desactivado/aceptado por HTTP; **1** = fallo del ETL/configuración; **2** = negocio publicado, entrega no confirmada. Una caída abrupta puede dejar un run `running` para revisión manual. Para recuperar una notificación, reenviar el resumen persistido:
 
 ```bash
-.venv/bin/python -m pytest tests/integration/test_etl.py -q
+.venv/bin/python -m src.etl --resend-make RUN_ID
 ```
 
-Las fixtures se generan en directorios temporales: CSV Latin-1, XML, pedidos UTF-8 BOM y HTTP simulado con fechas fijas. Las cinco pruebas comprueban carga/repetición/trazas, duplicados sin rechazos, fallo de última página, fallo MySQL al publicar y exclusión de un segundo escritor mientras el primero extrae. Las consultas de [etl_checks.py](tests/integration/etl_checks.py) verifican todas las FKs, claves únicas, líneas negativas según estado, históricos sin coste, sumas de stock y contadores contra incidencias persistidas. Los tests previos siguen comprobando las restricciones con escrituras inválidas y la corrección/retirada de líneas.
+Un run ya aceptado no repite HTTP salvo `--force`; revisar antes el historial de Make.
 
 ## Esquema de base de datos
 
-F4 aplicó [`001_products_and_runs.sql`](db/migrations/001_products_and_runs.sql) en MySQL 8 aislado: `etl_runs` (PK UUID), `products` (PK numérica, SKU binario único y FK a run) y `rejections` (FK a run, UNIQUE por ejecución/fuente/localizador/motivo/campo). `DECIMAL` conserva precios y ratios; los `CHECK` controlan precios positivos, rangos, estado histórico y stock desconocido. La migración se registra en `schema_migrations`. Se verificaron `UNIQUE`, FK y `CHECK` con inserciones/actualizaciones inválidas en MySQL. F5 añade [`002_stock.sql`](db/migrations/002_stock.sql): `stock_by_warehouse` con PK producto/almacén, FK a producto/run y CHECK de cantidades y reservas no negativas; añade también `etl_runs.stock_sha256`. F6 añade [`003_orders.sql`](db/migrations/003_orders.sql): `orders` y `order_lines` con FKs, UNIQUE de pedido y firma de línea, CHECKs de dominios y `etl_runs.orders_sha256`. Los históricos mínimos mantienen la FK sin inventar atributos.
-
-## Decisiones sobre calidad de datos
-
-Reglas en [DATA_RULES](DATA_RULES.md): encoding por fuente, nulos, precios Decimal, EAN conservador, selección determinista de duplicados, descuentos, fechas, estados/canales y stock desconocido. F1 implantó normalizadores puros; un descuento sin `%` igual a `1` se interpreta como 1 %. F2 lee el catálogo Latin-1 con `csv`, rechaza campos obligatorios inválidos y descarta solo opcionales incorrectos; conserva coste CSV inválido condicionado a una excepción. F3 resuelve tarifas y escoge la primera fila válida por SKU; conflictos de tarifa general abortan. F4 persiste con auditoría. F5 integra stock, separando versiones/duplicados de rechazos y reservas del físico. F6 leyó 1.142 filas reales de pedidos: 786 aceptadas, 349 rechazadas y 7 deduplicadas, con 277 pedidos, 22 parciales y 36 SKUs históricos potenciales. F7 confirmó inicialmente esas cifras con v1. El usuario resolvió después la incongruencia de capitalización (ADR 004); con v2 se publican 1.101 líneas y 358 pedidos, como se detalla abajo.
-
-La lectura aislada del catálogo original en F2 (sin tarifas ni MySQL) observó **133 registros de origen, 130 candidatos antes de precio final, 10 con coste CSV pendiente de validar por excepción y 13 incidencias preliminares**: 2 de columnas, 5 de campo obligatorio y 6 de EAN. Varios motivos pueden pertenecer a una sola fila. Eran cifras provisionales, antes de la selección económica de F3. Los ficheros de `data/` no se modificaron.
-
-F3 cruza ese catálogo con el XML real. El parser reconoció 6 reglas de categoría, 10 de marca y 14 excepciones; registró 5 términos de volumen/condiciones no aplicados. El resultado seleccionó 115 productos con coste neto calculado (103 desde coste CSV y descuentos, 12 por excepción). Las 133 filas se reconcilian como **115 aceptadas + 15 rechazadas + 3 deduplicadas**. Hay 19 incidencias de acción «rechazar» porque una fila puede tener varios motivos; además hay 7 campos descartados y 7 avisos, incluidos 2 por excepciones sin candidato. F4 confirmó estas cifras con CSV/XML originales en una BD temporal: 115 productos vigentes y 36 incidencias persistidas por run. No es una ejecución de las cuatro fuentes. EUR y base fiscal comparable siguen sin confirmar.
-
-## Definición de facturación y margen
-
-F8 implementa la **facturación operativa** propuesta: pedidos `ENVIADO`/`COMPLETADO`, líneas válidas con cantidad positiva y fecha entre 2025-04-01 y `as_of`, ambos incluidos. Cancelados, pendientes y devueltos quedan fuera. Las devoluciones permanecen en la BD pero no se compensan sin vínculo con la venta original. Un pedido con líneas rechazadas cuenta una vez si tiene al menos una línea válida elegible; solo esas líneas aportan importe. Cada línea se calcula como `ROUND_HALF_UP(cantidad × precio_unitario × (1 − descuento), 2)` antes de sumar. El ticket es facturación / pedidos, a dos decimales, o `NULL` si no hay pedidos.
-
-`as_of` por defecto es el día actual de `BUSINESS_TIMEZONE` (`Europe/Madrid` por defecto); para repetir medidas se pasa una fecha fija. La serie completa los meses desde abril de 2025 con cero y marca el mes de `as_of` como parcial. El mes anterior de Make es el mes natural completo inmediatamente previo a `as_of`, sujeto al mismo límite global desde abril de 2025. Categorías con distinta capitalización se agrupan por `category_key` del ETL; las históricas sin categoría forman el grupo explícito `Sin categoría`. Canal, categoría y margen parten del mismo conjunto de líneas; no se multiplica por almacenes.
-
-El margen conocido suma, por línea con `net_cost` actual no nulo, el importe menos `ROUND_HALF_UP(cantidad × net_cost, 2)`. Puede ser negativo. Se muestran por separado ventas con y sin coste y la cobertura como fracción de ventas con coste conocido sobre ventas totales, a cuatro decimales (`NULL` si el total es cero). Es una **estimación a coste actual**, no rentabilidad histórica exacta. Moneda EUR, IVA y comparabilidad del precio ERP con el coste proveedor: **pendientes de confirmación comercial**. Hasta entonces no presentar estas cifras como facturación fiscal o beneficio definitivo.
-
-## Productos históricos
-
-F4 conserva el ID de un producto que desaparece del CSV, lo marca histórico y limpia atributos comerciales, coste y stock. F6 crea/reutiliza el mismo ID para un SKU de pedido sin producto comercial, con atributos desconocidos a `NULL`; si reaparece en catálogo, lo promociona. Estas transiciones, FKs y retirada de pedidos pasaron contra MySQL con fixtures sintéticas. F8 incluye las ventas históricas y separa sus importes del margen con coste conocido; la carga real a 2026-09-25 tiene cobertura monetaria de `0.9036`.
-
-## Idempotencia
-
-F4 usa clave única SKU, upsert y reconciliación de catálogo completo con auditoría por run. F6 usa la firma `order-line-v1` y una instantánea completa de pedidos; las firmas idénticas se deduplican y las líneas/pedidos ausentes se retiran. El usuario confirma que el archivo es el entregado para la prueba: se usa entero como dataset del ejercicio, sin afirmar que futuras exportaciones del ERP tengan ese contrato. Se mantiene la deduplicación conforme a ADR 002; las ocho repeticiones aceptables del archivo coinciden en sus nueve columnas. Sin ID de línea no se pueden distinguir eventuales líneas legítimas idénticas.
-
-F6 verificó en MySQL sintético la corrección de una línea, retirada de pedidos ausentes y promoción/retirada de históricos. La repetición de F7 con reglas v2 comparó las cuatro tablas completas tras dos cargas reales: mismos valores, IDs y cantidades de filas. Solo se excluyó `last_run_id`; fechas de origen, firmas y localizadores de línea se conservaron en la comparación. Se añadió un run y su auditoría por carga, con 44 avisos de creación de históricos solo en la primera. Los identificadores, hashes y cifras se detallan abajo.
-
-## Integración Make
-
-- Escenario real con Custom webhook y contrato `etl-summary-v1`: recepción sintética y desde el ETL real verificadas. Run `c1a93f67-6990-4748-8efa-c18bc6777b42`; [evidencia aportada](make/capturas/f10-real-etl-evidence.md).
-- Router histórico primero/correo después; umbral y filtros de fila/correo configurados por el usuario. Sheets/Gmail, caso sin alerta/límite cero y repetición verificados con ejemplos sintéticos. La segunda exportación confirma procesamiento secuencial, filtro inicial con tres condiciones AND y entrada Raw en ambas escrituras. Detalle en [make/README](make/README.md).
-- Código de envío posterior al commit y reenvío del resumen persistido implementados y probados localmente; [ADR 005](docs/adr/005-persisted-make-delivery.md).
-- [Blueprint real saneado](make/escenario.blueprint.json) recibido el 27/09/2026. Actualizado con la segunda exportación, que acredita filtro inicial y entrada Raw; conserva la lógica, con webhook/conexiones/hoja/destinatario sin asignar. Guía de importación en [make/README](make/README.md); importación del archivo confirmada por el usuario el 27/09/2026; no se aportó captura ni prueba de configuración/ejecución de la copia. Exportación corregida recibida.
-- Capturas de [histórico sintético](make/capturas/f10-synthetic-history-first-run.png), [correo sintético ejecutado](make/capturas/f10-synthetic-alert-first-mail.png) y [ambas rutas del ETL real completadas](make/capturas/f10-real-etl-destinations.png). Los correos recibidos se documentan en texto sin versionar las capturas personales.
-- Run real `c1a93f67-6990-4748-8efa-c18bc6777b42`: logs de publicación/HTTP, módulos de ambos destinos completados y correo recibido con el mismo UUID. [Quince celdas de Sheets contrastadas](make/capturas/f10-real-sheets-verified.md): una sola fila, `as_of=2026-09-27`, contadores/JSON correctos y `email_sent_at=2026-09-27 15:34:53 UTC`. A09 acreditado.
-- Histórico por run_id y marca de correo posterior al envío documentados. Bloqueo de reinserción y repetición sin ejecutar Gmail observados en pruebas sintéticas y en el [reenvío del run real](make/capturas/f10-real-etl-repeat.png). Concurrencia y recuperación externas no verificadas al cierre; sigue existiendo riesgo de correo repetido si Gmail envía y falla la marca.
-
-No publicar URL secreta del webhook, tokens, identificadores sensibles de conexiones o destinatarios privados en capturas. El correo de alerta se enviará únicamente con destinatario e instrucción de envío autorizados. La evidencia debe proceder del ETL real; una prueba sintética adicional se etiqueta como tal.
-
-## Dashboard
-
-URL local/comando e interfaz: **TBD (F9)**. Las consultas SQL de F8 para KPIs, serie mensual, canales, top 10, categorías, margen/cobertura y bajo stock están implementadas y verificadas; aún no hay página ni gráfico. Captura real sin secretos: **TBD**. Comprobar coherencia visual con SQL y tratamiento visible de NULL/mes actual parcial: **TBD (F9)**.
-
-## Resultados de ejecución
-
-Corrección de F6–F7, 24/09/2026, ADR 004: dos llamadas reales a `run_etl(settings)` con reglas `catalog-stock-orders-v2`, sin sustituir lectores ni HTTP, en `f4_test_orders_v2` inicialmente vacía, sobre MySQL 8.0.46 temporal sin el volumen del usuario. Se aplicaron las tres migraciones; no fue necesaria una migración nueva. La API original entregó cinco páginas de 50 (última de 30); sus respuestas y los ficheros son idénticos a los de la validación anterior. El mock mantiene los registros en memoria. No se usa fecha analítica en F7.
-
-Evidencia anterior conservada: F7 con v1 (`039a403`) produjo 151 productos, 277 pedidos, 786 líneas y 349 filas de pedidos rechazadas; runs `bcef2d47-9487-4707-ac1c-85bfbbfbf00e` / `65fa3677-da9e-418e-bc20-7c6488e99793`, hash de negocio `8b5b29d361941891824dd2cbcdd8edf6471148869dc85c00686a83a610cc4185`. Esos resultados quedan sustituidos por los siguientes tras la confirmación del usuario.
-
-| Evidencia | Resultado real |
+| Tabla | Finalidad y relaciones |
 | --- | --- |
-| Código y reglas | Corrección ADR 004 sobre F6–F7 en `feature/orders`; reglas `catalog-stock-orders-v2`. Solo cambia la equivalencia de cliente de cabecera, sin cambiar la firma de línea. |
-| run_id inicial / repetición | `05ad2ff9-1f77-4b9f-84f5-72d228fc4bf1` / `bd8a09fb-b4f2-4df3-8c62-541aef63f4dc`, ambos `completed`. |
-| Productos | 159 en ambas cargas: 115 comerciales + 44 históricos. Los históricos sostienen 118 líneas aceptadas: 35 SKUs ausentes del catálogo original y 9 con fila rechazada. |
-| Pedidos/líneas | 358 pedidos, 30 parciales y 1.101 líneas en ambas cargas. Los 81 pedidos antes rechazados por capitalización existen y conservan la primera grafía normalizada no vacía, contrastado contra el CSV sin publicar nombres. |
-| Stock | 206 observaciones; entre los 115 comerciales, 103 con stock conocido, 12 desconocido y 0 inválido. Cero diferencias frente a SUM(quantity). |
-| Integridad | Cero FKs huérfanas en las cuatro tablas y auditoría, cero claves duplicadas, cero pedidos sin líneas. Históricos con coste/PVP/stock NULL. |
-| Auditoría | 222 incidencias iniciales y 178 en repetición; la diferencia son 44 creaciones de históricos. Rechazos de origen y deduplicaciones se repiten con el nuevo run_id. |
-| Comparación de negocio | Igualdad exacta de las cuatro tablas mediante `business_snapshot`, incluidos IDs y fechas de origen, excluyendo solo `last_run_id`. SHA-256: `f14438e6e9d777f64826857e1ed314793896ededc2f891171690fbf1b15fe0f1` en ambas. |
-| Duraciones y API | 9,226 s / 10,941 s, diferencia started_at–finished_at de la auditoría. Primer run sin reintentos; segundo con un reintento en página 4. No es un benchmark. |
-| Make / métricas | `make_status=not_applicable`; facturación, ticket, margen y cobertura pendientes de F8; entrega externa pendiente de F10. |
+| `products` | SKU único, coste neto, PVP, categoría y stock; comercial o histórico. |
+| `stock_by_warehouse` | Una observación por producto/almacén, FK a producto; cantidad, reservas y fecha. |
+| `orders` | Cabecera única por ID de origen: fecha, canal, estado y marca de parcial. |
+| `order_lines` | FK a pedido y producto, firma única; cantidad, precio y descuento. |
+| `etl_runs` | Estado, hashes, contadores y resumen persistido de Make por ejecución. |
+| `rejections` | FK a ejecución; fuente, localizador, entidad, acción y motivo. |
 
-Hashes SHA-256, idénticos antes/después y entre runs:
+`orders → order_lines → products` mantiene FKs reales sin perder ventas de SKUs ausentes: se crean históricos mínimos con coste/PVP/stock `NULL`. `UNIQUE`, `CHECK` y FKs complementan la validación Python. Dinero usa `Decimal`/`DECIMAL`; las [migraciones](db/migrations/) están versionadas.
 
-| Entrada | SHA-256 |
+## Decisiones sobre datos y descartes
+
+| Caso | Criterio aplicado |
 | --- | --- |
-| Catálogo CSV | `ebe2a2079d02814b02b3094ef0e9c0d2c696b6a81c21172a8e0a2d2821d9159a` |
-| Tarifas XML | `3922610e433d4b6e833a24f7e9db6d6c3c7858fbb8de4694d7fb005af511e3df` |
-| Pedidos CSV | `7819b3dc624de1bb6ec7a4dc80e207a5c5a7075c8d6295842aa3fcc7b42e11ac` |
-| Stock recibido, hash de páginas guardado en etl_runs | `08987b5f88455dc32034f60c331ed68ebbc94e4d3c33c312ae2f574e51b398bb` |
-| Fichero original mock-api/stock.json | `4e0e4f2117766b5a2067d7a055406573afc23f12cb183be7d1944ff5ad72906d` |
+| Codificaciones/columnas | Catálogo Latin-1 con `;`, pedidos UTF-8 BOM con `,`, XML UTF-8; lectores respetan comillas. Columnas incorrectas rechazan fila; archivo ilegible falla ejecución. |
+| Vacíos/números | Centinelas completos → `NULL`. Coma/punto y miles inequívocos se normalizan; dinero ambiguo se rechaza. No se inventan campos obligatorios. |
+| Campos opcionales | EAN inválido/científico, peso/IVA/alta inválidos → campo `NULL` con incidencia, conservando el producto cuando es válido. No se reconstruyen códigos. |
+| SKU repetido | Duplicado exacto → una ocurrencia; valores contradictorios → primera fila válida en orden del CSV, resto auditado. No hay fecha de actualización para elegir la última. |
+| Precio neto | Excepción XML manda; si no, `coste × (1 − descuento categoría − descuento marca)`. Descuentos aditivos; tarifas generales contradictorias abortan. Volumen/portes no se aplican sin datos de compra. |
+| Cabeceras | Fechas estrictas; vacíos solo heredan un valor inequívoco del mismo pedido. Cliente compara mayúsculas sin unir nombres por similitud. Estados/canales se canonizan; conflictos reales rechazan el pedido. |
+| Líneas | `10%`, `10` y `0,1` → 10 %; `1` sin símbolo → 1 %. Cantidad cero/fraccionaria se rechaza; negativa solo en DEVUELTO. Duplicados por firma; líneas válidas de parciales se conservan. |
+| Stock | Paginación completa y reintentos acotados ante 500/429/timeout. Suma física de `quantity`; `reserved` separado. Ausencia/total inválido → `NULL`, nunca cero. SKU ajeno al catálogo se rechaza. |
 
-| Fuente | Leídas | Aceptadas | Rechazadas | Deduplicadas | Avisos inicial / repetición | Campos descartados |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Catálogo | 133 | 115 | 15 | 3 | 7 / 7 | 7 |
-| Stock | 230 | 206 | 24 | 0 | 40 / 40 | 0 |
-| Pedidos | 1.142 | 1.101 | 33 | 8 | 80 / 36 | 0 |
+La auditoría diferencia rechazo, deduplicación, campo descartado y aviso. Por fuente: `leídas = aceptadas + rechazadas + deduplicadas`. Una fila cuenta una vez como rechazada aunque tenga varios motivos. Reglas completas: [DATA_RULES](DATA_RULES.md); decisiones de carga/históricos: [ADR](docs/adr/README.md).
 
-En las tres fuentes se cumple `read = accepted + rejected + deduplicated`, contrastado con los localizadores distintos de auditoría y las filas de negocio publicadas. XML tiene reglas, no filas de entidades equivalentes: 6 categorías, 10 marcas y 14 excepciones; sus 7 avisos (5 términos no aplicados y 2 excepciones sin candidato) se incluyen en `catalog_csv.quality_warnings`, conservando `source=tariffs_xml` en auditoría. Esto evita inventar un contador de filas XML comparable al de CSV.
+## Facturación, margen y panel
 
-Para reproducir la comparación real, usar otra base temporal inicialmente vacía con las migraciones aplicadas y las cuatro fuentes originales: invocar `run_etl` dos veces, llamar tras cada carga a `assert_integrity`, `assert_counters` y `business_snapshot` de [etl_checks.py](tests/integration/etl_checks.py), comparar los dos snapshots y `snapshot_hash`. Configurar solo la conexión de pruebas por entorno o `dataclasses.replace(load_settings(), ...)`; conservar el token en memoria y no editar `.env`. No ejecutar las fixtures sintéticas sobre esa misma base antes de la medida. El hash de negocio incluye IDs, por lo que demuestra igualdad entre estas cargas, no un identificador universal para bases con historiales distintos.
+Facturación operativa: pedidos **ENVIADO/COMPLETADO**, líneas válidas positivas, desde 01/04/2025 hasta la fecha analítica. Cada línea se redondea a dos decimales con `ROUND_HALF_UP` antes de sumar; ticket = facturación / pedidos elegibles. Un parcial aporta sus líneas válidas. Pendientes, cancelados y devueltos quedan fuera; las devoluciones se conservan sin compensar una venta no vinculada.
 
-### Trazas revisadas desde origen hasta MySQL
+El margen resta el coste neto **actual** de líneas con coste conocido. Muestra ventas sin coste y cobertura, sin tratarlas como coste cero. Es estimación, no rentabilidad histórica exacta: moneda/IVA y comparabilidad ERP/proveedor siguen sin confirmar.
 
-Contraste directo de las celdas originales, XML/stock y consultas SQL; sin copiar nombres de clientes a evidencias:
+El margen negativo observado tiene una causa visible en las fuentes: costes contradictorios de PRV-2013, PRV-2061 y PRV-2104, conservados según la primera fila válida. Por ejemplo, PRV-2013 presenta 34.400,16 frente a 318,52. Se muestra un aviso; no se corrige el origen para obtener un margen positivo.
 
-| Fuente / localizador | Contraste observado |
-| --- | --- |
-| Catálogo fila 98, PRV-2002; XML Herramienta manual / Stanley | `65,83` → Decimal 65.83; 10 % + 8 %: `65.83 × (1 − 0.10 − 0.08) = 53.9806`, igual a MySQL. Sin stock observado: NULL. |
-| Catálogo fila 66, PRV-2001; excepción XML del mismo SKU | Coste `-0,00` descartado con `NON_POSITIVE_PRICE`; excepción 165.75 → `net_cost=165.7500`, `base_cost=NULL`, origen `exception`. |
-| Catálogo filas 5 y 6 | EAN científico de PRV-2075 descartado sin eliminar producto; PRV-9001 rechazado por número de columnas. Auditoría conserva fila y motivo. |
-| Stock PRV-2001, page:4/row:38 y page:5/row:5 | MAD-01: quantity 0/reserved 2; BCN-02: 12/0. MySQL publica físico 12 y conserva ambas reservas; aviso para MAD-01. |
-| Stock page:1/row:6, PRV-7104 | `UNKNOWN_PRODUCT_SKU`; la observación no crea producto. |
-| Pedidos fila 3, PED-2025-00001 / PRV-2104 | `2025-04-19 19:57:00`, `b2c`, `91,75` → día 2025-04-19, B2C, precio 91.7500, cantidad 1, descuento 0. |
-| Pedidos fila 2, mismo pedido | Cantidad −3 en COMPLETADO y precio vacío: dos motivos de rechazo, una sola fila rechazada. Se conserva el pedido como parcial por sus líneas válidas. |
-| Pedidos fila 14, PED-2025-00004 / PRV-2062 | 50 unidades a 116.03; catálogo fila 38 rechazado por precio no positivo. Se crea histórico con coste NULL y FK válida. Estado CANCELADO conservado; no se calcula facturación en F7. |
+El panel incluye evolución mensual de facturación/unidades, KPIs, canales, categorías, top 10, margen/cobertura y bajo mínimos. Completa meses vacíos y señala el actual como parcial; tiene tabla exacta sin JavaScript. Bajo mínimos usa stock físico conocido <5 y ventas elegibles desde la fecha analítica menos tres meses hasta esa fecha, ambos días incluidos. El catálogo comercial tiene búsqueda, categoría y paginación; sus filtros no cambian las estadísticas.
 
-Las devoluciones negativas se prueban con fixtures sintéticas. No hay líneas negativas aceptadas en esta carga real: las ocho cantidades negativas originales pertenecen a COMPLETADO/CANCELADO, y se rechazan por cantidad incompatible.
+## Make
 
-## Resultados analíticos F8
+El resumen `etl-summary-v1` se guarda al publicar y se envía después del commit. Make valida versión/estado/ID y ejecuta histórico primero:
 
-El 25/09/2026 se cargaron las cuatro fuentes originales **una vez** en `f4_test_analytics_real`, MySQL 8.0.46 temporal sin volumen del usuario, con `run_id=d670414d-c73d-409d-ab0b-d0a34df20113` en estado `completed`. Se observaron 159 productos (115 comerciales y 44 históricos), 358 pedidos y 1.101 líneas, coherentes con F7. Se fijó `as_of=2026-09-25` para que el resultado sea reproducible; la base temporal de esta comprobación no se presenta como la BD del usuario.
+- Google Sheets: una fila por `run_id`, también sin alerta.
+- Gmail: alerta si `rows_rejected > MAKE_REJECTION_THRESHOLD` o hay bajo stock; después marca `email_sent_at`.
 
-| Métrica operativa F8 | Resultado de esa carga |
-| --- | ---: |
-| Facturación / pedidos elegibles / ticket medio | 1.381.450,43 / 269 / 5.135,50 |
-| Pedidos elegibles parciales | 23 |
-| Ventas B2B / B2C / marketplace | 485.666,36 / 391.949,69 / 503.834,38 |
-| Margen conocido estimado | −2.954.287,69 |
-| Ventas con coste / sin coste / cobertura | 1.248.262,11 / 133.188,32 / 0,9036 |
-| Facturación agosto 2026 (mes anterior completo) | 56.696,84 |
-| Productos vigentes con stock conocido <5 y ventas desde 2026-06-25 | 12 |
-| Meses de la serie abril 2025–septiembre 2026 | 18; septiembre marcado parcial |
+Umbral inicial 0; duplicados/avisos no cuentan como rechazados. Incluye motivos, facturación del mes anterior y bajo stock, sin clientes ni filas completas. Los fallos completos quedan en auditoría local y no generan resumen de éxito.
 
-Un cálculo independiente en Python leyó las líneas MySQL sin usar el SQL de `AnalyticsQueries` y aplicó `Decimal`/redondeo por línea. Coincidieron exactamente facturación, pedidos/parciales, cada mes y sus unidades, canales, categorías por `category_key`, top 10, margen conocido, importe sin coste, mes anterior y conjunto/unidades de bajo stock. La suma por canal y por categoría es 1.381.450,43 en ambos casos. El top 10 se ordena por facturación descendente y SKU ascendente en empate. En la fila 3 del CSV original, `PRV-2104`, cantidad 1 y precio `91,75`, la BD conserva `91.7500` con descuento cero; aporta 91,75 a abril de 2025. No se copiaron nombres de clientes a la evidencia.
+[Blueprint](make/escenario.blueprint.json), [configuración/importación](make/README.md) y [ejecución real](make/capturas/f10-real-etl-destinations.png). HTTP 2xx confirma recepción, no destinos. Se observó bloqueo del reenvío; Gmail puede repetirse si envía y falla la marca. Recuperación externa y ejecución de la copia importada no verificadas.
 
-La serie observada pasa de 106.943,03 y 295 unidades en julio de 2025 a 2.682,07 y 11 unidades en agosto; la BD contiene 14 pedidos/41 líneas elegibles en julio y 2 pedidos/5 líneas elegibles en agosto. También hay 2 pedidos cancelados en agosto. El descenso está en el origen aceptado, pero **no se atribuye a estacionalidad ni a una causa comercial** sin confirmación.
+## Verificación realizada
 
-El margen negativo está dominado por dos SKU con coste actual muy superior al PVP y al precio de pedido. Para `PRV-2013`, el catálogo original tiene coste `34400,16` en fila 97 y `318.52` en fila 109; conforme a la regla F3 ganó la primera fila válida, el coste neto quedó 28.208,1312 y la segunda se auditó como `CONFLICTING_PRODUCT_SKU`. Su contribución al margen es −3.242.476,26. `PRV-2061` sigue el mismo patrón: costes originales `2532,60` (fila 23) y `23.45` (fila 126), neto elegido 2.254,0140 y contribución −227.755,29. F8 no cambia la deduplicación ni sustituye costes: el origen y la semántica comercial de esos importes requieren revisión antes de interpretar el margen como rentabilidad. EUR/IVA siguen sin confirmarse.
+El 28/09/2026, desde clon nuevo de `main` (`aab89b9`) y MySQL aislado, dos cargas originales dejaron idénticos valores de negocio, con FKs y contadores correctos. Make desactivado en esa comprobación.
 
-**Decisión pendiente para valorar más adelante:** confirmar con el proveedor qué fila/coste corresponde a cada uno de esos SKU y si coste y precio de pedido son importes unitarios en la misma moneda y base de IVA. Hasta recibir esa información, F9 presenta el KPI como «Margen bruto estimado» y «A coste actual», muestra cobertura y un aviso visible sobre conflictos de catálogo y base fiscal sin confirmar. El aviso lee los SKU `CONFLICTING_PRODUCT_SKU` de la última carga completada (en la carga real F9: PRV-2013, PRV-2061 y PRV-2104); no afirma que todos tengan el mismo impacto económico. La interfaz está implementada; la validación comercial sigue pendiente. Si se confirma un error de origen, habrá que revisar la política de selección de catálogo en F2/F3, versionar la regla y repetir ETL y pruebas; no sustituir por la segunda fila ni excluir ventas del margen silenciosamente.
+| Fuente | Leídas | Aceptadas | Rechazadas | Deduplicadas |
+| --- | ---: | ---: | ---: | ---: |
+| Catálogo | 133 | 115 | 15 | 3 |
+| Stock | 230 | 206 | 24 | 0 |
+| Pedidos | 1.142 | 1.101 | 33 | 8 |
 
-Para revisar en DBeaver el total a la misma fecha, esta consulta de solo lectura reproduce el filtro y el redondeo de F8; el resto del SQL canónico está en [`queries.py`](src/analytics/queries.py):
+**115 comerciales + 44 históricos, 358 pedidos y 1.101 líneas**; 30 pedidos parciales. De 359 IDs originales, `PED-2025-00122` no entra por fecha ausente (fila 390, `MISSING_ORDER_DATE`).
 
-```sql
-WITH eligible AS (
-    SELECT o.id AS order_id,
-           ROUND(l.quantity * l.unit_price * (1 - l.discount), 2) AS amount
-    FROM orders o JOIN order_lines l ON l.order_id = o.id
-    WHERE o.status IN ('ENVIADO', 'COMPLETADO') AND l.quantity > 0
-      AND o.order_date BETWEEN '2025-04-01' AND '2026-09-25'
-)
-SELECT COALESCE(SUM(amount), 0) AS facturacion_operativa,
-       COUNT(DISTINCT order_id) AS pedidos_elegibles
-FROM eligible;
+A 28/09/2026: facturación **1.381.450,43**, **269 pedidos elegibles**, ticket **5.135,50**, margen conocido **−2.954.287,69**, cobertura **90,36 %** y **12 bajo mínimos**. Recálculo independiente coincidente con SQL; no hay fuente contable para reconciliar importes fiscales.
+
+**397 tests aprobados** (347 sin BD y 50 MySQL), Ruff/formato correctos; navegador con gráfico, filtros y paginación verificados. Permanece deprecación Starlette/TestClient. Make acreditado aparte el 27/09/2026: histórico, correo recibido y marca contrastados para un ETL real; [detalle](make/README.md#cierre-y-límites-de-verificación).
+
+[Reporte de repetibilidad](docs/evidence/f12/repeatability.json) · [Procedimiento aislado](docs/validation/README.md) · [Dos capturas de entrega](docs/evidence/README.md).
+
+### Cómo ejecutar tests
+
+```bash
+.venv/bin/python -m pytest -q
+.venv/bin/ruff check src tests docs/validation
+.venv/bin/ruff format --check src tests docs/validation
 ```
 
-Las seis pruebas sintéticas de [`test_analytics.py`](tests/integration/test_analytics.py) cubren los casos difíciles sin usar ni modificar las fuentes reales: dos almacenes sin doble conteo, redondeo individual de medio céntimo, histórico sin coste, margen negativo, meses vacíos/actual parcial, límites de fecha y mes natural anterior incluso cambio de año, estados excluidos, empate del top 10 y categorías con mayúsculas distintas. La ventana de tres meses ajusta 31 de mayo a 28/29 de febrero y excluye stock `NULL` o igual a 5.
+Sin `F4_TEST_DB_PORT` se omiten las 50 pruebas MySQL. La [guía aislada](docs/validation/README.md) prepara otra base y ejecuta todas; no usar `catalogo` ni correr pytest junto al ETL en la misma instancia.
 
-## Rechazos
+### Comprobar un registro
 
-Consulta de revisión: `SELECT source, record_locator, entity_key, reason_code, field_name, action FROM rejections WHERE run_id = ? ORDER BY id` (sustituir `?` por parámetro del cliente). El nombre `rejections` incluye también deduplicaciones, campos descartados y avisos; no usar COUNT(*) de toda la tabla como contador de filas rechazadas.
+Catálogo fila 98, PRV-2002: `65.83 × (1 − 0.10 − 0.08) = 53.9806`, igual a MySQL. PRV-2001 usa excepción `165.7500`, sin descuentos adicionales. Para localizar descartes sin exponer clientes:
 
-| Fuente | Motivos de acción reject_row (incidencias) | Filas distintas |
-| --- | --- | ---: |
-| Catálogo | AMBIGUOUS_NUMBER 5; CONFLICTING_PRODUCT_SKU 3; INVALID_COLUMN_COUNT 2; MISSING_REQUIRED_FIELD 5; NON_POSITIVE_PRICE 4 | 15 |
-| Stock | UNKNOWN_PRODUCT_SKU 24 | 24 |
-| Pedidos | INVALID_QUANTITY 9; INVALID_QUANTITY_FOR_STATUS 8; MISSING_ORDER_DATE 1; MISSING_REQUIRED_FIELD 16 | 33 |
+```sql
+SELECT source, record_locator, entity_key, reason_code, action
+FROM rejections
+WHERE run_id = (
+    SELECT id FROM etl_runs WHERE status = 'completed'
+    ORDER BY finished_at DESC LIMIT 1
+) AND entity_key IN ('PED-2025-00122', 'PRV-9001');
+```
 
-Catálogo tiene 19 incidencias de rechazo y pedidos 34, porque una fila puede tener varios motivos. Stock tiene además 28 avisos por reservas y 12 por ausencia. Pedidos tiene 22 avisos de herencia, 14 de descuento vacío y 44 de creación histórica solo en la primera carga. Todas las diferencias de contadores están explicadas.
-
-**Incongruencia de cliente resuelta (ADR 004):** el usuario confirmó que las variantes de mayúsculas/minúsculas representan al mismo cliente. Ahora se comparan con `casefold()` tras NFC/espacios, conservando la primera grafía válida; nombres realmente distintos siguen en conflicto. De las 324 filas antes rechazadas por cabecera, se recuperan 315 líneas, 8 se rechazan por otros errores y 1 se deduplica. Los 81 pedidos se recuperan, con sus líneas válidas. Se mantiene el límite de no unir nombres por similitud ni eliminar tildes.
-
-## Pruebas realizadas
-
-| Verificación | Comando / evidencia | Resultado |
-| --- | --- | --- |
-| F0: versiones y dependencias | `python3.13 --version`, `docker --version`, `docker compose version`, `pip install -r requirements.txt`, `pip check`, importación de 8 dependencias directas | Python 3.13.13; Docker 29.2.1; Compose 2.38.2; instalación/importaciones correctas; `pip check`: sin incompatibilidades. |
-| F0: servicios y credenciales locales | `docker compose ps`; `/health`; GET stock sin/con Bearer leído de `.env`; conexión MySQL con PyMySQL | Ambos contenedores healthy; health 200; stock 401 sin token y 200 con token, 5 registros; MySQL 8.0.46/base `catalogo`, 0 tablas. |
-| F0: remoto Git | `git push --dry-run origin HEAD:refs/heads/feature/etl-products` | Éxito; no se subieron cambios. |
-| F1: normalización y configuración | `.venv/bin/python -m pytest -q`; `.venv/bin/ruff check src tests`; `.venv/bin/ruff format --check src tests` | 123 tests pasan; lint y formato correctos. Casos sintéticos sin BD/API. |
-| F2: lector y selección diferida del catálogo | `.venv/bin/python -m pytest -q`; `.venv/bin/ruff check src tests`; `.venv/bin/ruff format --check src tests`; lectura aislada de `data/proveedor_productos.csv` | 155 tests en total; lint y formato correctos. Lectura real sin escribir fuentes ni BD. |
-| F3: XML y coste neto | `.venv/bin/python -m pytest -q`; `.venv/bin/ruff check src tests`; `.venv/bin/ruff format --check src tests`; cruce en memoria de CSV/XML originales | 194 tests en total; lint y formato correctos. Ejemplo sintético 100 − 10 % − 5 % = 85; 115 productos seleccionados en memoria, sin BD. |
-| F4: migración e integración MySQL | MySQL 8 temporal sin volumen del usuario; `F4_TEST_DB_PORT=… F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; dos ejecuciones de `.venv/bin/python -m src.etl` con CSV/XML originales sobre la BD temporal | 201 tests pasan, Ruff limpio; UNIQUE/FK/CHECK, repetición, retiro/promoción, rollback, catálogo vacío, fichero cambiante, tarifa conflictiva y lock comprobados. 115 productos vigentes, 36 incidencias/run, estado de negocio idéntico. |
-| F5: API mock, reglas y publicación de stock | `F4_TEST_DB_PORT=… F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; dos comandos ETL contra la API local real con destino MySQL temporal | 273 tests pasan; lint/formato correctos. HTTP simulado cubre paginación, 401/403, 429 con segundos/fecha HTTP, 500, timeout, presupuesto, JSON/meta inválidos y páginas repetidas. Reglas cubren duplicados, versiones, conflictos, límites, reservas y NULL frente a cero. API real: 230 observaciones en 5 páginas; primer run necesitó un reintento en página 3, segundo ninguno. |
-| MySQL, FKs y rollback | F4–F6 en MySQL 8 temporal; tests de pedidos sintéticos | PK/FKs/CHECK de almacenes y pedidos; repetición, corrección, históricos, promoción/retirada, instantánea vacía y rollback comprobados. |
-| F6: pedidos y reconciliación | `.venv/bin/python -m pytest tests/integration -q`; tests unitarios; Ruff | 323 tests en total al cerrar F6: 302 unitarios y 21 MySQL. Unitarios: BOM/CSV, cabeceras, parciales y firmas. MySQL: históricos, promoción/retirada, FKs/CHECKs, repetición, corrección, instantánea vacía y rollback. |
-| F7 inicial (v1): ETL completo y segunda ejecución | `F4_TEST_DB_PORT=… F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; dos llamadas reales a `run_etl` en otra BD temporal vacía | 329 tests: 303 unitarios y 26 MySQL. F7 añade cinco casos E2E y una regresión de cliente con diferente capitalización. Cargas reales: 151 productos, 206 almacenes, 277 pedidos y 786 líneas idénticos; contadores e integridad correctos. |
-| Corrección F6–F7: ADR 004 | Suite completa en MySQL temporal, Ruff y dos cargas reales v2 | 333 tests pasan (307 unitarios, 26 MySQL). 159 productos, 206 almacenes, 358 pedidos y 1.101 líneas idénticos entre cargas. Cero huérfanos, contadores conciliados y las 81 cabeceras restauradas. |
-| F7: fallos y concurrencia | `tests/integration/test_etl.py` en MySQL 8, fuentes sintéticas | Última página 500 agotada y error real de FK tras escribir las cuatro tablas: negocio anterior íntegro, run failed durable, sin histórico ficticiamente creado en auditoría. Otro lector ve la versión previa antes del rollback. Segundo escritor rechazado antes de crear run durante extracción; tras liberar lock, nueva carga completada. |
-| F8: SQL/conciliación de métricas | MySQL 8 temporal; `F4_TEST_DB_PORT=… F4_TEST_DB_NAME=f4_test_analytics F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; una carga real aislada y recálculo independiente con `as_of=2026-09-25`; Ruff | 339 tests pasan (307 sin BD, 32 MySQL), lint/formato correctos. Las consultas y el cálculo independiente coinciden en total, 18 meses/unidades, canales, categorías, top 10, margen, mes anterior y bajo stock. La comprobación real no alteró el volumen del usuario. |
-| F9: web/MySQL y navegador | Nueve casos `test_web.py`; suite completa sobre MySQL 8.0.46 temporal; Ruff; carga real aislada y [capturas](docs/evidence/README.md) | 348 tests pasan (307 sin BD, 41 MySQL), lint y formato correctos. Filtros, paginación, HTML escapado, comodines literales/inyección, vacíos, error 503, última publicación ante fallo posterior, stock inválido y métricas contrastadas con SQL. Gráfico, tablas, filtros y paginación comprobados en navegador; ajuste móvil verificado a 390 × 844. |
-| F10 local: resumen y cliente | `F4_TEST_DB_PORT=… F4_TEST_DB_NAME=f4_test_make F4_TEST_DB_PASSWORD=… .venv/bin/python -m pytest -q`; Ruff; una carga real a BD temporal con receptor HTTP simulado | 397 tests pasan; no rollback por HTTP; reenvío inmutable; resumen real 115 productos/72 rechazados/56.696,84/12 bajo stock. No es ejecución Make. |
-| Make: escenario real con datos sintéticos | POST manual del usuario; texto de Sheets; capturas del histórico, ejecución de Gmail/Update a Cell, correo recibido y reenvío | Fila y tres JSON coinciden con el ejemplo; correo sintético recibido con valores correctos; reenvío bloqueado sin ejecutar Add a Row/Gmail/Update a Cell. La tabla de Sheets confirma la fecha UTC de O solo en la alerta. No acredita carga ETL real ni A09. |
-| Make: ejemplo sintético sin alerta | Captura del usuario tras enviar summary.synthetic.json | Add a Row completado y «Hay alerta» bloqueado; Gmail no se ejecuta. Contenido y JSON vacíos de la nueva fila verificados contra el ejemplo; O vacía. |
-| Make: rechazo del filtro inicial | Capturas del usuario tras pruebas guiadas de versión incorrecta, estado inválido y run_id ausente, por separado | Webhook completado y «Resumen válido» deja pasar 0 bundles en los tres casos; ningún módulo posterior ejecutado. Las capturas no contienen el payload; identificación de cada entrada por la guía. |
-| Make: primera ejecución ETL real | Logs y capturas del usuario para c1a93f67-6990-4748-8efa-c18bc6777b42 | Publicación anterior al POST; histórico, Gmail y marca completados; correo recibido con UUID y cifras coincidentes. 115 productos/72 rechazados/12 bajo mínimos/56696.84 de agosto. Fila final contrastada, as_of 2026-09-27 y marca UTC 15:34:53; A09 acreditado. |
-| Make: reenvío del ETL real | Comando/log del usuario y captura posterior para el mismo run | HTTP aceptado; «Ejecución nueva» y «Correo pendiente» dejan pasar 0; Add a Row/Gmail/Update a Cell no se ejecutan. Bloqueo de duplicados observado, sin nueva lectura de O ni prueba concurrente. |
-| Make: importación del blueprint saneado | Confirmación textual del usuario tras la guía de importación en un escenario nuevo/desactivado | Archivo importado según confirmación del usuario; sin captura, configuración de conexiones ni ejecución de la copia acreditadas. |
-| F10: revisión local de cierre (27/09/2026) | `pytest -q` sin BD de pruebas; Ruff/lint y formato; revisión documental/blueprint/capturas | 347 pruebas pasan, 50 MySQL omitidas y aviso de deprecación previo; lint/formato pasan. Suite completa 397 conservada como evidencia anterior. Cierre técnico con límites externos explícitos, integración en main pendiente. |
-| Arranque desde cero y secretos | TBD | TBD |
-
-Trazabilidad de aceptación: A01 (cuatro fuentes y fallos), A02 (dos precios contrastados con origen), A03 (FKs e históricos), A04 (localizadores/contadores/rechazos) y A05 (repetición completa más corrección de líneas probada en F6) quedan verificados bajo las reglas vigentes. F8 acredita las consultas SQL de A07 y A08 bajo las decisiones documentadas; F9 verifica la presentación de A06–A08 con datos reales y casos sintéticos. El margen estimado no equivale a beneficio confirmado por los conflictos de coste y la base fiscal pendiente.
+Una columna de pedidos se cambia en `src/etl/orders.py`, contratos/persistencia y migración si procede; la paginación en `src/etl/stock_client.py`; desgloses en `src/analytics/queries.py` y presentación web. Actualizar reglas y regresiones cuando cambien contratos.
 
 ## Qué cambiaría con cinco millones de líneas
 
-Propuesta de evolución, pendiente de contrastar mediante medidas: lectura en streaming y staging MySQL por lotes, validación/deduplicación con índices y conjuntos en BD en vez de todo en memoria; publicación de versión consolidada solo tras validar; upserts/reconciliación por particiones o versión de snapshot; ID estable de línea del ERP para incrementar con seguridad. Medir EXPLAIN/índices y preagregar meses si las consultas lo necesitan. Definir retención/acceso de payloads e historial, backups y recuperación. Stock incremental con watermark y refresco completo periódico por falta de tombstones.
+El primer límite previsible es memoria: hoy se materializa la instantánea para validar pedidos y duplicados. Pasaría a streaming y staging por lotes con índices para resolver firmas/cabeceras entre lotes. Publicaría solo tras validar la instantánea completa, manteniendo atomicidad; mediría locks/escrituras. Revisaría índices y planes SQL y precalcularía agregados si las latencias lo justifican.
 
-No introducir Spark/Kafka/Kubernetes solo por el número de filas: medir memoria, duración y cuellos antes. Decisiones finales, benchmark o estimaciones identificadas como tales: **TBD**.
+Mediría tiempo, pico de memoria y filas/s con una réplica representativa. No hay benchmark de cinco millones ni SLA prometido. Incremental necesita contrato de cambios/bajas e ID estable de línea; `updated_since` de stock por sí solo no detecta bajas.
 
-## Limitaciones
+## Qué quedó fuera y entrega
 
-Por validar: ausencia de ID de línea y coste histórico; base fiscal/zona de negocio; política de devoluciones; stock por instantánea y antigüedad; entrega Make al menos una vez. F5 conserva 12 productos sin stock observado como NULL y no crea productos por los 24 registros de stock ajenos al catálogo aceptado. El timestamp agregado es la actualización más reciente, no una garantía de frescura de todos los almacenes. La API no ofrece una versión de snapshot: totales iguales entre páginas no permiten detectar todo cambio concurrente del proveedor. Quedan por confirmar las reservas y la autoridad/frescura de la instantánea; más limitaciones de las fases futuras: **TBD**.
+Fuera por tiempo: incremental, contenedor de la aplicación Python y comparativa interanual. Sí hay reintentos, logs, tests y auditoría. No se deducen costes históricos, vínculos de devolución ni disponibilidad descontando reservas; el timestamp más reciente tampoco garantiza frescura común de almacenes.
 
-## Cosas dejadas fuera por tiempo
+Se utilizó Codex para implementación y verificación; el autor confirmó decisiones y configuró/ejecutó los destinos externos. Las pruebas HTTP simuladas no se presentan como ejecuciones de Make.
 
-**TBD**: registrar lo realmente omitido. Candidatos opcionales: incremental, dockerización completa, YoY y mejoras operativas. No etiquetar un requisito obligatorio incumplido como «opcional»; indicarlo de forma explícita si finalmente falta.
-
-## Uso de IA
-
-En F10, Codex implementó el contrato persistido, el cliente HTTP y el reenvío, añadió 49 pruebas y verificó las cuatro fuentes con un receptor simulado. Después guio el montaje de Make y revisó las capturas/texto aportados; el usuario conectó los destinos y ejecutó las pruebas externas sintéticas y el ETL real, con correos recibidos y filas de Sheets contrastadas el 27/09/2026. A petición del usuario se cerró la fase con la evidencia disponible y límites externos explícitos; las pruebas locales no acreditan por sí solas los destinos externos.
-
-Se usó Codex para inspeccionar el repositorio, redactar la planificación e implementar F0–F9. F1–F3 incorporaron reglas puras y Ruff; F4–F6 añadieron persistencia, stock y pedidos con pruebas MySQL y cargas parciales reales. F7 añadió pruebas de integración completa, un caso unitario que explicita la comparación actual de cliente, dos cargas reales de las cuatro fuentes y contraste de muestras contra origen. No modificó reglas de negocio, fuentes ni el volumen del usuario; corrigió el mensaje de error del CLI que aún mencionaba F5 y documentación desactualizada. El responsable deberá revisar y poder explicar las decisiones y resultados. Después de F7, el usuario confirmó equivalencia de capitalización del cliente: se implementó ADR 004, se versionaron reglas v2 y se repitieron suite y dos cargas reales. La deduplicación de las ocho repeticiones idénticas se mantuvo como decisión para la prueba. F8 añadió consultas SQL, seis pruebas MySQL sintéticas y contraste de métricas con una carga real aislada; detectó categorías con distinta capitalización y costes conflictivos con efecto material sobre el margen, documentados arriba. F9 añadió la interfaz, nueve pruebas MySQL/HTML y capturas reales; la revisión móvil detectó un desbordamiento de tablas, corregido con contenedores desplazables y ancho mínimo de los paneles.
-
-Uso durante implementación, tareas asistidas, decisiones revisadas personalmente, validación y errores detectados: **TBD**. No atribuir aprobaciones o verificaciones humanas que no han ocurrido.
-
-## Entrega y Git
-
-- Enlace GitHub y acceso si privado: **TBD**.
-- Ramas reales (mínimo tres de trabajo) y enlaces de PR merged a main (mínimo dos): **TBD**.
-- Commit de main verificado y procedimiento reproducible: **TBD**.
-- Resumen de dos o tres párrafos: **TBD**.
-- Captura real de panel F9: [dashboard](docs/evidence/f9-dashboard.png), [catálogo filtrado](docs/evidence/f9-catalog-filter.png) y [contexto de evidencia](docs/evidence/README.md). Make dispone de capturas sintéticas y de [ambas rutas del ETL real completadas](make/capturas/f10-real-etl-destinations.png), además del [contraste de Sheets](make/capturas/f10-real-sheets-verified.md); detalles en [make/README](make/README.md).
-- Borrador de correo conforme al destinatario/asunto de README: **TBD**. Preparar no equivale a enviar; no se envía automáticamente.
+El historial conserva seis ramas/PR integradas en `main`, superando tres ramas y dos PR exigidas. **Pendiente:** integrar `feature/delivery-docs` y enviar el correo de entrega con las dos capturas requeridas.

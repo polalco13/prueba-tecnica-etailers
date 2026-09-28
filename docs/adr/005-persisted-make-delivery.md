@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementada y verificada en F10, cerrada técnicamente en `feature/make-integration` y pendiente de integración en main. Resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado; ETL real distribuido a Sheets/Gmail, fila/marca y reenvío bloqueado acreditados. A09 satisfecho; blueprint saneado, capturas y guía disponibles. El usuario decidió terminar las pruebas manuales. Recuperación de destinos y configuración/ejecución de la copia importada no verificadas; importación del archivo confirmada textualmente. [Límites de cierre](../../make/README.md#cierre-y-límites-de-verificación).
+Implementada y verificada en F10, integrada en main mediante PR 5 (`ff53b1c`). Resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado; ETL real distribuido a Sheets/Gmail, fila/marca y reenvío bloqueado acreditados. A09 satisfecho; blueprint saneado, capturas y guía disponibles. El usuario decidió terminar las pruebas manuales. Recuperación de destinos y configuración/ejecución de la copia importada no verificadas; importación del archivo confirmada textualmente. [Límites de cierre](../../make/README.md#cierre-y-límites-de-verificación).
 
 ## Contexto
 

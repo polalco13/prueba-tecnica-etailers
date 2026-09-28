@@ -2,7 +2,7 @@
 
 La evidencia se capturó en la web ejecutable local (`http://127.0.0.1:8000/`) con la publicación real `c1a93f67-6990-4748-8efa-c18bc6777b42`, finalizada el 27/09/2026 a las 15:34 UTC. Se mantuvo `as_of=28/09/2026`, zona `Europe/Madrid` y, para el catálogo, la búsqueda `destornillador` con categoría `Herramienta manual`.
 
-Las capturas `before-*` son la referencia tomada antes de editar la interfaz; las `after-*` corresponden al mismo servidor y publicación. No se editaron para añadir o quitar contenido. Las capturas muestran métricas agregadas y nombres de producto; no contienen credenciales, tokens ni datos de clientes.
+Las capturas antes/después y el detalle de comparación se retiraron del paquete final para simplificarlo; están en el historial Git. Se conserva la [captura de entrega](../dashboard.png), tomada después sobre el clon limpio F12.
 
 ## Revisión Before | After | Why
 
@@ -18,7 +18,7 @@ Las capturas `before-*` son la referencia tomada antes de editar la interfaz; la
 ## Comprobaciones realizadas
 
 - Escritorio: 1440 × 900. Móvil: 390 × 844. No hubo desbordamiento de la página en las vistas ejecutables.
-- Comparación DOM de la misma publicación: cuatro KPIs, serie mensual de 18 meses y celdas de seis tablas coinciden (`data-comparison.json`).
+- Comparación DOM de la misma publicación: cuatro KPIs, serie mensual de 18 meses y celdas de seis tablas coinciden.
 - Recorrido del navegador: evolución, tabla mensual, foco de región, búsqueda + categoría, Limpiar y paginación; la paginación mantuvo `q` y `category`.
 - Tabla sin JavaScript: una previsualización local de solo lectura aplicó CSP `script-src 'none'`; se conservaron 18 filas mensuales y los seis cuadros tabulares, y el `<details>` siguió funcionando.
 - Texto ampliado: una previsualización local aplicó 200 % al documento; la navegación se ajustó sin desbordar el viewport. Las tablas anchas se desplazan dentro de su contenedor.

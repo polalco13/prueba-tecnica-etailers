@@ -1,6 +1,6 @@
 # Especificación técnica propuesta
 
-Estado: F0–F9 integradas en main. F10 cerrada técnicamente en `feature/make-integration`, pendiente de integración. Resumen persistido, cliente HTTP y reenvío probados localmente; ejecución ETL real en Sheets/Gmail, fila/marca y bloqueo del reenvío acreditados. Blueprint saneado e importación confirmada por el usuario; recuperación de destinos y ejecución de la copia importada no verificadas, con [límites documentados](make/README.md#cierre-y-límites-de-verificación). R14/R15 y A09 satisfechos; F11 no iniciado. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
+Estado: F0–F10 y F10b integradas en main (PR 1–6). F12 documentada y verificada en `feature/delivery-docs`; integración documental pendiente. Resumen persistido, cliente HTTP y reenvío probados localmente; ejecución ETL real en Sheets/Gmail, fila/marca y bloqueo del reenvío acreditados. Blueprint saneado e importación confirmada por el usuario; recuperación de destinos y ejecución de la copia importada no verificadas, con [límites documentados](make/README.md#cierre-y-límites-de-verificación). R14/R15 y A09 satisfechos; F11 no iniciado. R/D/S se definen en [PRD.md](PRD.md). Las reglas concretas pertenecen a [DATA_RULES.md](DATA_RULES.md); el orden de trabajo a [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). La inspección siguiente describe el estado inicial; la evidencia actual está en [SOLUCION.md](SOLUCION.md).
 
 ## Inspección y límites de evidencia
 
@@ -26,7 +26,7 @@ API stock ────┘                                          transacción 
                                                              router -> email / Sheets
 ```
 
-Un único proyecto Python, un comando ETL síncrono y una aplicación web de lectura, compartiendo configuración y consultas. Extraer y validar antes de abrir la transacción de negocio; no mantener una transacción abierta durante peticiones HTTP. Un fallo fatal deja la versión anterior publicada. Las filas inválidas se descartan según reglas y pueden producir una ejecución `success_with_rejections`. Una extracción incompleta nunca se publica.
+Un único proyecto Python, un comando ETL síncrono y una aplicación web de lectura, compartiendo configuración y consultas. Extraer y validar antes de abrir la transacción de negocio; no mantener una transacción abierta durante peticiones HTTP. Un fallo fatal deja la versión anterior publicada. Las filas inválidas se descartan según reglas y producen una ejecución `completed` con contadores de rechazo explícitos. Una extracción incompleta nunca se publica.
 
 Tecnologías propuestas, a fijar y probar en F0:
 
@@ -176,7 +176,7 @@ Concreción implementada en F6: `003_orders.sql` añade `orders`, `order_lines` 
 
 ## Configuración y seguridad
 
-Variables existentes: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `STOCK_API_URL`, `STOCK_API_TOKEN`, `CSV_PATH`, `XML_PATH`. Añadir en implementación `ORDERS_CSV_PATH`, `BUSINESS_TIMEZONE` (propuesta Europe/Madrid, S), `ANALYTICS_AS_OF` opcional, parámetros de HTTP/retries/límite, `LOG_LEVEL`, `MAKE_WEBHOOK_URL`, timeout Make y umbral de rechazos. Documentar valores no secretos en plantilla; no copiar credenciales de ejemplo a código. No cambiar `.env` existente sin necesidad ni mostrar su contenido.
+Variables existentes: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `STOCK_API_URL`, `STOCK_API_TOKEN`, `CSV_PATH`, `XML_PATH`. Implementadas además `ORDERS_CSV_PATH`, `BUSINESS_TIMEZONE` (Europe/Madrid por defecto, S), parámetros HTTP/retries/límite, `LOG_LEVEL`, `MAKE_WEBHOOK_URL`, timeout Make y umbral de rechazos. La fecha analítica se inyecta por argumento Python en tests; `ANALYTICS_AS_OF` fue una propuesta y no es una variable implementada. Documentar valores no secretos en plantilla; no copiar credenciales de ejemplo a código. No cambiar `.env` existente sin necesidad ni mostrar su contenido.
 
 El Compose actual tiene valores de demostración literales: no está configurado para sustituirlos todos desde `.env`. En F0 verificar alineación sin afirmar que cambiar `.env` cambia los contenedores; parametrización de Compose, si se necesita, sería cambio posterior explícito. Dentro de Docker los hosts serán nombres de servicio y MySQL puerto 3306, no localhost:3307. El volumen MySQL ya inicializado no vuelve a ejecutar `db/init`; aplicar scripts versionados sin borrar volúmenes.
 

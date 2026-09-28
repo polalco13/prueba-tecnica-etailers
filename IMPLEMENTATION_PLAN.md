@@ -1,6 +1,6 @@
 # Plan de implementación y estrategia Git
 
-Estado actualizado el 28/09/2026: F0–F10 integradas en `main`; F10b implementada y verificada en la rama `feature/ui-ux`, pendiente de revisión/integración. F10 mediante PR 5, merge `ff53b1c`, con R14/R15 y A09 acreditados. Recuperación de destinos y ejecución de la copia importada no verificadas, con [límites documentados](make/README.md#cierre-y-límites-de-verificación). F11 no iniciado y F12 pendiente. Los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
+Estado actualizado el 28/09/2026: F0–F10 integradas en `main`; F10b integrada mediante PR 6 (`aab89b9`). F10 mediante PR 5, merge `ff53b1c`, con R14/R15 y A09 acreditados. Recuperación de destinos y ejecución de la copia importada no verificadas, con [límites documentados](make/README.md#cierre-y-límites-de-verificación). F11 no elegido. F12 implementada y verificada en `feature/delivery-docs`, pendiente de integración y envío de entrega. Los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
 
 ## Orden y alcance
 
@@ -133,7 +133,7 @@ Las fases preparan primero reglas puras y después persistencia, integración, S
 
 ## F10b — Mejora UI/UX de la plataforma ejecutable
 
-**Estado:** implementada y verificada en `feature/ui-ux`; pendiente de revisión/integración. [Guía de ejecución y criterios de aceptación](docs/phases/f10b-ui-ux.md). Evidencia: [docs/evidence/f10b](docs/evidence/f10b/README.md).
+**Estado:** implementada, verificada e integrada mediante PR 6 (`aab89b9`). [Guía de ejecución y criterios de aceptación](docs/phases/f10b-ui-ux.md). Evidencia: [docs/evidence/f10b](docs/evidence/f10b/README.md).
 
 - **Objetivo:** facilitar la lectura del negocio y la consulta del catálogo en la aplicación existente, con una presentación coherente en escritorio y móvil. Conservar los resultados y contratos acreditados en F8–F10.
 - **Tareas:** inspeccionar la web ejecutable y sus estados; revisar jerarquía, navegación entre secciones, densidad de tablas, gráfico, filtros, paginación y avisos; priorizar problemas y aplicar mejoras de tipografía, espaciado, color, etiquetas y feedback. Mantener métricas, periodos, cobertura del margen y límites comerciales comprensibles. Implementar las mejoras en FastAPI/Jinja2, CSS/JS nativos y Chart.js local.
@@ -159,6 +159,8 @@ Las fases preparan primero reglas puras y después persistencia, integración, S
 
 ## F12 — Documentación y entrega
 
+**Estado:** implementada y validada el 28/09/2026; [evidencia y aceptación](docs/evidence/f12/README.md). Arranque limpio, dos cargas reales, 397 tests y paquete de entrega preparados. Pendientes: integración documental a `main` y envío explícito del correo; F11 no elegido.
+
 - **Objetivo:** repositorio reproducible, evidencias auténticas y entrega revisable.
 - **Tareas:** completar SOLUCION; validar arranque desde clon limpio y BD de pruebas nueva sin borrar volumen del usuario; ETL dos veces con entradas controladas; tests/lint configurado; dashboard y Make; revisar secretos en cambios, historial relevante, blueprint y capturas; `.gitignore`; verificar ≥3 ramas, ≥2 PR y main funcional. Preparar una demostración breve y reproducible que siga un registro desde la fuente hasta el rechazo o la métrica, y localizar los módulos que habría que cambiar ante una nueva columna, una paginación distinta o un nuevo desglose del gráfico. Explicar cinco millones de líneas, limitaciones, exclusiones y uso de IA. Preparar borrador de correo y enlaces/acceso, sin enviarlo automáticamente.
 - **Archivos previstos:** `SOLUCION.md`, documentación ajustada a implementación real, evidencias en `docs/` y `make/capturas/`, `.gitignore` si necesario; no adjuntar `.env` ni dumps con clientes.
@@ -179,7 +181,7 @@ No crear ramas ni commits de fases futuras. Al iniciar F7 la rama era `feature/o
 | 3 | `feature/orders` | F6–F7: cuatro fuentes relacionadas, pruebas E2E e idempotencia. |
 | 4 | `feature/dashboard` | F8–F9: SQL validado y panel completo. |
 | 5 | `feature/make-integration` | F10: integración real y artefactos Make. |
-| Siguiente | `feature/ui-ux` | F10b: mejoras implementadas en la web y evidencia de uso. |
+| 6, integrada | `feature/ui-ux` | F10b: mejoras implementadas en la web y evidencia de uso. |
 | Opcional | `feature/optional-hardening` | F11: extras seleccionados. |
 | Final | `feature/delivery-docs` | F12: guía y evidencias finales. |
 
@@ -195,4 +197,4 @@ Ejemplo de solicitud futura: «Implementa únicamente F1 siguiendo AGENTS y los 
 
 Solicitud preparada para la nueva fase: «Implementa únicamente F10b según [su guía](docs/phases/f10b-ui-ux.md), usando `impeccable` y `emil-design-eng` sobre la aplicación ejecutable. Conserva los datos y reglas existentes; realiza la verificación acotada indicada y registra la evidencia. No avances a F11 ni F12».
 
-F0–F10 ya están integradas en main y F10b queda implementada en `feature/ui-ux`, pendiente de integración. F12 sigue pendiente y F11 no se inicia automáticamente. EUR/IVA y costes conflictivos siguen pendientes de confirmación comercial.
+F0–F10 y F10b están integradas en main. F12 está implementada y validada en `feature/delivery-docs`, pendiente de integración documental y entrega. F11 no se ha elegido. EUR/IVA y costes conflictivos siguen pendientes de confirmación comercial.

@@ -9,3 +9,9 @@ venv/
 *.log
 salida/
 output/
+
+# Metadatos locales de Finder
+.DS_Store
+
+# Borradores personales de entrega
+/docs/delivery/
