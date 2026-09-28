@@ -5,7 +5,10 @@
     <h1 id="page-title">El negocio, en cifras</h1>
     <p>Desde abril de 2025 hasta {{ as_of.strftime('%d/%m/%Y') }} · {{ timezone }}</p>
   </div>
-  <p class="updated">Última carga publicada<br><strong>{% if publication.finished_at %}{{ publication.finished_at.strftime('%d/%m/%Y %H:%M') }} UTC{% else %}Sin cargas completadas con fecha{% endif %}</strong></p>
+  <div class="updated">
+    <span class="status-chip {% if publication.run_id %}status-chip-ok{% else %}status-chip-empty{% endif %}"><span class="status-dot" aria-hidden="true"></span>{% if publication.run_id %}Publicación disponible{% else %}Sin publicación{% endif %}</span>
+    <span class="updated-label">Última carga publicada</span><br><strong>{% if publication.finished_at %}{{ publication.finished_at.strftime('%d/%m/%Y %H:%M') }} UTC{% else %}Sin cargas completadas con fecha{% endif %}</strong>
+  </div>
 </section>
 {% if not publication.run_id %}
 <p class="notice">Todavía no hay una carga completada. Ejecuta el ETL para publicar las cuatro fuentes.</p>
