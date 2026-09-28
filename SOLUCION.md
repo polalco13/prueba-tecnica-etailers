@@ -1,6 +1,6 @@
 # Solución — documento vivo
 
-**Estado: F0–F9 integradas en `main` (PR 4, `aa8569e`). F10 cerrada técnicamente en `feature/make-integration`, pendiente de PR/integración en main: R14/R15 y A09 acreditados con código, blueprint y ejecución ETL real en Sheets/Gmail, fila y marca contrastadas. Recuperación tras fallo de destino y ejecución de la copia importada no verificadas; limitaciones documentadas. F11 no iniciado; F12 pendiente.** `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado: F0–F10 integradas en `main`; F10 mediante PR 5 (`ff53b1c`), con R14/R15 y A09 acreditados con código, blueprint y ejecución ETL real en Sheets/Gmail, fila y marca contrastadas. F10b implementada y verificada en `feature/ui-ux`, pendiente de revisión/integración.** Recuperación tras fallo de destino y ejecución de la copia importada no verificadas; limitaciones documentadas. F11 no iniciado; F12 pendiente. `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
 
 Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
 
@@ -9,7 +9,7 @@ Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_R
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
 - Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7); consultas analíticas probadas y contrastadas con una carga real aislada (F8); catálogo web paginado y dashboard con gráfico, métricas y avisos de calidad, comprobados en MySQL y navegador (F9); resumen persistido y envío posterior al commit a Make, histórico en Sheets, alerta Gmail y reenvío del mismo resumen con bloqueo de duplicados observado (F10).
 - Versión/commit entregado y enlace GitHub: **TBD**.
-- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A08: verificada en F9. A09 de Make: acreditado con ejecución real y destinos contrastados; F10 cerrada con límites explícitos. Integración Git de F10 y cierre de entrega F12 pendientes, sin declarar el ejercicio completo.
+- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A08: verificada en F9 y refinada en F10b. A09 de Make: acreditado con ejecución real y destinos contrastados; F10 integrada con límites explícitos. F12 sigue pendiente, sin declarar el ejercicio completo.
 
 ## Arquitectura final
 
@@ -128,7 +128,7 @@ La suite emite un aviso de deprecación de Starlette al usar su TestClient con e
 
 ## F10 — Resumen persistido y cliente de entrega
 
-**F10 cerrada técnicamente; integración en main pendiente.** La rama `feature/make-integration` nació del main que contiene PR 4. La migración 004 añade `make_summary`, `make_attempts`, `make_error_code`, `make_last_attempt_at` y `make_accepted_at` a `etl_runs`. Se genera `etl-summary-v1` dentro de la publicación atómica y se envía después del commit; un fallo de HTTP no revierte productos/pedidos/stock ni convierte el run completado en failed. El reenvío conserva fechas, umbral, métricas y `run_id` del JSON guardado, aunque el negocio cambie después. La decisión y los estados están en [ADR 005](docs/adr/005-persisted-make-delivery.md).
+**F10 cerrada e integrada mediante PR 5 (`ff53b1c`).** La rama `feature/make-integration` nació del main que contiene PR 4. La migración 004 añade `make_summary`, `make_attempts`, `make_error_code`, `make_last_attempt_at` y `make_accepted_at` a `etl_runs`. Se genera `etl-summary-v1` dentro de la publicación atómica y se envía después del commit; un fallo de HTTP no revierte productos/pedidos/stock ni convierte el run completado en failed. El reenvío conserva fechas, umbral, métricas y `run_id` del JSON guardado, aunque el negocio cambie después. La decisión y los estados están en [ADR 005](docs/adr/005-persisted-make-delivery.md).
 
 El umbral inicial es 0, configurable; alerta si `rows_rejected > threshold` o hay productos bajo mínimos. Duplicados/avisos no disparan por sí solos la alerta. Se incluye facturación del mes natural anterior desde SQL F8 como texto con dos decimales y moneda/base fiscal sin confirmar. Solo los runs completed generan este contrato; los fallos completos permanecen en auditoría local. La URL secreta no se incluye en el resumen ni en logs de aplicación/HTTPX.
 
@@ -161,6 +161,23 @@ El umbral inicial es 0, configurable; alerta si `rows_rejected > threshold` o ha
 **Cierre acordado de F10 (27/09/2026):** el usuario decidió terminar las pruebas manuales y pidió revisar/cerrar esta fase. R14/R15 y A09 se satisfacen con el escenario original: webhook conectado al ETL, router/filtros, histórico Sheets, alerta Gmail, código de llamada, blueprint real saneado, capturas y explicación. La prueba adicional de fallo/recuperación de Sheets no se ejecutó; la configuración/ejecución de la copia importada tampoco está acreditada. El reenvío observado no prueba concurrencia externa ni entrega exactamente una vez; un correo puede repetirse si Gmail envía y falla la marca. Son [límites de verificación](make/README.md#cierre-y-límites-de-verificación), no pruebas aprobadas. F10 queda cerrada técnicamente en la rama, pendiente de integración en main. F11 no iniciado y F12 pendiente.
 
 **Comprobación local de cierre:** `pytest -q` sin las variables de la BD de pruebas ejecutó 347 pruebas y omitió 50; la colección de `tests/unit` confirmó 347 casos. Corrige el desglose documental anterior 346/51, manteniendo el total 397. `ruff check .` pasó y `ruff format --check .` informó 58 archivos ya formateados. El aviso de deprecación anterior se mantiene. No se repitió MySQL ni se lanzó ETL, POST o correo real para este cierre; se conserva la evidencia previa de la suite completa y los destinos del usuario.
+
+## F10b — Mejora UI/UX implementada
+
+F10 se integró después del cierre técnico descrito arriba mediante PR 5, merge `ff53b1c`; las referencias anteriores a integración pendiente corresponden al estado de aquellas verificaciones.
+
+El 27/09/2026 se añadió al [plan](IMPLEMENTATION_PLAN.md#f10b--mejora-uiux-de-la-plataforma-ejecutable) una fase intermedia solicitada por el usuario. La [guía de ejecución](docs/phases/f10b-ui-ux.md) define alcance, uso de `impeccable`/`emil-design-eng`, criterios UX01–UX06 y verificación acotada de la aplicación real.
+
+**Implementada en `feature/ui-ux`:** se refinó la cabecera y navegación por secciones, jerarquía de KPIs, avisos y detalle del margen, gráfico y tabla de respaldo, tablas accesibles, filtros activos, limpiar y paginación, estados vacíos/error y comportamiento responsive. Se conservaron las métricas, columnas, desconocidos, históricos y límites comerciales; no se añadieron cálculos monetarios en JavaScript. La revisión `Before | After | Why`, capturas auténticas y comandos ejecutados están en [docs/evidence/f10b/README.md](docs/evidence/f10b/README.md). F12 seguirá a la integración de F10b; F11 continúa opcional.
+
+| Criterio | Resultado de la revisión F10b |
+| --- | --- |
+| UX01 | Cumplido: periodo, última carga, KPIs, cobertura y avisos aparecen en la entrada; navegación directa a evolución, inventario y catálogo. |
+| UX02 | Cumplido: la comparación DOM de la misma publicación conserva cuatro KPIs, 18 mensualidades y las celdas de las seis tablas; gráfico y tabla exacta permanecen disponibles. |
+| UX03 | Cumplido: búsqueda + categoría, filtros activos, Limpiar y paginación verificados; los parámetros se conservaron al pasar a la página 2 y el resumen no cambió. |
+| UX04 | Cumplido en la revisión acotada: 1440 × 900 y 390 × 844 sin desbordamiento de página; tablas anchas se desplazan dentro de su región. |
+| UX05 | Cumplido en la revisión acotada: skip link, etiquetas, foco visible, regiones de tablas, `<details>` nativos, CSP sin JavaScript y texto ampliado al 200 % verificados. No es auditoría WCAG completa. |
+| UX06 | Cumplido: estados vacío/error conservan mensajes y acciones; desconocido, inválido, cero, histórico, margen negativo y supuestos EUR/IVA siguen diferenciados. |
 
 ## Cómo ejecutar tests
 
