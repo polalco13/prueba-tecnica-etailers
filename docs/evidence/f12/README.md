@@ -13,4 +13,4 @@ Clon nuevo de GitHub `main` (`aab89b9`), venv nuevo y MySQL aislado; Python 3.13
 
 La prueba MySQL y la web temporal se retiraron sin tocar los servicios/datos del usuario. Make se acredita por separado con la ejecución real del 27/09/2026 y sus [límites](../../../make/README.md#cierre-y-límites-de-verificación). La revisión responsive está en [F10b](../f10b/README.md).
 
-GitHub público y seis PR integradas a `main` verificados. **Pendiente:** integrar la documentación F12 y enviar el [correo preparado](../../delivery/email.md). No se identifica implementación obligatoria pendiente; los supuestos comerciales y extras siguen explícitos en [SOLUCION](../../../SOLUCION.md).
+GitHub público y seis PR integradas a `main` verificados. **Pendiente:** integrar la documentación F12 y enviar el correo de entrega. No se identifica implementación obligatoria pendiente; los supuestos comerciales y extras siguen explícitos en [SOLUCION](../../../SOLUCION.md).

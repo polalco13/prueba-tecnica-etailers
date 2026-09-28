@@ -149,4 +149,4 @@ Fuera por tiempo: incremental, contenedor de la aplicación Python y comparativa
 
 Se utilizó Codex para implementación y verificación; el autor confirmó decisiones y configuró/ejecutó los destinos externos. Las pruebas HTTP simuladas no se presentan como ejecuciones de Make.
 
-El historial conserva seis ramas/PR integradas en `main`, superando tres ramas y dos PR exigidas. **Pendiente:** integrar `feature/delivery-docs` y enviar el [correo preparado](docs/delivery/email.md), con las dos capturas requeridas.
+El historial conserva seis ramas/PR integradas en `main`, superando tres ramas y dos PR exigidas. **Pendiente:** integrar `feature/delivery-docs` y enviar el correo de entrega con las dos capturas requeridas.
