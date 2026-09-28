@@ -81,7 +81,7 @@ El margen resta el coste neto **actual** de líneas con coste conocido. Muestra 
 
 El margen negativo observado tiene una causa visible en las fuentes: costes contradictorios de PRV-2013, PRV-2061 y PRV-2104, conservados según la primera fila válida. Por ejemplo, PRV-2013 presenta 34.400,16 frente a 318,52. Se muestra un aviso; no se corrige el origen para obtener un margen positivo.
 
-El panel incluye evolución mensual de facturación/unidades, KPIs, canales, categorías, top 10, margen/cobertura y bajo mínimos. Completa meses vacíos y señala el actual como parcial; tiene tabla exacta sin JavaScript. Bajo mínimos usa stock físico conocido <5 y ventas elegibles en los tres meses naturales anteriores. El catálogo comercial tiene búsqueda, categoría y paginación; sus filtros no cambian las estadísticas.
+El panel incluye evolución mensual de facturación/unidades, KPIs, canales, categorías, top 10, margen/cobertura y bajo mínimos. Completa meses vacíos y señala el actual como parcial; tiene tabla exacta sin JavaScript. Bajo mínimos usa stock físico conocido <5 y ventas elegibles desde la fecha analítica menos tres meses hasta esa fecha, ambos días incluidos. El catálogo comercial tiene búsqueda, categoría y paginación; sus filtros no cambian las estadísticas.
 
 ## Make
 
