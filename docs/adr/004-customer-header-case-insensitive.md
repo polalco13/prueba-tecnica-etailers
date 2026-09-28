@@ -2,7 +2,7 @@
 
 ## Estado
 
-Aceptado por el usuario el 24/09/2026: las variantes de mayúsculas/minúsculas corresponden al mismo cliente. Implementado como corrección de F6–F7; evidencia en [SOLUCION](../../SOLUCION.md#resultados-de-ejecución). No introduce una tabla ni una identidad global de clientes.
+Aceptado por el usuario el 24/09/2026: las variantes de mayúsculas/minúsculas corresponden al mismo cliente. Implementado como corrección de F6–F7; evidencia final en [SOLUCION](../../SOLUCION.md#verificación-realizada). No introduce una tabla ni una identidad global de clientes.
 
 ## Contexto
 

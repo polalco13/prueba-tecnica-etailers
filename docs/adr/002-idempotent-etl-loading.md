@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado en F4–F6 y verificado en F7 contra MySQL 8: repetición de cuatro fuentes, rollback y exclusión de escritores concurrentes. Evidencia en [SOLUCION](../../SOLUCION.md#resultados-de-ejecución). El usuario aclara que el CSV es el fichero recibido para la prueba: se procesa completo como dataset del ejercicio (decisión técnica), sin atribuirle un contrato confirmado sobre futuras exportaciones del ERP. La entrega a Make corresponde a F10.
+Implementado en F4–F6 y verificado en F7 contra MySQL 8: repetición de cuatro fuentes, rollback y exclusión de escritores concurrentes. Evidencia final en [SOLUCION](../../SOLUCION.md#verificación-realizada). El usuario aclara que el CSV es el fichero recibido para la prueba: se procesa completo como dataset del ejercicio (decisión técnica), sin atribuirle un contrato confirmado sobre futuras exportaciones del ERP. La entrega a Make corresponde a F10.
 
 ## Contexto
 

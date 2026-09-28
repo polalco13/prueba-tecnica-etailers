@@ -121,4 +121,4 @@ Los estados distinguen evidencia técnica ejecutada y trabajo pendiente; no impl
 | Dockerización completa opcional | TECH_SPEC; F11 | Opcional no elegido |
 | Logs opcionales en README | TECH_SPEC; base F1, mejoras F11 | Logging con run_id implementado |
 | Comparativa YoY opcional | TECH_SPEC; F11 | Opcional no elegido |
-| Uso de IA permitido y decisiones explicables | AGENTS; SOLUCION; F12 | Uso y límites documentados; demostración preparada |
+| Uso de IA permitido y decisiones explicables | AGENTS; SOLUCION; F12 | Uso y límites documentados; recorrido de un registro incluido en SOLUCION |

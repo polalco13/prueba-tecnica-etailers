@@ -51,7 +51,7 @@ F4_TEST_DB_PASSWORD=f12-test-only .venv/bin/python -m pytest -q
 .venv/bin/ruff format --check src tests docs/validation
 ```
 
-**No ejecutar pytest mientras esté ejecutándose el ETL** en esta instancia MySQL, aunque las bases tengan nombres distintos. El advisory lock es compartido por servidor; una ejecución concurrente debe ser rechazada. F12 detectó esa colisión en el primer intento de validación y repitió la suite secuencialmente: 397 pruebas aprobadas, ninguna omitida. Permanece un aviso de deprecación Starlette/TestClient por httpx; no se añade otro cliente ni se oculta el aviso.
+**No ejecutar pytest mientras esté ejecutándose el ETL** en esta instancia MySQL, aunque las bases tengan nombres distintos: el advisory lock es compartido por servidor. Validación secuencial: 397 pruebas aprobadas, ninguna omitida; aviso conocido de deprecación Starlette/TestClient por httpx.
 
 ## Interfaz y limpieza del entorno temporal
 
