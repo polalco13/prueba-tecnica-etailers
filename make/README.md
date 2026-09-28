@@ -1,6 +1,6 @@
 # Integración Make — F10
 
-**Estado:** F10 cerrada técnicamente en `feature/make-integration`, pendiente de integración en `main`. R14/R15 y A09 acreditados con código, blueprint real saneado, capturas, fila de Sheets y correo recibido desde el ETL real. El usuario confirmó la importación y decidió terminar las pruebas manuales con la evidencia disponible. Recuperación tras fallo de destino y configuración/ejecución de la copia importada no verificadas; límites detallados más abajo. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
+**Estado:** F10 integrada en `main` mediante PR 5 (`ff53b1c`). R14/R15 y A09 acreditados con código, blueprint real saneado, capturas, fila de Sheets y correo recibido desde el ETL real. El usuario confirmó la importación y decidió terminar las pruebas manuales con la evidencia disponible. Recuperación tras fallo de destino y configuración/ejecución de la copia importada no verificadas; límites detallados más abajo. Distinguir HTTP simulado, datos sintéticos enviados a Make y carga real del ETL.
 
 ## Configuración y comandos
 
@@ -151,7 +151,7 @@ El 27/09/2026 el usuario decidió finalizar las pruebas manuales. El alcance obl
 - **Copia importada:** importación del archivo confirmada textualmente por el usuario; conexiones y ejecución de esa copia sin verificar. El escenario original sí tiene evidencia de ambos destinos. Asignar conexiones propias antes de ejecutar una importación.
 - **Duplicación residual:** el reenvío manual se observó bloqueado y el blueprint configura procesamiento secuencial; no se ejecutó una prueba concurrente externa. Si Gmail envía y falla la marca en Sheets, un reenvío puede repetir el correo. HTTP 2xx no acredita destinos ni entrega exactamente una vez.
 
-Estas limitaciones quedan documentadas sin atribuirles éxito. El cierre técnico de F10 no acredita el arranque limpio ni la entrega final de F12; tampoco inicia F11. La integración de la rama en `main` sigue pendiente.
+Estas limitaciones quedan documentadas sin atribuirles éxito. El cierre técnico de F10 no acredita el arranque limpio ni la entrega final de F12; tampoco inicia F11. Integrada en `main` mediante PR 5; F12 conserva esta evidencia sin realizar nuevos envíos.
 
 ## Blueprint exportado y revisión del 27/09/2026
 
@@ -177,7 +177,7 @@ Importar el archivo desde el menú **Import blueprint** de un escenario nuevo y 
 3. Autorizar Gmail [16], introducir un destinatario de prueba propio y revisar asunto/cuerpo. La lista de destinatarios se deja vacía deliberadamente.
 4. Comprobar que se conservan el filtro inicial, ambas entradas Raw y **Process data in order**; guardar y probar de forma controlada antes de activarlo. El usuario confirmó la importación del archivo; configuración y ejecución de esta copia siguen sin acreditarse.
 
-A09 queda acreditado con ejecución real, ambos destinos y fila final contrastada. F10 queda cerrada técnicamente con los límites indicados; integración en `main` pendiente. F11 no se ha iniciado.
+A09 queda acreditado con ejecución real, ambos destinos y fila final contrastada. F10 queda cerrada técnicamente con los límites indicados; integrada en `main` mediante PR 5. F11 no se ha iniciado.
 
 ## Referencias y decisión técnica
 

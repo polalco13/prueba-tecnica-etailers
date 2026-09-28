@@ -12,4 +12,4 @@ Crear un ADR solo para una decisión con impacto transversal o alternativas sign
 | [002](002-idempotent-etl-loading.md) | Instantáneas, claves únicas y publicación transaccional | Implementado para el dataset de prueba; contrato futuro pendiente | F4–F7 |
 | [003](003-historical-orphan-products.md) | Productos históricos mínimos para mantener FKs | Implementado; consulta de margen e interfaz verificadas | F6/F8/F9 |
 | [004](004-customer-header-case-insensitive.md) | Cliente equivalente sin distinguir mayúsculas | Aceptado por el usuario e implementado | Corrección F6–F7 |
-| [005](005-persisted-make-delivery.md) | Resumen persistido y entrega independiente a Make | Código local probado; escenario/destinos reales pendientes | F10 |
+| [005](005-persisted-make-delivery.md) | Resumen persistido y entrega independiente a Make | Implementado; destinos reales acreditados, límites externos documentados | F10 |

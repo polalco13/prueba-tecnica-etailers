@@ -1,0 +1,26 @@
+# Entorno de validación separado del Compose de desarrollo. Compose >= 2.24.4.
+# Credenciales de demostración heredadas del entorno de la prueba; solo loopback.
+services:
+  mysql:
+    extends:
+      file: ../../docker-compose.yml
+      service: mysql
+    container_name: nortesur-f12-mysql
+    restart: "no"
+    environment:
+      MYSQL_DATABASE: f12_real
+    ports: !override
+      - "127.0.0.1:13317:3306"
+    volumes: !override []
+    tmpfs:
+      - /var/lib/mysql
+  stock-api:
+    extends:
+      file: ../../docker-compose.yml
+      service: stock-api
+    container_name: nortesur-f12-stock
+    restart: "no"
+    ports: !override
+      - "127.0.0.1:13311:3001"
+    volumes: !override
+      - ../../mock-api:/app:ro

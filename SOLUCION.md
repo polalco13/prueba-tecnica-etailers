@@ -1,55 +1,74 @@
-# Solución — documento vivo
+# Solución — ejecución y entrega
 
-**Estado: F0–F10 integradas en `main`; F10 mediante PR 5 (`ff53b1c`), con R14/R15 y A09 acreditados con código, blueprint y ejecución ETL real en Sheets/Gmail, fila y marca contrastadas. F10b implementada y verificada en `feature/ui-ux`, pendiente de revisión/integración.** Recuperación tras fallo de destino y ejecución de la copia importada no verificadas; limitaciones documentadas. F11 no iniciado; F12 pendiente. `TBD` significa pendiente de implementación/verificación; no sustituirlo por estimaciones presentadas como hechos.
+**Estado a 28/09/2026:** F0–F10 y F10b integradas en `main` (PR 1–6). F12 implementada y validada en `feature/delivery-docs`; queda pendiente integrar esta documentación en `main` y enviar la entrega. No se inicia F11. El código funcional de referencia es `aab89b9`, clonado de GitHub para la comprobación limpia.
 
-Diseño propuesto: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md), [ADR](docs/adr/README.md). Al finalizar, actualizar esta guía a lo realmente implementado y distinguirlo de propuestas descartadas.
+[Arranque](#cómo-levantar-desde-cero) · [Evidencia final y aceptación](docs/evidence/f12/README.md) · [Demostración](docs/delivery/demo.md) · [Borrador de correo](docs/delivery/email.md).
+
+README es el enunciado. [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [plan](IMPLEMENTATION_PLAN.md) y [ADR](docs/adr/README.md) distinguen requisitos, decisiones y supuestos. Las evidencias históricas fechadas de abajo conservan lo observado entonces; el estado final es el de F12. La validación técnica no confirma moneda/IVA, costes históricos ni decisiones comerciales del proveedor.
 
 ## Resumen
 
 - Problema: consolidar catálogo CSV, tarifas XML, pedidos CSV y stock REST del distribuidor B2B.
 - Funcionalidad realmente implementada: bootstrap de dependencias y comprobación local de servicios (F0); configuración, contratos y normalizadores puros (F1); lector/validador del CSV de catálogo (F2); reglas XML y coste neto (F3); persistencia MySQL y auditoría (F4); API paginada y stock por almacén (F5); pedidos, históricos y reconciliación de las cuatro fuentes (F6); validación end-to-end con pruebas sintéticas y dos cargas reales repetibles en MySQL aislado (F7); consultas analíticas probadas y contrastadas con una carga real aislada (F8); catálogo web paginado y dashboard con gráfico, métricas y avisos de calidad, comprobados en MySQL y navegador (F9); resumen persistido y envío posterior al commit a Make, histórico en Sheets, alerta Gmail y reenvío del mismo resumen con bloqueo de duplicados observado (F10).
-- Versión/commit entregado y enlace GitHub: **TBD**.
-- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A08: verificada en F9 y refinada en F10b. A09 de Make: acreditado con ejecución real y destinos contrastados; F10 integrada con límites explícitos. F12 sigue pendiente, sin declarar el ejercicio completo.
+- Repositorio público: [polalco13/prueba-tecnica-etailers](https://github.com/polalco13/prueba-tecnica-etailers). Código funcional verificado: `aab89b9` (main tras PR 6); F12 añade documentación y comprobación reproducible, sin cambios productivos.
+- A01–A05: verificados técnicamente en F7. SQL de A07 y A08: verificado en F8, con supuestos comerciales explícitos más abajo. Interfaz de A06–A08: verificada en F9 y refinada en F10b. A09 de Make: acreditado con ejecución real y destinos contrastados; F10 integrada con límites explícitos. F12 acredita el arranque limpio y la regresión completa; su integración y el envío de entrega siguen pendientes.
 
 ## Arquitectura final
 
-El incremento implementado es CSV/XML/API de stock/CSV de pedidos → lectores y reglas Python → transacción InnoDB MySQL 8 (`products`, `stock_by_warehouse`, `orders`, `order_lines`, `etl_runs`, `rejections`) → consultas SQL de solo lectura en `src/analytics/queries.py` → FastAPI/Jinja2 y Chart.js local en `src/web/`. El catálogo usa `src/analytics/catalog.py`; los importes se calculan en SQL, no en JavaScript. Las incidencias de fallos se confirman por separado tras rollback; un advisory lock serializa escritores. Diagrama final con web y Make: **TBD**.
+El incremento implementado es CSV/XML/API de stock/CSV de pedidos → lectores y reglas Python → transacción InnoDB MySQL 8 (`products`, `stock_by_warehouse`, `orders`, `order_lines`, `etl_runs`, `rejections`) → consultas SQL de solo lectura en `src/analytics/queries.py` → FastAPI/Jinja2 y Chart.js local en `src/web/`. El catálogo usa `src/analytics/catalog.py`; los importes se calculan en SQL, no en JavaScript. Las incidencias de fallos se confirman por separado tras rollback; un advisory lock serializa escritores. Make recibe el resumen guardado en `etl_runs` después del commit. HTTP aceptado se distingue del resultado de los destinos.
+
+```mermaid
+flowchart LR
+    F[CSV catálogo / XML tarifas / CSV pedidos / API stock] --> E[Lectura y reglas Python]
+    E --> D[(MySQL 8: publicación atómica y auditoría)]
+    D --> Q[SQL analítico]
+    Q --> W[FastAPI / Jinja2 / Chart.js local]
+    D --> M[Resumen persistido: cliente HTTP / reenvío]
+    M --> H[Webhook Make]
+    H --> R[Router y filtros]
+    R --> S[Google Sheets: histórico por run_id]
+    R --> G[Gmail: alerta pendiente]
+    G --> O[Sheets: email_sent_at]
+```
 
 ## Requisitos de entorno
 
-- Entorno local comprobado en F0 (23/09/2026): Python 3.13.13, Docker 29.2.1 y Compose 2.38.2. MySQL respondió como 8.0.46. Se usa 3.13 porque la versión 3.12 propuesta no está disponible en este equipo; compatibilidad con otros Python **TBD**.
-- Dependencias resueltas y fijadas en `requirements.txt`; configuración de pytest y Ruff en `pyproject.toml`. La justificación de dependencias está más abajo. Instalación en otro equipo **TBD**.
-- Puertos/servicios del entorno provisto: MySQL host 3307 y API stock 3001; ambos estaban `healthy` en F0. Esta observación local no sustituye la comprobación desde cero de F12.
-- En F0 no había `MAKE_WEBHOOK_URL` ni conexiones Make verificadas. En F10 el usuario configuró la URL local y conectó Sheets/Gmail; el 27/09/2026 hay evidencia de correos sintético/ETL real recibidos y sus filas de Sheets contrastadas. Destinos y parámetros privados permanecen fuera de Git. El token local se usó en memoria para la comprobación autenticada; no se mostró ni publicó.
-- GitHub: `origin` está configurado y un `git push --dry-run` a `feature/etl-products` terminó correctamente; no se publicó esa rama por esta comprobación. La accesibilidad final del repositorio entregado se verificará en F12.
-- Zona horaria propuesta en F1: `Europe/Madrid` por defecto, configurable mediante `BUSINESS_TIMEZONE` y pendiente de confirmación comercial. Moneda y base fiscal: **TBD**.
+- Verificado el 28/09/2026 en macOS: Python **3.13.13**, Docker **29.2.1**, Compose **2.38.2**, MySQL **8.0.46**. No se certifican otros sistemas operativos/versiones Python.
+- Dependencias fijadas en `requirements.txt`; instalación en un entorno virtual nuevo y `pip check` correctos. No necesita Node local, bundler ni CDN para la web.
+- Compose provisto levanta MySQL en 3307 y stock en 3001. Sus credenciales son las **demo públicas** del enunciado, escritas literalmente en Compose: cambiar `.env` no cambia automáticamente esos servicios.
+- Make queda desactivado con URL vacía. La conexión externa se prepara según [make/README](make/README.md); las pruebas auténticas de Sheets/Gmail del 27/09/2026 se conservan. F12 no envía notificaciones ni accede a secretos.
+- `BUSINESS_TIMEZONE=Europe/Madrid` por defecto. Moneda/base fiscal y semántica comercial de los costes son limitaciones documentadas, no requisitos técnicos pendientes ocultos.
 
 ## Cómo levantar desde cero
 
-Pasos de bootstrap comprobados en F0, que F12 debe repetir desde un clon limpio:
+En una máquina con los puertos 3307/3001 libres y Docker iniciado:
 
-1. Clonar repositorio y seleccionar versión de entrega: URL/commit **TBD**.
-2. Preparar `.env` a partir de `.env.example` solo si no existe. En F0 ya existía y se conservó. Mantenerlo local; no mostrar claves reales en ejemplos. F1 acepta opcionalmente `ORDERS_CSV_PATH` (por defecto `data/pedidos_historico.csv`), `BUSINESS_TIMEZONE` (por defecto `Europe/Madrid`) y `LOG_LEVEL` (por defecto `INFO`). Variables de fases posteriores: **TBD**.
-3. Comprobar que variables de la aplicación coinciden con servicios: Compose tiene valores demo literales y no interpola automáticamente todo `.env`. La conexión local de F0 confirmó que los valores actuales coinciden.
-4. El README proporciona `docker compose up -d` para MySQL/API. Después, comprobar `docker compose ps` y `curl --fail http://localhost:3001/health`. En F0 los servicios ya estaban en marcha: se comprobó `docker compose ps`, `/health` y una página autenticada, sin reiniciarlos ni imprimir el token. Se observó `/health` 200, 401 sin token y 200 con token (`data`: 5 elementos, `meta`: `page`, `per_page`, `total_records`, `total_pages`, `has_next`). El token se leyó desde `.env` mediante `python-dotenv` en memoria, no se pasó como literal de línea de comandos.
-5. Crear el entorno Python e instalar dependencias fijadas:
+```bash
+git clone https://github.com/polalco13/prueba-tecnica-etailers.git
+cd prueba-tecnica-etailers
+# No sobrescribir una configuración existente.
+test -f .env || cp .env.example .env
+python3.13 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pip check
+docker compose up -d --wait
+curl --fail http://localhost:3001/health
+.venv/bin/python -m src.db migrate
+MAKE_WEBHOOK_URL= .venv/bin/python -m src.etl
+.venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000
+```
 
-   ```bash
-   python3.13 -m venv .venv
-   .venv/bin/python -m pip install -r requirements.txt
-   .venv/bin/python -m pip check
-   ```
+Abrir http://127.0.0.1:8000. `Ctrl+C` detiene la web; `docker compose stop` detiene los servicios conservando los datos. **No ejecutar `down -v`** para actualizar o repetir la prueba. La base empieza vacía; sin el paso ETL la web no tiene una publicación que mostrar. La variable vacía en ese primer comando evita contactar Make aunque exista una configuración previa.
 
-   En F0 se creó `.venv` local y se instalaron las versiones fijadas. La verificación de instalación desde `requirements.txt` y `pip check` consta en las pruebas realizadas. `.venv` y las cachés de herramientas están ignoradas por Git.
-6. Aplicar las migraciones con `.venv/bin/python -m src.db migrate` una vez que `.env` apunte al MySQL deseado. Registra `001_products_and_runs`, `002_stock`, `003_orders` y, desde F10, `004_make_delivery`; repetir informa «ya aplicadas». También actualiza volúmenes existentes sin borrarlos: `db/init` solo se ejecuta al inicializarlos. F10 añade cinco columnas de auditoría a `etl_runs`, sin modificar tablas de negocio; se verificó que puede retomarse sin perder resúmenes. La web y el ETL de esta rama requieren la migración 004 aunque Make esté desactivado. La base del usuario no se migró durante esta tarea; revisar/respaldar el destino antes de aplicarla allí.
-7. Arrancar web: `.venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000` y abrir http://127.0.0.1:8000. Mantener esa terminal abierta; `Ctrl+C` detiene la web. Lee la BD configurada en `.env`; no lanza el ETL al abrirla. Véase la comprobación manual F9 más abajo.
-8. Registrar validación desde clon/BD de pruebas nuevos, fecha y commit: **TBD**. No ejecutar pruebas destructivas sobre el volumen del usuario.
+La web y el ETL necesitan las cuatro migraciones, hasta `004_make_delivery`, incluso con Make desactivado. El migrador actualiza bases existentes sin borrarlas; `db/init` no actualiza volúmenes previos. Repetir `migrate` informa «ya aplicadas». Revisar el destino configurado antes de migrar una base existente.
 
-El incremento F6 permite cargar las cuatro fuentes y F7 lo verificó en MySQL aislado; F9 añade la web; F10 acredita Make con ejecución real y queda cerrada técnicamente con los límites documentados. En F12 habrá que repetir el procedimiento desde un clon limpio.
+Para validar junto a una instalación ya activa, usar el [procedimiento aislado](docs/validation/README.md): nombres/puertos separados, MySQL temporal sin volumen del usuario, fecha fija, dos cargas originales y suite completa. Ese procedimiento se ejecutó desde un clon nuevo de GitHub; no se afirma una instalación en otro equipo.
+
+La configuración admite también `ORDERS_CSV_PATH`, `BUSINESS_TIMEZONE`, `LOG_LEVEL` y los parámetros HTTP descritos en la siguiente sección. La fecha analítica se inyecta como argumento Python en pruebas; no existe una variable implementada `ANALYTICS_AS_OF`.
 
 ### Dependencias elegidas en F0
 
-`PyMySQL` proporciona el driver de MySQL que falta en la biblioteca estándar; `httpx` sirve tanto para la API como para el webhook y permite simular transporte en tests. `FastAPI`, `Uvicorn` y `Jinja2` sostendrán la página HTML propuesta, sin SPA ni ORM. `python-dotenv` permite cargar `.env` local sin ejecutarlo como shell ni sobrescribir variables; `pytest` verifica reglas futuras y `Ruff` configura un lint ligero. No se añade pandas, un segundo cliente HTTP ni un framework de migraciones. El uso de estas dependencias por módulos de aplicación queda pendiente de sus fases; F0 solo valida instalación/importación.
+`PyMySQL` proporciona el driver de MySQL que falta en la biblioteca estándar; `httpx` sirve tanto para la API como para el webhook y permite simular transporte en tests. `FastAPI`, `Uvicorn` y `Jinja2` sostienen la página HTML, sin SPA ni ORM. `python-dotenv` permite cargar `.env` local sin ejecutarlo como shell ni sobrescribir variables; `pytest` verifica las reglas y `Ruff` configura un lint ligero. No se añade pandas, un segundo cliente HTTP ni un framework de migraciones. F12 volvió a instalar estas dependencias sin añadir ninguna y comprobó la aplicación completa.
 
 ## Cómo ejecutar el ETL
 
@@ -58,11 +77,11 @@ El incremento F6 permite cargar las cuatro fuentes y F7 lo verificó en MySQL ai
 - Repetir el mismo comando con los mismos CSV/XML y respuestas completas de stock mantiene los valores de negocio y añade un `etl_runs`/sus incidencias nuevos. Los SKU que faltan en una instantánea válida pasan a históricos, con precios y stock `NULL`; un catálogo vacío o sin productos válidos, o un fichero modificado durante la extracción, falla y conserva la versión anterior. Solo se admite un escritor mediante advisory lock MySQL. Una caída abrupta puede dejar un run `running` para revisión manual.
 - Parámetros opcionales de stock: `STOCK_PER_PAGE=50`, `STOCK_ATTEMPTS=5`, `STOCK_CONNECT_TIMEOUT=5`, `STOCK_READ_TIMEOUT=15`, `STOCK_REQUESTS_PER_MINUTE=30`, `STOCK_BUDGET_SECONDS=300`. Tiempos en segundos; límites y reintentos en [TECH_SPEC](TECH_SPEC.md#api-de-stock). F10 añade `MAKE_WEBHOOK_URL` (vacía por defecto), `MAKE_TIMEOUT=10` y `MAKE_REJECTION_THRESHOLD=0`. Reutiliza httpx y no añade dependencias.
 - Reenvío F10: `.venv/bin/python -m src.etl --resend-make RUN_ID`; reutiliza el JSON almacenado, sin ETL. Si ya figura accepted, no repite HTTP salvo `--force`, después de revisar Make. Detalles en [make/README](make/README.md).
-- Recuperación automática adicional: **TBD**.
+- No hay scheduler ni recuperación automática adicional. Un `running` interrumpido requiere revisión; la entrega se recupera con reenvío explícito del resumen, sin recargar negocio.
 
-### Comprobación manual en la base del usuario (pendiente)
+### Consultas de comprobación sobre una base cargada
 
-Las comprobaciones F6/F7 se hicieron en MySQL temporal; esta tarea no migró ni recargó la base `catalogo` del usuario. Para llevar este incremento a esa base, con los servicios activos y `.env` apuntando a ella:
+Las comprobaciones automáticas usan MySQL temporal. El usuario ya ejecutó una carga real en F10; F12 preserva su base. Para preparar otra instalación, con los servicios activos y la configuración apuntando al destino elegido:
 
 ```bash
 .venv/bin/python -m src.db migrate
@@ -110,7 +129,7 @@ docker compose up -d
 .venv/bin/python -m uvicorn src.web.app:app --host 127.0.0.1 --port 8000
 ```
 
-Los dos comandos centrales preparan/actualizan la BD: si ya tiene migraciones hasta `003_orders` y una carga completa v2, basta arrancar Uvicorn. La web abre en http://127.0.0.1:8000; se detiene con `Ctrl+C`. No necesita Node ni una CDN: Chart.js 4.5.1 se incluye con su licencia y [procedencia verificable](src/web/static/vendor/README.md). No se añaden dependencias Python a las fijadas en F0.
+Los dos comandos centrales preparan/actualizan la BD: si ya tiene migraciones hasta `004_make_delivery` y una carga completa v2, basta arrancar Uvicorn. La web abre en http://127.0.0.1:8000; se detiene con `Ctrl+C`. No necesita Node ni una CDN: Chart.js 4.5.1 se incluye con su licencia y [procedencia verificable](src/web/static/vendor/README.md). No se añaden dependencias Python a las fijadas en F0.
 
 Pasos de revisión:
 
@@ -158,7 +177,7 @@ El umbral inicial es 0, configurable; alerta si `rows_rejected > threshold` o ha
 
 **Importación confirmada (27/09/2026):** el usuario respondió «ha funcionado» después de la guía para importar `make/escenario.blueprint.json` en un escenario nuevo y desactivado. Se registra la confirmación textual del archivo guiado, sin atribuirle captura, conexiones asignadas, ajustes finales o ejecución no aportados. La evidencia de destinos sigue correspondiendo al escenario original. El agente solo actualizó documentación; recuperación sigue pendiente.
 
-**Cierre acordado de F10 (27/09/2026):** el usuario decidió terminar las pruebas manuales y pidió revisar/cerrar esta fase. R14/R15 y A09 se satisfacen con el escenario original: webhook conectado al ETL, router/filtros, histórico Sheets, alerta Gmail, código de llamada, blueprint real saneado, capturas y explicación. La prueba adicional de fallo/recuperación de Sheets no se ejecutó; la configuración/ejecución de la copia importada tampoco está acreditada. El reenvío observado no prueba concurrencia externa ni entrega exactamente una vez; un correo puede repetirse si Gmail envía y falla la marca. Son [límites de verificación](make/README.md#cierre-y-límites-de-verificación), no pruebas aprobadas. F10 queda cerrada técnicamente en la rama, pendiente de integración en main. F11 no iniciado y F12 pendiente.
+**Cierre acordado de F10 (27/09/2026):** el usuario decidió terminar las pruebas manuales y pidió revisar/cerrar esta fase. R14/R15 y A09 se satisfacen con el escenario original: webhook conectado al ETL, router/filtros, histórico Sheets, alerta Gmail, código de llamada, blueprint real saneado, capturas y explicación. La prueba adicional de fallo/recuperación de Sheets no se ejecutó; la configuración/ejecución de la copia importada tampoco está acreditada. El reenvío observado no prueba concurrencia externa ni entrega exactamente una vez; un correo puede repetirse si Gmail envía y falla la marca. Son [límites de verificación](make/README.md#cierre-y-límites-de-verificación), no pruebas aprobadas. En esa fecha se cerró F10; posteriormente se integró mediante PR 5. El estado actual de F12 figura al inicio.
 
 **Comprobación local de cierre:** `pytest -q` sin las variables de la BD de pruebas ejecutó 347 pruebas y omitió 50; la colección de `tests/unit` confirmó 347 casos. Corrige el desglose documental anterior 346/51, manteniendo el total 397. `ruff check .` pasó y `ruff format --check .` informó 58 archivos ya formateados. El aviso de deprecación anterior se mantiene. No se repitió MySQL ni se lanzó ETL, POST o correo real para este cierre; se conserva la evidencia previa de la suite completa y los destinos del usuario.
 
@@ -168,7 +187,7 @@ F10 se integró después del cierre técnico descrito arriba mediante PR 5, merg
 
 El 27/09/2026 se añadió al [plan](IMPLEMENTATION_PLAN.md#f10b--mejora-uiux-de-la-plataforma-ejecutable) una fase intermedia solicitada por el usuario. La [guía de ejecución](docs/phases/f10b-ui-ux.md) define alcance, uso de `impeccable`/`emil-design-eng`, criterios UX01–UX06 y verificación acotada de la aplicación real.
 
-**Implementada en `feature/ui-ux`:** se refinó la cabecera y navegación por secciones, jerarquía de KPIs, avisos y detalle del margen, gráfico y tabla de respaldo, tablas accesibles, filtros activos, limpiar y paginación, estados vacíos/error y comportamiento responsive. Se conservaron las métricas, columnas, desconocidos, históricos y límites comerciales; no se añadieron cálculos monetarios en JavaScript. La revisión `Before | After | Why`, capturas auténticas y comandos ejecutados están en [docs/evidence/f10b/README.md](docs/evidence/f10b/README.md). F12 seguirá a la integración de F10b; F11 continúa opcional.
+**Integrada mediante PR 6 (`aab89b9`):** se refinó la cabecera y navegación por secciones, jerarquía de KPIs, avisos y detalle del margen, gráfico y tabla de respaldo, tablas accesibles, filtros activos, limpiar y paginación, estados vacíos/error y comportamiento responsive. Se conservaron las métricas, columnas, desconocidos, históricos y límites comerciales; no se añadieron cálculos monetarios en JavaScript. La revisión `Before | After | Why`, capturas auténticas y comandos ejecutados están en [docs/evidence/f10b/README.md](docs/evidence/f10b/README.md). F12 valida este código integrado; F11 continúa opcional.
 
 | Criterio | Resultado de la revisión F10b |
 | --- | --- |
@@ -243,7 +262,7 @@ No publicar URL secreta del webhook, tokens, identificadores sensibles de conexi
 
 ## Dashboard
 
-URL local/comando e interfaz: **TBD (F9)**. Las consultas SQL de F8 para KPIs, serie mensual, canales, top 10, categorías, margen/cobertura y bajo stock están implementadas y verificadas; aún no hay página ni gráfico. Captura real sin secretos: **TBD**. Comprobar coherencia visual con SQL y tratamiento visible de NULL/mes actual parcial: **TBD (F9)**.
+Interfaz F9 refinada en F10b e integrada en PR 6. El [panel final](docs/evidence/f12/dashboard.png) y el [gráfico visible](docs/evidence/f12/evolution.png) proceden del arranque limpio F12; [contexto y controles](docs/evidence/f12/README.md). En http://127.0.0.1:8000 están KPIs, 18 meses hasta septiembre de 2026, canales, categorías, top 10, margen/cobertura, bajo stock y catálogo. El gráfico utiliza importes SQL; JavaScript solo los representa. La tabla mensual permite leer valores exactos sin depender del gráfico.
 
 ## Resultados de ejecución
 
@@ -382,23 +401,36 @@ Catálogo tiene 19 incidencias de rechazo y pedidos 34, porque una fila puede te
 | Make: reenvío del ETL real | Comando/log del usuario y captura posterior para el mismo run | HTTP aceptado; «Ejecución nueva» y «Correo pendiente» dejan pasar 0; Add a Row/Gmail/Update a Cell no se ejecutan. Bloqueo de duplicados observado, sin nueva lectura de O ni prueba concurrente. |
 | Make: importación del blueprint saneado | Confirmación textual del usuario tras la guía de importación en un escenario nuevo/desactivado | Archivo importado según confirmación del usuario; sin captura, configuración de conexiones ni ejecución de la copia acreditadas. |
 | F10: revisión local de cierre (27/09/2026) | `pytest -q` sin BD de pruebas; Ruff/lint y formato; revisión documental/blueprint/capturas | 347 pruebas pasan, 50 MySQL omitidas y aviso de deprecación previo; lint/formato pasan. Suite completa 397 conservada como evidencia anterior. Cierre técnico con límites externos explícitos, integración en main pendiente. |
-| Arranque desde cero y secretos | TBD | TBD |
+| F12: clon limpio, regresión y revisión de entrega | [Procedimiento](docs/validation/README.md), [informe](docs/evidence/f12/README.md) | 397 tests, dos cargas idénticas, recálculo independiente y revisión de artefactos; límites y pasos Git/envío pendientes explícitos. |
 
 Trazabilidad de aceptación: A01 (cuatro fuentes y fallos), A02 (dos precios contrastados con origen), A03 (FKs e históricos), A04 (localizadores/contadores/rechazos) y A05 (repetición completa más corrección de líneas probada en F6) quedan verificados bajo las reglas vigentes. F8 acredita las consultas SQL de A07 y A08 bajo las decisiones documentadas; F9 verifica la presentación de A06–A08 con datos reales y casos sintéticos. El margen estimado no equivale a beneficio confirmado por los conflictos de coste y la base fiscal pendiente.
 
 ## Qué cambiaría con cinco millones de líneas
 
-Propuesta de evolución, pendiente de contrastar mediante medidas: lectura en streaming y staging MySQL por lotes, validación/deduplicación con índices y conjuntos en BD en vez de todo en memoria; publicación de versión consolidada solo tras validar; upserts/reconciliación por particiones o versión de snapshot; ID estable de línea del ERP para incrementar con seguridad. Medir EXPLAIN/índices y preagregar meses si las consultas lo necesitan. Definir retención/acceso de payloads e historial, backups y recuperación. Stock incremental con watermark y refresco completo periódico por falta de tombstones.
+**No se ha ejecutado un benchmark de 5 millones ni se promete un SLA de tiempo/RAM.** El primer límite previsible está en la memoria: los lectores materializan filas/candidatos y el ETL conserva la instantánea para validar cabeceras, firmas y publicar. El coste de objetos Python y conjuntos puede superar ampliamente el CSV. Como estimación ilustrativa, 5 millones de líneas de 1 KB ocuparían unos 5 GB solo en texto; no es el tamaño medido del dataset ni una estimación de RAM suficiente.
 
-No introducir Spark/Kafka/Kubernetes solo por el número de filas: medir memoria, duración y cuellos antes. Decisiones finales, benchmark o estimaciones identificadas como tales: **TBD**.
+La evolución defendible sería:
+
+1. Medir tiempo de extracción, normalización, escrituras y consultas, pico RSS, filas/s y planes `EXPLAIN` sobre una réplica representativa; separar reintentos de API del rendimiento del ETL.
+2. Leer CSV/API en streaming y guardar staging por lotes acotados con `run_id`, localizador y firma. Resolver duplicados y coherencia de cabecera mediante índices/agrupaciones en staging, también entre lotes: trocear el archivo sin ese control cambiaría las reglas.
+3. Validar reconciliación e integridad antes de publicar. Promover una versión completa o usar tablas por snapshot, manteniendo atomicidad visible; medir redo/undo y duración de locks para no reemplazar una transacción grande por publicaciones parciales.
+4. Medir índices por fecha/estado, FK y clave natural; precalcular agregados mensuales únicamente si los planes/latencias lo justifican. Paginar resultados y separar la consulta de catálogo de los agregados.
+5. Añadir incremental solo con contrato de cambios/bajas y un ID estable de línea del ERP. `updated_since` de stock sin tombstones necesita refresco completo periódico. Definir retención, backups y recuperación antes de prometer operación continua.
+
+No requiere Spark/Kafka/Kubernetes por el mero número de filas. Tiempo objetivo, hardware, distribución de datos y concurrencia se acordarían y medirían; no son requisitos de esta entrega.
 
 ## Limitaciones
 
-Por validar: ausencia de ID de línea y coste histórico; base fiscal/zona de negocio; política de devoluciones; stock por instantánea y antigüedad; entrega Make al menos una vez. F5 conserva 12 productos sin stock observado como NULL y no crea productos por los 24 registros de stock ajenos al catálogo aceptado. El timestamp agregado es la actualización más reciente, no una garantía de frescura de todos los almacenes. La API no ofrece una versión de snapshot: totales iguales entre páginas no permiten detectar todo cambio concurrente del proveedor. Quedan por confirmar las reservas y la autoridad/frescura de la instantánea; más limitaciones de las fases futuras: **TBD**.
+- Coste actual, moneda/base fiscal y conflictos de catálogo: el margen es estimado, con cobertura y aviso. Se conserva la primera fila válida conforme a la regla versionada; no se sustituyen costes por intuición.
+- Sin ID físico de línea ni costes con vigencia: no se distingue con certeza una repetición de una línea legítima idéntica ni se calcula rentabilidad histórica exacta. El CSV completo se trata como instantánea del ejercicio.
+- Facturación operativa de enviados/completados, incluyendo líneas válidas de pedidos parciales; devoluciones conservadas pero no compensadas sin vínculo con la venta. No se reconcilió contra contabilidad: esa fuente no está disponible.
+- Stock físico = suma de `quantity`; reservas separadas. Doce productos sin observación siguen en NULL. El timestamp agregado más reciente no garantiza frescura de todos los almacenes y la API carece de versión consistente entre páginas.
+- Make: HTTP 2xx no prueba destinos. Se acreditan los del escenario original; no recuperación externa, concurrencia ni ejecución de la copia importada. Puede duplicarse un correo si Gmail envía y falla su marca. No se promete exactly-once.
+- Validación limpia en el mismo equipo macOS, no matriz de sistemas operativos. Aviso de deprecación Starlette/TestClient conocido; no impide los 397 tests.
 
 ## Cosas dejadas fuera por tiempo
 
-**TBD**: registrar lo realmente omitido. Candidatos opcionales: incremental, dockerización completa, YoY y mejoras operativas. No etiquetar un requisito obligatorio incumplido como «opcional»; indicarlo de forma explícita si finalmente falta.
+F11 no se ha elegido: incremental, dockerización de la aplicación Python y comparativa YoY quedan fuera. Tampoco se incorporan scheduler, autenticación multiusuario ni alertas adicionales por antigüedad/porcentaje; no son requisitos obligatorios del README. Sí se implementaron reintentos acotados, logs, tests, idempotencia y auditoría. Las limitaciones de negocio anteriores no se ocultan como funciones resueltas.
 
 ## Uso de IA
 
@@ -406,13 +438,19 @@ En F10, Codex implementó el contrato persistido, el cliente HTTP y el reenvío,
 
 Se usó Codex para inspeccionar el repositorio, redactar la planificación e implementar F0–F9. F1–F3 incorporaron reglas puras y Ruff; F4–F6 añadieron persistencia, stock y pedidos con pruebas MySQL y cargas parciales reales. F7 añadió pruebas de integración completa, un caso unitario que explicita la comparación actual de cliente, dos cargas reales de las cuatro fuentes y contraste de muestras contra origen. No modificó reglas de negocio, fuentes ni el volumen del usuario; corrigió el mensaje de error del CLI que aún mencionaba F5 y documentación desactualizada. El responsable deberá revisar y poder explicar las decisiones y resultados. Después de F7, el usuario confirmó equivalencia de capitalización del cliente: se implementó ADR 004, se versionaron reglas v2 y se repitieron suite y dos cargas reales. La deduplicación de las ocho repeticiones idénticas se mantuvo como decisión para la prueba. F8 añadió consultas SQL, seis pruebas MySQL sintéticas y contraste de métricas con una carga real aislada; detectó categorías con distinta capitalización y costes conflictivos con efecto material sobre el margen, documentados arriba. F9 añadió la interfaz, nueve pruebas MySQL/HTML y capturas reales; la revisión móvil detectó un desbordamiento de tablas, corregido con contenedores desplazables y ancho mínimo de los paneles.
 
-Uso durante implementación, tareas asistidas, decisiones revisadas personalmente, validación y errores detectados: **TBD**. No atribuir aprobaciones o verificaciones humanas que no han ocurrido.
+En F10b Codex refinó UI/UX con las skills de diseño solicitadas y comprobó navegador/regresiones. En F12 preparó el arranque y la entrega, ejecutó las pruebas aisladas y documentó una discrepancia de 359 pedidos de origen frente a 358 cargados: uno carece de fecha. También corrigió documentación obsoleta (migración requerida, ETL antes de arrancar la web y estados de fases). La revisión personal y defensa de cada decisión corresponden al autor; no se atribuyen revisiones humanas adicionales.
 
 ## Entrega y Git
 
-- Enlace GitHub y acceso si privado: **TBD**.
-- Ramas reales (mínimo tres de trabajo) y enlaces de PR merged a main (mínimo dos): **TBD**.
-- Commit de main verificado y procedimiento reproducible: **TBD**.
-- Resumen de dos o tres párrafos: **TBD**.
-- Captura real de panel F9: [dashboard](docs/evidence/f9-dashboard.png), [catálogo filtrado](docs/evidence/f9-catalog-filter.png) y [contexto de evidencia](docs/evidence/README.md). Make dispone de capturas sintéticas y de [ambas rutas del ETL real completadas](make/capturas/f10-real-etl-destinations.png), además del [contraste de Sheets](make/capturas/f10-real-sheets-verified.md); detalles en [make/README](make/README.md).
-- Borrador de correo conforme al destinatario/asunto de README: **TBD**. Preparar no equivale a enviar; no se envía automáticamente.
+Repositorio público [prueba-tecnica-etailers](https://github.com/polalco13/prueba-tecnica-etailers), accesibilidad y PR comprobadas el 28/09/2026 mediante API pública sin credenciales. `main` funcional validado: `aab89b9`.
+
+| PR integrada | Rama de trabajo | Contenido |
+| --- | --- | --- |
+| [1](https://github.com/polalco13/prueba-tecnica-etailers/pull/1) | `feature/etl-products` | Catálogo y tarifas |
+| [2](https://github.com/polalco13/prueba-tecnica-etailers/pull/2) | `feature/etl-stock` | Stock REST |
+| [3](https://github.com/polalco13/prueba-tecnica-etailers/pull/3) | `feature/orders` | Pedidos, históricos e integración |
+| [4](https://github.com/polalco13/prueba-tecnica-etailers/pull/4) | `feature/dashboard` | SQL y dashboard |
+| [5](https://github.com/polalco13/prueba-tecnica-etailers/pull/5) | `feature/make-integration` | Make y evidencias de destinos |
+| [6](https://github.com/polalco13/prueba-tecnica-etailers/pull/6) | `feature/ui-ux` | Mejora de interfaz |
+
+F12 está preparada en `feature/delivery-docs`: [evidencias y aceptación](docs/evidence/f12/README.md), [demostración](docs/delivery/demo.md), [correo de tres párrafos y adjuntos](docs/delivery/email.md). No se asigna un número de PR inexistente. Queda integrar esta rama en `main` para que el paquete documental final esté disponible en el enlace público, y enviar el correo por instrucción explícita del autor. El código funcional ya está en main; esta comprobación no acredita una integración futura.

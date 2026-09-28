@@ -1,6 +1,6 @@
 # Plan de producto — Integración y automatizaciones
 
-Estado: F0–F10 implementadas, verificadas e integradas en main; F10b implementada y verificada en `feature/ui-ux`, pendiente de revisión/integración. F10 mediante PR 5 (`ff53b1c`), con R14/R15 y A09 acreditados. Recuperación de destinos y ejecución de la copia importada no verificadas; [límites de cierre](make/README.md#cierre-y-límites-de-verificación). Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
+Estado: F0–F10 implementadas, verificadas e integradas en main; F10b integrada mediante PR 6 (`aab89b9`). F12 implementada y validada en `feature/delivery-docs`, pendiente de integración documental y envío; [evidencia](docs/evidence/f12/README.md). F10 mediante PR 5 (`ff53b1c`), con R14/R15 y A09 acreditados. Recuperación de destinos y ejecución de la copia importada no verificadas; [límites de cierre](make/README.md#cierre-y-límites-de-verificación). Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
 
 En estos documentos, **R** significa requisito explícito del README; **D**, decisión técnica propuesta; **S**, supuesto pendiente de validar. Una propuesta no constituye una regla de negocio confirmada. El encargo de planificación exige tests y mayor detalle de robustez aunque el README los considere extras.
 
@@ -75,7 +75,7 @@ Las siguientes medidas son D para satisfacer una entrega pequeña y defendible:
 
 ## Ampliación solicitada: mejora UI/UX
 
-El 27/09/2026 el usuario solicitó una fase intermedia de mejora de la plataforma ejecutable usando las skills de diseño instaladas. Se incorpora **F10b**, después de F10 y antes de F12, con [alcance y aceptación propios](docs/phases/f10b-ui-ux.md). Es una ampliación solicitada, no un requisito nuevo del README; queda implementada en `feature/ui-ux` y pendiente de integración.
+El 27/09/2026 el usuario solicitó una fase intermedia de mejora de la plataforma ejecutable usando las skills de diseño instaladas. Se incorpora **F10b**, después de F10 y antes de F12, con [alcance y aceptación propios](docs/phases/f10b-ui-ux.md). Es una ampliación solicitada, no un requisito nuevo del README; quedó integrada mediante PR 6.
 
 La mejora debe facilitar la lectura de métricas, la navegación, los filtros y la consulta de tablas en escritorio/móvil. Conserva R08–R13 y A06–A08, las definiciones de negocio y las limitaciones visibles; no añade métricas ni modifica ETL/Make. La verificación está registrada en [SOLUCION](SOLUCION.md) y en la evidencia visual de la fase.
 
@@ -87,7 +87,7 @@ Incremental, dockerización de la aplicación y YoY son opcionales. El manejo b�
 
 ## Supuestos que deben validarse
 
-S1: importes de pedido y coste son EUR y comparables sin IVA; el origen no lo confirma. S2: cada CSV completo es una instantánea autoritativa; no hay identidad estable de línea. S3: se acepta facturación operativa de enviados/completados, excluyendo devoluciones sin vínculo con la venta original. S4: stock total significa suma de `quantity`, no disponibilidad tras reservas. S5: procede descuento aditivo categoría + marca. S6: zona horaria de fechas sin offset y acceso a Make/Google se confirmarán. Estas decisiones tienen alternativas en TECH_SPEC y DATA_RULES.
+S1: importes de pedido y coste son EUR y comparables sin IVA; el origen no lo confirma. S2: cada CSV completo es una instantánea autoritativa; no hay identidad estable de línea. S3: se acepta facturación operativa de enviados/completados, excluyendo devoluciones sin vínculo con la venta original. S4: stock total significa suma de `quantity`, no disponibilidad tras reservas. S5: procede descuento aditivo categoría + marca. S6: zona horaria de fechas sin offset por confirmar comercialmente; acceso a Make/Google y destinos ya verificados en F10. Estas decisiones tienen alternativas en TECH_SPEC y DATA_RULES.
 
 ## Trazabilidad final con README
 
@@ -111,14 +111,14 @@ Los estados distinguen evidencia técnica ejecutada y trabajo pendiente; no impl
 | Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Cliente probado; Sheets/Gmail completados y correo recibido desde ETL real, además de pruebas sintéticas |
 | Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | F10 integrada mediante PR 5; artefactos disponibles y A09 acreditado, con límites de pruebas externas documentados |
 | Idempotencia | R16; ADR 002; F4/F6–F7 | Verificada en F7 con fuentes congeladas |
-| SOLUCION.md y análisis de cinco millones de líneas | R17; plantilla SOLUCION; F12 | Planificado |
-| GitHub, ramas, commits, PR y main funcional | R18; IMPLEMENTATION_PLAN; F0–F12 | Planificado |
-| .gitignore y secretos | R19; AGENTS; F0/F12 | Planificado |
-| Correo, enlace/acceso, resumen y capturas | R20; SOLUCION; F12 | Planificado |
-| Reintentos opcionales | TECH_SPEC; base F5, mejoras F11 | Planificado |
-| Incremental updated_since opcional | TECH_SPEC; F11 | Planificado |
-| Tests opcionales en README, exigidos por este plan | AGENTS; F1–F10 | Planificado |
-| Dockerización completa opcional | TECH_SPEC; F11 | Planificado |
-| Logs opcionales en README | TECH_SPEC; base F1, mejoras F11 | Planificado |
-| Comparativa YoY opcional | TECH_SPEC; F11 | Planificado |
-| Uso de IA permitido y decisiones explicables | AGENTS; SOLUCION; F12 | Planificado |
+| SOLUCION.md y análisis de cinco millones de líneas | R17; SOLUCION; F12 | Documentado y comprobado; sin benchmark de 5 M |
+| GitHub, ramas, commits, PR y main funcional | R18; IMPLEMENTATION_PLAN; F0–F12 | Repo público, seis ramas/PR integradas y main probado; integración documental F12 pendiente |
+| .gitignore y secretos | R19; AGENTS; F0/F12 | Revisión de cambios/historial y artefactos; alcance en evidencia F12 |
+| Correo, enlace/acceso, resumen y capturas | R20; SOLUCION; F12 | Borrador, enlace y capturas listos; correo no enviado |
+| Reintentos opcionales | TECH_SPEC; base F5, mejoras F11 | Reintentos acotados implementados/probados; mejoras F11 no elegidas |
+| Incremental updated_since opcional | TECH_SPEC; F11 | Opcional no elegido |
+| Tests opcionales en README, exigidos por este plan | AGENTS; F1–F10/F12 | 397 tests pasan en MySQL aislado |
+| Dockerización completa opcional | TECH_SPEC; F11 | Opcional no elegido |
+| Logs opcionales en README | TECH_SPEC; base F1, mejoras F11 | Logging con run_id implementado |
+| Comparativa YoY opcional | TECH_SPEC; F11 | Opcional no elegido |
+| Uso de IA permitido y decisiones explicables | AGENTS; SOLUCION; F12 | Uso y límites documentados; demostración preparada |
