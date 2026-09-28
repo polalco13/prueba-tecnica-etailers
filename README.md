@@ -1,5 +1,14 @@
 # Prueba técnica — Integración y Automatizaciones
 
+Solución para integrar las cuatro fuentes en MySQL, con auditoría de datos, catálogo y panel de negocio. Incluye una automatización en Make que registra las ejecuciones completadas en Google Sheets y envía alertas por Gmail cuando corresponde.
+
+- [SOLUCION.md](SOLUCION.md): arranque paso a paso, reglas aplicadas, verificación y límites de la solución.
+- [Make](make/README.md): blueprint exportado, configuración del escenario y evidencia de una ejecución correcta.
+
+---
+
+## Enunciado de la prueba
+
 Hola y gracias por tu interés en Etailers.
 
 Esta prueba busca ver cómo trabajas, no si te sabes una librería de memoria. Es un caso muy parecido a lo que hacemos cada semana: recibir datos de un proveedor y de un ERP en formatos distintos, limpiarlos, cruzarlos y convertirlos en algo que un cliente pueda mirar para tomar decisiones.
