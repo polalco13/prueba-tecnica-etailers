@@ -1,10 +1,10 @@
 # Plan de implementación y estrategia Git
 
-Estado actualizado en F10: F0–F9 integradas en `main` (PR 4, merge `aa8569e`). F10 cerrada técnicamente en `feature/make-integration`, pendiente de PR/integración en main. R14/R15 y A09 acreditados con implementación local, blueprint saneado y ejecución ETL real en Sheets/Gmail, fila final y marca contrastadas. Reenvío y filtros observados; importación confirmada por el usuario. El usuario decidió terminar las pruebas manuales; recuperación de destinos y ejecución de la copia importada no verificadas, con [límites documentados](make/README.md#cierre-y-límites-de-verificación). F11 no iniciado y F12 pendiente. Los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
+Estado actualizado el 28/09/2026: F0–F10 integradas en `main`; F10b implementada y verificada en la rama `feature/ui-ux`, pendiente de revisión/integración. F10 mediante PR 5, merge `ff53b1c`, con R14/R15 y A09 acreditados. Recuperación de destinos y ejecución de la copia importada no verificadas, con [límites documentados](make/README.md#cierre-y-límites-de-verificación). F11 no iniciado y F12 pendiente. Los supuestos comerciales siguen abiertos. La evidencia ejecutada está en [SOLUCION](SOLUCION.md); las tareas futuras siguen siendo planificación. Referencias: [PRD](PRD.md), [TECH_SPEC](TECH_SPEC.md), [DATA_RULES](DATA_RULES.md), [AGENTS](AGENTS.md). Cada fase se solicita y verifica por separado; no empezar la siguiente automáticamente.
 
 ## Orden y alcance
 
-Ruta obligatoria: F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 → F8 → F9 → F10 → F12. F11 es opcional después de F10 y no bloquea entrega. No interpretar trece fases como trece días: son cortes pequeños para el plazo del README. Si falta tiempo, reducir extras F11 y estética, no Make ni métricas requeridas.
+Ruta acordada: F0 → F1 → F2 → F3 → F4 → F5 → F6 → F7 → F8 → F9 → F10 → **F10b** → F12. F10b añade la mejora de UI/UX solicitada el 27/09/2026; no es un requisito adicional del README. F11 sigue siendo opcional y requiere una petición separada. Se conserva la numeración existente. Las fases son incrementos, no jornadas; mantener acotada la mejora visual y priorizar claridad y funcionamiento sobre extras estéticos.
 
 Las fases preparan primero reglas puras y después persistencia, integración, SQL y web. Cada cierre exige actualizar decisiones y evidencia en SOLUCION sin inventar resultados. Nombres de módulos, comandos, ramas y commits siguientes son propuestas, no archivos o acciones ya ejecutadas. Con el plazo del README, reservar tiempo desde F0 para credenciales y acceso a los destinos de Make, y desde F7 para una ejecución completa y contraste manual de resultados; F11 solo se considera si lo obligatorio ya funciona.
 
@@ -120,7 +120,7 @@ Las fases preparan primero reglas puras y después persistencia, integración, S
 
 ## F10 — Integración Make
 
-**Cierre técnico (27/09/2026):** migración 004, `etl-summary-v1`, envío posterior al commit y reenvío implementados; pruebas locales con HTTP simulado/MySQL y evidencia externa disponibles. El run real `c1a93f67-6990-4748-8efa-c18bc6777b42` acredita publicación, histórico, correo recibido, fila final y marca UTC: A09 satisfecho. Blueprint saneado, guía y capturas cubren R14/R15. También se observaron el caso sin alerta, el bloqueo del reenvío y los tres rechazos del filtro inicial. El usuario confirmó la importación y decidió terminar las pruebas manuales. Recuperación tras fallo de destino y configuración/ejecución de la copia importada no verificadas; riesgo residual de duplicar correo documentado. No impiden el cierre del alcance obligatorio del README. Rama pendiente de PR/integración en main; F11 no iniciado.
+**Cierre técnico e integración (27/09/2026):** migración 004, `etl-summary-v1`, envío posterior al commit y reenvío implementados; pruebas locales con HTTP simulado/MySQL y evidencia externa disponibles. El run real `c1a93f67-6990-4748-8efa-c18bc6777b42` acredita publicación, histórico, correo recibido, fila final y marca UTC: A09 satisfecho. Blueprint saneado, guía y capturas cubren R14/R15. También se observaron el caso sin alerta, el bloqueo del reenvío y los tres rechazos del filtro inicial. El usuario confirmó la importación y decidió terminar las pruebas manuales. Recuperación tras fallo de destino y configuración/ejecución de la copia importada no verificadas; riesgo residual de duplicar correo documentado. No impiden el cierre del alcance obligatorio del README. Integrada mediante PR 5 (`ff53b1c`); F11 no iniciado.
 
 - **Objetivo:** una ejecución real del ETL distribuida a destinos útiles.
 - **Tareas:** contrato/versionado del resumen guardado, cliente webhook posterior al commit y reenvío por run_id; escenario webhook, router/filtro, email condicional e histórico siempre en Sheets; umbral explícito, deduplicación de histórico. Confirmar cuentas, conexiones y destinatario sin versionar secretos. Exportar blueprint real, capturas del escenario y ejecución de destinos; documentar disparador/decisiones. El envío de correos por herramientas requiere instrucción explícita del usuario: preparar primero destinatario y contenido de prueba revisables.
@@ -131,15 +131,30 @@ Las fases preparan primero reglas puras y después persistencia, integración, S
 - **Rama / PR:** `feature/make-integration`, PR 5 a `main`.
 - **Dependencias:** F9 integrado (consultas requeridas proceden de F8); acceso real a Make y destinos.
 
+## F10b — Mejora UI/UX de la plataforma ejecutable
+
+**Estado:** implementada y verificada en `feature/ui-ux`; pendiente de revisión/integración. [Guía de ejecución y criterios de aceptación](docs/phases/f10b-ui-ux.md). Evidencia: [docs/evidence/f10b](docs/evidence/f10b/README.md).
+
+- **Objetivo:** facilitar la lectura del negocio y la consulta del catálogo en la aplicación existente, con una presentación coherente en escritorio y móvil. Conservar los resultados y contratos acreditados en F8–F10.
+- **Tareas:** inspeccionar la web ejecutable y sus estados; revisar jerarquía, navegación entre secciones, densidad de tablas, gráfico, filtros, paginación y avisos; priorizar problemas y aplicar mejoras de tipografía, espaciado, color, etiquetas y feedback. Mantener métricas, periodos, cobertura del margen y límites comerciales comprensibles. Implementar las mejoras en FastAPI/Jinja2, CSS/JS nativos y Chart.js local.
+- **Skills:** `impeccable` como guía principal para contexto, revisión y diseño de una interfaz operativa; `emil-design-eng` para controles, estados e interacción. Usar las referencias pertinentes de `frontend-ui-ux-design` como apoyo de accesibilidad y adaptación a móvil. Seguir las instrucciones instaladas al ejecutar; no introducir una SPA o una biblioteca de animación para utilizar una skill.
+- **Archivos previstos:** `src/web/templates/{base,index,error}.html`, `src/web/static/styles.css`, `src/web/static/dashboard.js`; `src/web/app.py` solo si la presentación lo necesita. `tests/integration/test_web.py` para regresiones funcionales afectadas; guía/evidencias y `SOLUCION.md`. Contexto de producto/diseño únicamente cuando lo requiera el flujo de la skill.
+- **Fuera de alcance:** cambios de ETL, SQL analítico, esquema, reglas de negocio, Make, fuentes originales o `.env`; nuevas métricas, autenticación, edición de datos, servicios o dependencias sin necesidad demostrada.
+- **Tests/verificación:** una revisión conjunta de escritorio y móvil sobre la web real, teclado, gráfico/tabla de respaldo y búsqueda/categoría/limpiar/paginación. Ejecutar regresiones web afectadas en MySQL aislado y lint/formato cuando corresponda. Sin tests nuevos que solo repliquen estilos ni nuevas ejecuciones ETL/Make para acreditar apariencia; como máximo una ronda de confirmación tras corregir hallazgos, salvo fallos pendientes.
+- **Finalización:** UX01–UX06 revisados con límites explícitos; mejoras implementadas y capturas auténticas comparables; revisión `Before | After | Why` y verificación registrada en [SOLUCION](SOLUCION.md) y [evidencia](docs/evidence/f10b/README.md). Todos los campos/métricas requeridos siguen disponibles, sin cálculos monetarios nuevos en JS ni ceros ficticios. Integración en `main` antes de F12 cuando se solicite el trabajo Git.
+- **Commits sugeridos:** `feat: improve dashboard hierarchy and catalog usability`; `docs: record UI UX changes and browser verification`.
+- **Rama / PR:** `feature/ui-ux`, PR propia a `main`; asignar el número real al crearla, sin reservarlo en la planificación.
+- **Dependencias:** F10 integrada; acceso local a la web con datos ya publicados y contexto de diseño suficiente. No comenzar F11 ni F12 como parte de esta fase.
+
 ## F11 — Robustez opcional
 
 - **Objetivo:** mejorar solo después de satisfacer requisitos obligatorios.
 - **Tareas:** elegir extras con beneficio: incremental `updated_since` con watermark/solapamiento y refresco completo, métricas de retries y presupuesto de tiempo, logging enriquecido, contenedores para ETL/web, comparativa YoY con meses comparables y ausencia de histórico visible. No rehacer arquitectura ni posponer aquí retry/logging básicos.
 - **Archivos previstos:** cliente/repositorio/config, tests correspondientes, `Dockerfile` y cambios autorizados de Compose, `queries.py`/web si YoY, SOLUCION.
 - **Tests:** incremental vacío mantiene stock, límite inclusivo no duplica, fallo no avanza watermark, eliminación solo detectable en refresco completo; arranque de contenedores; YoY sin base previa produce NULL, no crecimiento inventado. Ejecutar únicamente los aplicables a extras elegidos.
-- **Finalización:** cada extra elegido tiene evidencia y no degrada F0–F10; lo no elegido queda fuera explícitamente. No es necesario implementar todos para cerrar entrega obligatoria.
+- **Finalización:** cada extra elegido tiene evidencia y no degrada las fases integradas, incluida F10b cuando corresponda; lo no elegido queda fuera explícitamente. No es necesario implementar todos para cerrar entrega obligatoria.
 - **Commits sugeridos:** `feat: add safe incremental stock refresh`; `chore: containerize ETL and web services` (solo si se hacen).
-- **Rama / PR:** `feature/optional-hardening`, PR 6 opcional; dividir por extra si crece.
+- **Rama / PR:** `feature/optional-hardening`, PR opcional independiente; dividir por extra si crece. No reservar un número de PR.
 - **Dependencias:** F10 cerrado.
 
 ## F12 — Documentación y entrega
@@ -148,10 +163,10 @@ Las fases preparan primero reglas puras y después persistencia, integración, S
 - **Tareas:** completar SOLUCION; validar arranque desde clon limpio y BD de pruebas nueva sin borrar volumen del usuario; ETL dos veces con entradas controladas; tests/lint configurado; dashboard y Make; revisar secretos en cambios, historial relevante, blueprint y capturas; `.gitignore`; verificar ≥3 ramas, ≥2 PR y main funcional. Preparar una demostración breve y reproducible que siga un registro desde la fuente hasta el rechazo o la métrica, y localizar los módulos que habría que cambiar ante una nueva columna, una paginación distinta o un nuevo desglose del gráfico. Explicar cinco millones de líneas, limitaciones, exclusiones y uso de IA. Preparar borrador de correo y enlaces/acceso, sin enviarlo automáticamente.
 - **Archivos previstos:** `SOLUCION.md`, documentación ajustada a implementación real, evidencias en `docs/` y `make/capturas/`, `.gitignore` si necesario; no adjuntar `.env` ni dumps con clientes.
 - **Tests/verificación:** repetir procedimiento documentado, comparar negocio tras segunda pasada y confirmar nuevos runs de auditoría; ejecutar suite completa una vez tras cambios finales; comprobar UI y historial Make; verificar enlaces y PR reales en GitHub. Una limitación pendiente de Make no equivale a éxito.
-- **Finalización:** A01–A11 acreditados; cero TBD críticos de ejecución obligatoria; lo opcional no realizado identificado; main contiene versión reproducible; paquete de correo listo. Su envío requiere instrucción explícita del usuario y queda fuera del cierre técnico automático.
+- **Finalización:** A01–A11 acreditados y UX01–UX06 de la ampliación F10b satisfechos; cero TBD críticos de ejecución obligatoria; lo opcional no realizado identificado; main contiene versión reproducible; paquete de correo listo. Su envío requiere instrucción explícita del usuario y queda fuera del cierre técnico automático.
 - **Commits sugeridos:** `docs: finalize reproducible setup and delivery evidence`; `chore: exclude local artifacts from version control` si procede.
 - **Rama / PR:** `feature/delivery-docs`, PR final a `main`.
-- **Dependencias:** F10; F11 solo si se eligió e integró.
+- **Dependencias:** F10 y F10b integradas; F11 solo si se eligió e integró.
 
 ## Estrategia Git y PR
 
@@ -164,7 +179,8 @@ No crear ramas ni commits de fases futuras. Al iniciar F7 la rama era `feature/o
 | 3 | `feature/orders` | F6–F7: cuatro fuentes relacionadas, pruebas E2E e idempotencia. |
 | 4 | `feature/dashboard` | F8–F9: SQL validado y panel completo. |
 | 5 | `feature/make-integration` | F10: integración real y artefactos Make. |
-| 6 opcional | `feature/optional-hardening` | F11: extras seleccionados. |
+| Siguiente | `feature/ui-ux` | F10b: mejoras implementadas en la web y evidencia de uso. |
+| Opcional | `feature/optional-hardening` | F11: extras seleccionados. |
 | Final | `feature/delivery-docs` | F12: guía y evidencias finales. |
 
 La estrategia supera naturalmente tres ramas y dos PR sin acumular el proyecto en una sola. Cada rama empieza tras integrar sus dependencias a `main`; evitar ramas apiladas innecesarias. `main` debe pasar las verificaciones de su incremento y la entrega final debe cumplir todo lo obligatorio. No fusionar scripts a medio funcionar ni afirmar que un incremento parcial ya cumple el ejercicio.
@@ -177,4 +193,6 @@ Antes de cada merge: tests de la fase y regresiones afectadas, diff/secretos rev
 
 Ejemplo de solicitud futura: «Implementa únicamente F1 siguiendo AGENTS y los documentos de planificación. Antes del cambio identifica archivos, razón y criterio; prueba las reglas y resume evidencias y pendientes. No avances a F2». Una fase puede dividirse en tareas aún más pequeñas si no cabe en un diff revisable.
 
-F8–F9 ya están integradas en main. F10 queda cerrada técnicamente en `feature/make-integration`, con A09 acreditado y límites externos documentados; pendiente de PR/integración en main. El siguiente paso Git es integrar esta fase revisada; F12 sigue pendiente y F11 no se inicia automáticamente. EUR/IVA y costes conflictivos siguen pendientes de confirmación comercial.
+Solicitud preparada para la nueva fase: «Implementa únicamente F10b según [su guía](docs/phases/f10b-ui-ux.md), usando `impeccable` y `emil-design-eng` sobre la aplicación ejecutable. Conserva los datos y reglas existentes; realiza la verificación acotada indicada y registra la evidencia. No avances a F11 ni F12».
+
+F0–F10 ya están integradas en main y F10b queda implementada en `feature/ui-ux`, pendiente de integración. F12 sigue pendiente y F11 no se inicia automáticamente. EUR/IVA y costes conflictivos siguen pendientes de confirmación comercial.

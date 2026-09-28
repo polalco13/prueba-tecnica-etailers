@@ -1,6 +1,6 @@
 # Plan de producto — Integración y automatizaciones
 
-Estado: F0–F9 implementadas, verificadas e integradas en main. F10 cerrada técnicamente en `feature/make-integration`, pendiente de integración: R14/R15 y A09 acreditados con código, blueprint y ejecución ETL real distribuida a Sheets/Gmail. Recuperación de destinos y ejecución de la copia importada no verificadas; [límites de cierre](make/README.md#cierre-y-límites-de-verificación). Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
+Estado: F0–F10 implementadas, verificadas e integradas en main; F10b implementada y verificada en `feature/ui-ux`, pendiente de revisión/integración. F10 mediante PR 5 (`ff53b1c`), con R14/R15 y A09 acreditados. Recuperación de destinos y ejecución de la copia importada no verificadas; [límites de cierre](make/README.md#cierre-y-límites-de-verificación). Fuente normativa: [README.md](README.md). El plazo indicado allí es de siete días naturales o cinco laborables; las fases son incrementos verificables, no jornadas obligatorias.
 
 En estos documentos, **R** significa requisito explícito del README; **D**, decisión técnica propuesta; **S**, supuesto pendiente de validar. Una propuesta no constituye una regla de negocio confirmada. El encargo de planificación exige tests y mayor detalle de robustez aunque el README los considere extras.
 
@@ -73,11 +73,17 @@ Las siguientes medidas son D para satisfacer una entrega pequeña y defendible:
 | A10 | Una persona puede levantar y ejecutar desde cero siguiendo SOLUCION, sin pasos implícitos; los resultados documentados tienen evidencias reales. | F12 |
 | A11 | Historial Git acredita ≥3 ramas de trabajo y ≥2 PR hacia `main`; la entrega final está en `main`, sin secretos ni dependencias versionadas. | F12 |
 
+## Ampliación solicitada: mejora UI/UX
+
+El 27/09/2026 el usuario solicitó una fase intermedia de mejora de la plataforma ejecutable usando las skills de diseño instaladas. Se incorpora **F10b**, después de F10 y antes de F12, con [alcance y aceptación propios](docs/phases/f10b-ui-ux.md). Es una ampliación solicitada, no un requisito nuevo del README; queda implementada en `feature/ui-ux` y pendiente de integración.
+
+La mejora debe facilitar la lectura de métricas, la navegación, los filtros y la consulta de tablas en escritorio/móvil. Conserva R08–R13 y A06–A08, las definiciones de negocio y las limitaciones visibles; no añade métricas ni modifica ETL/Make. La verificación está registrada en [SOLUCION](SOLUCION.md) y en la evidencia visual de la fase.
+
 ## Fuera de alcance
 
 No se propone autenticación multiusuario del dashboard local, ERP completo, gestión de clientes independiente, contabilidad fiscal, logística, predicción, orquestador distribuido ni tiempo real. Tampoco se fabricarán costes históricos, identificadores de línea del ERP o EAN perdidos. Kafka, Spark, Airflow, Kubernetes y microservicios no tienen una necesidad demostrada para esta prueba.
 
-Incremental, dockerización de la aplicación y YoY son opcionales. El manejo básico de errores, los tests y logs se adelantan por decisión del encargo; sus mejoras pueden esperar. Esta tarea crea solo documentación, sin ejecutar la implementación, crear PR ni enviar correos.
+Incremental, dockerización de la aplicación y YoY son opcionales. El manejo básico de errores, los tests y logs se adelantan por decisión del encargo; sus mejoras pueden esperar. Esta fase no crea PR ni envía correos automáticamente; la integración y el cierre de entrega quedan para el paso Git solicitado.
 
 ## Supuestos que deben validarse
 
@@ -103,7 +109,7 @@ Los estados distinguen evidencia técnica ejecutada y trabajo pendiente; no impl
 | Margen bruto | R12; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados; comparabilidad de costes por confirmar |
 | Stock < 5 con ventas en últimos tres meses | R13; TECH_SPEC; F8–F9 | SQL F8 y web F9 verificados |
 | Make: webhook, router/filtro y dos destinos | R14; TECH_SPEC; F10 | Cliente probado; Sheets/Gmail completados y correo recibido desde ETL real, además de pruebas sintéticas |
-| Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | F10 cerrada técnicamente: artefactos disponibles y A09 acreditado; integración en main pendiente y límites de pruebas externas documentados |
+| Make: código, blueprint, explicación y capturas reales | R15; SOLUCION; F10/F12 | F10 integrada mediante PR 5; artefactos disponibles y A09 acreditado, con límites de pruebas externas documentados |
 | Idempotencia | R16; ADR 002; F4/F6–F7 | Verificada en F7 con fuentes congeladas |
 | SOLUCION.md y análisis de cinco millones de líneas | R17; plantilla SOLUCION; F12 | Planificado |
 | GitHub, ramas, commits, PR y main funcional | R18; IMPLEMENTATION_PLAN; F0–F12 | Planificado |
