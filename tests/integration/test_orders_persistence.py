@@ -195,7 +195,7 @@ def test_failure_preserves_previous_business_and_audits(
     write_orders(settings, [order_row()])
     runner.run_etl(settings)
     before = business(settings)
-    _write(settings, [_row(precio_coste="200")])
+    _write(settings, [_row(precio_coste="110")])
     write_orders(settings, [order_row(sku="NEVER-PUBLISH")])
     code, error_type = "UNEXPECTED_ERROR", RuntimeError
     if mode == "empty":

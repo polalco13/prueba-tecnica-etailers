@@ -1,0 +1,168 @@
+{
+  "baseline_code": "aaf002e87416cfd733f737973cae5d6b5d07d90d",
+  "corrected_code": "7fdaeac3c3118b21933d1012c6ff5bcf704a0be7",
+  "as_of": "2026-09-28",
+  "inputs_identical": true,
+  "sales_identical": true,
+  "monthly_series_identical": true,
+  "margin_before": {
+    "known_margin": "-2954287.69",
+    "known_revenue": "1248262.11",
+    "unknown_revenue": "133188.32",
+    "coverage": "0.9036"
+  },
+  "margin_after": {
+    "known_margin": "575355.92",
+    "known_revenue": "1319415.62",
+    "unknown_revenue": "62034.81",
+    "coverage": "0.9551"
+  },
+  "sku_before": [
+    {
+      "sku": "PRV-2013",
+      "base_cost": "34400.1600",
+      "net_cost": "28208.1312",
+      "pvp": "539.0000",
+      "price_origin": "base_with_discounts",
+      "revenue": "57875.08",
+      "known_margin": "-3242476.26"
+    },
+    {
+      "sku": "PRV-2024",
+      "base_cost": null,
+      "net_cost": null,
+      "pvp": null,
+      "price_origin": null,
+      "revenue": "5387.14",
+      "known_margin": null
+    },
+    {
+      "sku": "PRV-2047",
+      "base_cost": null,
+      "net_cost": null,
+      "pvp": null,
+      "price_origin": null,
+      "revenue": "3954.91",
+      "known_margin": null
+    },
+    {
+      "sku": "PRV-2061",
+      "base_cost": "2532.6000",
+      "net_cost": "2254.0140",
+      "pvp": "48.6600",
+      "price_origin": "base_with_discounts",
+      "revenue": "4408.13",
+      "known_margin": "-227755.29"
+    },
+    {
+      "sku": "PRV-2070",
+      "base_cost": null,
+      "net_cost": null,
+      "pvp": null,
+      "price_origin": null,
+      "revenue": "45949.82",
+      "known_margin": null
+    },
+    {
+      "sku": "PRV-2093",
+      "base_cost": null,
+      "net_cost": null,
+      "pvp": null,
+      "price_origin": null,
+      "revenue": "11268.99",
+      "known_margin": null
+    },
+    {
+      "sku": "PRV-2104",
+      "base_cost": "49.8400",
+      "net_cost": "45.3544",
+      "pvp": "94.6200",
+      "price_origin": "base_with_discounts",
+      "revenue": "6565.29",
+      "known_margin": "3209.09"
+    },
+    {
+      "sku": "PRV-2116",
+      "base_cost": null,
+      "net_cost": null,
+      "pvp": null,
+      "price_origin": null,
+      "revenue": "4592.65",
+      "known_margin": null
+    }
+  ],
+  "sku_after": [
+    {
+      "sku": "PRV-2013",
+      "base_cost": "318.5200",
+      "net_cost": "261.1864",
+      "pvp": "539.0000",
+      "price_origin": "base_with_discounts",
+      "revenue": "57875.08",
+      "known_margin": "27316.27"
+    },
+    {
+      "sku": "PRV-2024",
+      "base_cost": "60.5600",
+      "net_cost": "49.6592",
+      "pvp": "76.4100",
+      "price_origin": "base_with_discounts",
+      "revenue": "5387.14",
+      "known_margin": "1712.36"
+    },
+    {
+      "sku": "PRV-2047",
+      "base_cost": "41.9200",
+      "net_cost": "40.6624",
+      "pvp": "70.0300",
+      "price_origin": "base_with_discounts",
+      "revenue": "3954.91",
+      "known_margin": "1637.16"
+    },
+    {
+      "sku": "PRV-2061",
+      "base_cost": "23.4500",
+      "net_cost": "20.8705",
+      "pvp": "48.6600",
+      "price_origin": "base_with_discounts",
+      "revenue": "4408.13",
+      "known_margin": "2258.46"
+    },
+    {
+      "sku": "PRV-2070",
+      "base_cost": "291.3700",
+      "net_cost": "233.0960",
+      "pvp": "450.9700",
+      "price_origin": "base_with_discounts",
+      "revenue": "45949.82",
+      "known_margin": "20775.44"
+    },
+    {
+      "sku": "PRV-2093",
+      "base_cost": "223.0200",
+      "net_cost": "194.0274",
+      "pvp": "353.7900",
+      "price_origin": "base_with_discounts",
+      "revenue": "11268.99",
+      "known_margin": "4478.04"
+    },
+    {
+      "sku": "PRV-2104",
+      "base_cost": "49.8400",
+      "net_cost": "45.3544",
+      "pvp": "94.6200",
+      "price_origin": "base_with_discounts",
+      "revenue": "6565.29",
+      "known_margin": "3209.09"
+    },
+    {
+      "sku": "PRV-2116",
+      "base_cost": "283.8800",
+      "net_cost": "239.8786",
+      "pvp": "364.1700",
+      "price_origin": "base_with_discounts",
+      "revenue": "4592.65",
+      "known_margin": "1234.33"
+    }
+  ]
+}

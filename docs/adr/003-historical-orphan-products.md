@@ -2,7 +2,7 @@
 
 ## Estado
 
-Implementado en F6 y verificado en F7. Tras la corrección de capitalización de ADR 004, las cargas reales v2 conservan 44 históricos (35 ausentes del catálogo y 9 rechazados), relacionados con 118 líneas aceptadas, sin FKs huérfanas. Evidencia final en [SOLUCION](../../SOLUCION.md#verificación-realizada); los resultados anteriores permanecen en el historial Git. F8 verificó margen con coste desconocido separado y cobertura visible; F9 verifica su presentación, los históricos etiquetados en rankings y su exclusión del catálogo comercial.
+Implementado en F6 y verificado en F7. Tras la corrección de capitalización de ADR 004, las cargas reales v2 conservan 44 históricos (35 ausentes del catálogo y 9 rechazados), relacionados con 118 líneas aceptadas, sin FKs huérfanas. Esas cifras son históricas de reglas v2: [evidencia F12](../evidence/f12/README.md). Con las reglas v3 se recuperan cinco comerciales y quedan 39 históricos, verificados en [F13](../evidence/f13/README.md). F8 verificó margen con coste desconocido separado y cobertura visible; F9 verifica su presentación, los históricos etiquetados en rankings y su exclusión del catálogo comercial.
 
 ## Contexto
 

@@ -151,7 +151,7 @@ def test_failure_preserves_all_business_and_audits(
     mock_api(monkeypatch, [stock_row()])
     runner.run_etl(settings)
     before = business(settings)
-    _write(settings, [_row(precio_coste="200"), _row(sku="NEW")])
+    _write(settings, [_row(precio_coste="110"), _row(sku="NEW")])
     requests = mock_api(
         monkeypatch,
         [stock_row(quantity=20), stock_row(warehouse="BCN"), stock_row(sku="NEW")],

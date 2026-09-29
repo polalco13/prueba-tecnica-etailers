@@ -242,7 +242,7 @@ def test_failure_keeps_all_four_business_tables_and_durable_audit(
     # Cambiar catálogo, tarifas, pedidos y stock, incluidos un histórico y una firma nuevos.
     _write(
         settings,
-        [_row(precio_coste="200")],
+        [_row(precio_coste="110")],
         "<TarifasProveedor><Descuentos/><Excepciones/></TarifasProveedor>",
     )
     historical = "E2E-ROLLBACK-" + uuid4().hex[:8].upper()

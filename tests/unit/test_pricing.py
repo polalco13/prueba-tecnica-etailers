@@ -356,3 +356,77 @@ def test_exact_catalog_duplicate_does_not_count_as_rejection(tmp_path: Path) -> 
         result.selection.rows_rejected,
         result.selection.rows_deduplicated,
     ) == (2, 1, 0, 1)
+
+
+@pytest.mark.parametrize(
+    "cost,pvp,accepted", [("100", "100", True), ("99", "100", True), ("100.01", "100", False)]
+)
+def test_net_cost_pvp_quality_boundary(tmp_path: Path, cost: str, pvp: str, accepted: bool) -> None:
+    batch = extract_catalog(_catalog(tmp_path, [_row(precio_coste=cost, pvp_recomendado=pvp)]))
+    result = price_catalog(batch, load_tariffs(_xml(tmp_path)))
+    assert result.selection.rows_accepted == int(accepted)
+    assert result.selection.rows_rejected == int(not accepted)
+    if not accepted:
+        issue = result.issues[0]
+        assert issue.reason_code == ReasonCode.COST_EXCEEDS_PVP
+        assert issue.field_name == "net_cost" and issue.action == Action.REJECT_ROW
+        assert "100.0100 > PVP 100" in issue.detail
+
+
+def test_quality_validation_uses_discounted_cost_not_raw_cost(tmp_path: Path) -> None:
+    batch = extract_catalog(_catalog(tmp_path, [_row(precio_coste="130", pvp_recomendado="120")]))
+    result = price_catalog(batch, load_tariffs(FIXTURE))
+    assert result.products[0].quote.net_cost == Decimal("110.5000")
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_incoherent_cost_cannot_displace_valid_duplicate(tmp_path: Path, reverse: bool) -> None:
+    rows = [_row(precio_coste="1000"), _row(precio_coste="80")]
+    if reverse:
+        rows.reverse()
+    result = price_catalog(extract_catalog(_catalog(tmp_path, rows)), load_tariffs(FIXTURE))
+    assert result.products[0].quote.net_cost == Decimal("68.0000")
+    assert (
+        result.selection.rows_read,
+        result.selection.rows_accepted,
+        result.selection.rows_rejected,
+    ) == (2, 1, 1)
+    issue = next(i for i in result.issues if i.action == Action.REJECT_ROW)
+    assert issue.reason_code == ReasonCode.COST_EXCEEDS_PVP
+    assert issue.ref.locator == ("3" if reverse else "2")
+    assert "850.0000 > PVP 120" in issue.detail and issue.raw_excerpt is not None
+
+
+def test_all_incoherent_candidates_are_rejected(tmp_path: Path) -> None:
+    rows = [_row(precio_coste="1000"), _row(precio_coste="200")]
+    result = price_catalog(extract_catalog(_catalog(tmp_path, rows)), load_tariffs(FIXTURE))
+    assert result.products == () and result.selection.rows_rejected == 2
+
+
+def test_two_plausible_conflicts_keep_first_with_audit(tmp_path: Path) -> None:
+    rows = [_row(precio_coste="80"), _row(precio_coste="70")]
+    result = price_catalog(extract_catalog(_catalog(tmp_path, rows)), load_tariffs(FIXTURE))
+    assert result.products[0].quote.net_cost == Decimal("68.0000")
+    issue = next(i for i in result.issues if i.action == Action.REJECT_ROW)
+    assert issue.reason_code == ReasonCode.CONFLICTING_PRODUCT_SKU
+    assert "conservada fila 2" in issue.detail
+
+
+def test_exception_is_checked_without_fallback_to_lower_base_cost(tmp_path: Path) -> None:
+    batch = extract_catalog(_catalog(tmp_path, [_row(precio_coste="10"), _row(precio_coste="N/D")]))
+    tariffs = load_tariffs(_xml(tmp_path, exceptions=_exception("PRV-001", "121")))
+    result = price_catalog(batch, tariffs)
+    assert result.products == () and result.selection.rows_rejected == 2
+    assert all(i.reason_code == ReasonCode.COST_EXCEEDS_PVP for i in result.issues)
+
+
+def test_valid_exception_rescues_incoherent_raw_cost(tmp_path: Path) -> None:
+    batch = extract_catalog(_catalog(tmp_path, [_row(precio_coste="1000")]))
+    tariffs = load_tariffs(_xml(tmp_path, exceptions=_exception("PRV-001", "100")))
+    assert price_catalog(batch, tariffs).products[0].quote.net_cost == Decimal("100.0000")
+
+
+def test_xml_does_not_accept_catalog_currency_repair(tmp_path: Path) -> None:
+    batch = extract_catalog(_catalog(tmp_path, [_row()]))
+    tariffs = load_tariffs(_xml(tmp_path, exceptions=_exception("PRV-001", "60,56?")))
+    assert price_catalog(batch, tariffs).selection.rows_rejected == 1

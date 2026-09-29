@@ -1,4 +1,4 @@
-# Validación final — 28/09/2026
+# Validación histórica v2 — 28/09/2026
 
 Clon nuevo de GitHub `main` (`aab89b9`), venv nuevo y MySQL aislado; Python 3.13.13, Compose 2.38.2 y MySQL 8.0.46. Instalación, `pip check`, migraciones 001–004 y arranque verificados. Make desactivado durante esta comprobación.
 
@@ -13,4 +13,4 @@ Clon nuevo de GitHub `main` (`aab89b9`), venv nuevo y MySQL aislado; Python 3.13
 
 La prueba MySQL y la web temporal se retiraron sin tocar los servicios/datos del usuario. Make se acredita por separado con la ejecución real del 27/09/2026 y sus [límites](../../../make/README.md#cierre-y-límites-de-verificación). La revisión responsive está en [F10b](../f10b/README.md).
 
-GitHub público y seis PR integradas a `main` verificados. **Pendiente:** integrar la documentación F12 y enviar el correo de entrega. No se identifica implementación obligatoria pendiente; los supuestos comerciales y extras siguen explícitos en [SOLUCION](../../../SOLUCION.md).
+Esta evidencia describe reglas v2 y conserva sus cifras originales. La documentación F12 quedó integrada mediante PR 7 (`177ec37`); el envío de correo no está acreditado. La corrección de costes y las cifras vigentes se verifican por separado en [F13](../f13/README.md).

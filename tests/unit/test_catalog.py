@@ -13,7 +13,7 @@ from src.etl.catalog import (
     extract_catalog,
     select_catalog_candidates,
 )
-from src.etl.records import Action, ReasonCode
+from src.etl.records import Action, ReasonCode, Severity
 
 
 def _row(**changes: str) -> list[str]:
@@ -296,3 +296,46 @@ def test_issue_excerpt_is_bounded(tmp_path: Path) -> None:
     )
     assert batch.issues[0].raw_excerpt is not None
     assert len(batch.issues[0].raw_excerpt) <= 512
+
+
+@pytest.mark.parametrize("field", ["precio_coste", "pvp_recomendado"])
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("223,02?", "223.02"),
+        ("41,92?", "41.92"),
+        ("283,88?", "283.88"),
+        ("291.37?", "291.37"),
+        ("60,56?", "60.56"),
+        (" 60,56 ? ", "60.56"),
+        ("1.234,56?", "1234.56"),
+    ],
+)
+def test_degraded_currency_is_scoped_and_audited(
+    tmp_path: Path, field: str, raw: str, expected: str
+) -> None:
+    batch = extract_catalog(_write_catalog(tmp_path / "catalog.csv", [_row(**{field: raw})]))
+    product = batch.candidates[0].record.payload
+    assert (product.base_cost if field == "precio_coste" else product.pvp) == Decimal(expected)
+    issue = batch.issues[0]
+    assert (issue.reason_code, issue.action, issue.severity, issue.field_name) == (
+        ReasonCode.NORMALIZED_CURRENCY_SUFFIX,
+        Action.NORMALIZE,
+        Severity.INFO,
+        field,
+    )
+    assert issue.ref.locator == "2" and issue.ref.entity_key == "PRV-001"
+    assert issue.raw_excerpt is not None and raw in issue.raw_excerpt
+    selected = select_catalog_candidates(batch, _base_price_issue)
+    assert (selected.rows_accepted, selected.rows_rejected) == (1, 0)
+
+
+@pytest.mark.parametrize("field", ["precio_coste", "pvp_recomendado"])
+@pytest.mark.parametrize(
+    "raw", ["?60,56", "60?56", "60,56??", "?", "1.234?", "0?", "-2?", "1e3?", "100000000000000?"]
+)
+def test_degraded_suffix_does_not_hide_invalid_money(tmp_path: Path, field: str, raw: str) -> None:
+    batch = extract_catalog(_write_catalog(tmp_path / "catalog.csv", [_row(**{field: raw})]))
+    selected = select_catalog_candidates(batch, _base_price_issue)
+    assert selected.rows_rejected == 1 and selected.winners == ()
+    assert not any(i.reason_code == ReasonCode.NORMALIZED_CURRENCY_SUFFIX for i in batch.issues)

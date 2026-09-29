@@ -135,7 +135,7 @@ def test_dashboard_values_match_sql_and_explain_unknowns(
     assert "Histórico" in response.text and "Sin categoría" in response.text
     assert "Desconocido" in response.text
     assert "25/09/2026 10:00 UTC" in response.text
-    assert "Costes por revisar" in response.text and "SOLD" in response.text
+    assert "Costes por confirmar" in response.text and "SOLD" in response.text
     assert "Moneda EUR y base fiscal (IVA) pendientes de confirmar" in response.text
     assert 'class="badge low">0</span>' in response.text
     payload = json.loads(
@@ -188,7 +188,7 @@ def test_failed_run_does_not_replace_publication_or_hide_negative_margin(
     response = client.get("/")
     assert response.context["publication"].run_id == sales_db.run_id
     assert "24/09/2026 10:00 UTC" in response.text
-    assert "Costes por revisar" not in response.text
+    assert "Costes por confirmar" not in response.text
     assert 'class="negative" data-value="-10.00">-10,00' in response.text
     assert "Dato inválido" in response.text
     assert response.context["low_stock"] == []

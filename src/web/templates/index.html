@@ -44,7 +44,7 @@
   </details>
 </div>
 {% if publication.conflicting_skus %}
-<aside class="notice warning" role="note"><strong>Costes por revisar.</strong> Hay filas de catálogo contradictorias para {{ publication.conflicting_skus|join(', ') }}. Se conservó la primera fila válida. La selección puede afectar al margen: no interpretarlo como beneficio definitivo.</aside>
+<aside class="notice warning" role="note"><strong>Costes por confirmar.</strong> Hay alternativas de catálogo válidas para {{ publication.conflicting_skus|join(', ') }}. Se descartaron los costes netos superiores al PVP y se conservó la primera fila que supera las validaciones. El proveedor debe confirmar los conflictos restantes; el margen usa el coste actual seleccionado.</aside>
 {% endif %}
 <section id="evolucion" class="panel section" aria-labelledby="evolution-title">
   <div class="section-heading">

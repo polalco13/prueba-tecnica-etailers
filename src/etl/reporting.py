@@ -11,7 +11,7 @@ from src.etl.orders import OrdersSelection
 from src.etl.pricing import PricedCatalog
 from src.etl.records import Action
 
-RULES_VERSION = "catalog-stock-orders-v2"
+RULES_VERSION = "catalog-stock-orders-v3"
 SUMMARY_VERSION = "etl-summary-v1"
 
 

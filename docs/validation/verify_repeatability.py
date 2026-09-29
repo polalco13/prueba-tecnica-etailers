@@ -1,4 +1,4 @@
-"""Comprobación F12 con fuentes originales, solo en la BD temporal f12_real.
+"""Comprobación con fuentes originales, solo en las BD temporales f12_real/f13_real.
 
 Ejecutar desde la raíz: .venv/bin/python docs/validation/verify_repeatability.py.
 No imprime clientes, extractos de pedidos ni configuración privada.
@@ -14,6 +14,8 @@ from dataclasses import asdict
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
+
+from pymysql.connections import Connection
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -32,6 +34,9 @@ from src.config import configure_logging, load_settings  # noqa: E402
 from src.etl.runner import run_etl  # noqa: E402
 
 AS_OF = date(2026, 9, 28)
+REVIEW_SKUS = frozenset(
+    {"PRV-2013", "PRV-2061", "PRV-2104", "PRV-2093", "PRV-2047", "PRV-2116", "PRV-2070", "PRV-2024"}
+)
 
 
 def file_hashes() -> dict[str, str]:
@@ -43,21 +48,61 @@ def file_hashes() -> dict[str, str]:
     }
 
 
+def sku_review(connection: Connection) -> list[dict[str, object]]:
+    """Contribución calculada desde líneas, sin SQL analítico ni datos de clientes."""
+    profiles = {}
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT sku, base_cost, net_cost, pvp, price_origin FROM products ORDER BY sku"
+        )
+        for sku, base, net, pvp, origin in cursor.fetchall():
+            if sku in REVIEW_SKUS:
+                profiles[sku] = {
+                    "sku": sku,
+                    "base_cost": base,
+                    "net_cost": net,
+                    "pvp": pvp,
+                    "price_origin": origin,
+                    "revenue": Decimal("0.00"),
+                    "known_margin": None if net is None else Decimal("0.00"),
+                }
+        cursor.execute(
+            "SELECT p.sku, l.quantity, l.unit_price, l.discount FROM order_lines l "
+            "JOIN orders o ON o.id=l.order_id JOIN products p ON p.id=l.product_id "
+            "WHERE o.status IN ('ENVIADO', 'COMPLETADO') AND l.quantity>0 "
+            "AND o.order_date BETWEEN %s AND %s",
+            (date(2025, 4, 1), AS_OF),
+        )
+        for sku, quantity, price, discount in cursor.fetchall():
+            if sku not in profiles:
+                continue
+            row = profiles[sku]
+            amount = (quantity * price * (1 - discount)).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+            row["revenue"] += amount
+            if row["net_cost"] is not None:
+                row["known_margin"] += amount - (quantity * row["net_cost"]).quantize(
+                    Decimal("0.01"), rounding=ROUND_HALF_UP
+                )
+    return list(profiles.values())
+
+
 def main() -> None:
     settings = load_settings()
     if (
         settings.db_host != "127.0.0.1"
         or settings.db_port != 13317
-        or settings.db_name != "f12_real"
+        or settings.db_name not in {"f12_real", "f13_real"}
         or settings.stock_api_url != "http://127.0.0.1:13311/api/v1/stock"
         or settings.make.webhook_url
     ):
-        raise RuntimeError("Requiere el entorno aislado F12 y Make desactivado")
+        raise RuntimeError("Requiere el entorno aislado de validación y Make desactivado")
     with db.connect(settings) as connection, connection.cursor() as cursor:
         for table in ("products", "orders", "order_lines", "etl_runs"):
             cursor.execute(f"SELECT COUNT(*) FROM {table}")
             if cursor.fetchone()[0]:
-                raise RuntimeError("La comprobación exige f12_real inicialmente vacía")
+                raise RuntimeError("La comprobación exige una BD de validación inicialmente vacía")
         cursor.execute("SELECT VERSION()")
         mysql_version = cursor.fetchone()[0]
 
@@ -150,7 +195,7 @@ def main() -> None:
             )
             missing_reasons[order_id] = [row[0] for row in cursor.fetchall()]
         report = {
-            "base_commit": subprocess.check_output(
+            "code_commit": subprocess.check_output(
                 ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
             ).strip(),
             "as_of": AS_OF,
@@ -167,6 +212,7 @@ def main() -> None:
             "low_stock_count": len(analytics.low_stock_products()),
             "independent_recalculation": "passed",
             "make_requests": 0,
+            "sku_review": sku_review(connection),
         }
     print(json.dumps(report, ensure_ascii=False, indent=2, default=str))
 
