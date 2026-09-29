@@ -1,6 +1,7 @@
 """Conexión MySQL y aplicación explícita de migraciones versionadas."""
 
 import argparse
+import time
 from pathlib import Path
 
 import pymysql
@@ -10,6 +11,8 @@ from src.config import Settings, configure_logging, get_run_logger, load_setting
 
 MIGRATIONS = ("001_products_and_runs", "002_stock", "003_orders", "004_make_delivery")
 MIGRATION_DIR = Path(__file__).resolve().parent.parent / "db/migrations"
+_CONNECTION_RETRY_DELAYS = (1, 2, 4, 8, 10)
+_TRANSIENT_CONNECTION_ERRORS = frozenset({2003, 2006, 2013, 1053})
 
 
 def connect(settings: Settings) -> Connection:
@@ -25,9 +28,36 @@ def connect(settings: Settings) -> Connection:
         read_timeout=30,
         write_timeout=30,
     )
-    with connection.cursor() as cursor:
-        cursor.execute("SET time_zone = '+00:00'")
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SET time_zone = '+00:00'")
+    except Exception:
+        connection.close()
+        raise
     return connection
+
+
+def _connect_for_migration(settings: Settings) -> Connection:
+    """Espera acotada al arranque; nunca repite SQL de migración ni transacciones."""
+
+    attempts = len(_CONNECTION_RETRY_DELAYS) + 1
+    for attempt in range(1, attempts + 1):
+        try:
+            return connect(settings)
+        except pymysql.OperationalError as exc:
+            code = exc.args[0] if exc.args else None
+            if code not in _TRANSIENT_CONNECTION_ERRORS or attempt == attempts:
+                raise
+            delay = _CONNECTION_RETRY_DELAYS[attempt - 1]
+            get_run_logger("db").warning(
+                "Conexión MySQL no disponible (código %s, intento %d/%d); espera %d s",
+                code,
+                attempt,
+                attempts,
+                delay,
+            )
+            time.sleep(delay)
+    raise AssertionError("Bucle de conexión agotado sin resultado")
 
 
 def schema_is_current(connection: Connection) -> bool:
@@ -112,7 +142,7 @@ def main() -> int:
     try:
         settings = load_settings()
         configure_logging(settings.log_level)
-        with connect(settings) as connection:
+        with _connect_for_migration(settings) as connection:
             applied = apply_migration(connection)
     except Exception as exc:
         get_run_logger("db").error("Migración no completada (%s)", type(exc).__name__)

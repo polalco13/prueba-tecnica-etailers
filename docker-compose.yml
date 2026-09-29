@@ -14,7 +14,12 @@ services:
       - mysql_data:/var/lib/mysql
       - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpass"]
+      test:
+        - CMD-SHELL
+        - >-
+          mysql --protocol=TCP --host=127.0.0.1 --connect-timeout=3
+          --user="$${MYSQL_USER}" --password="$${MYSQL_PASSWORD}"
+          --database="$${MYSQL_DATABASE}" --execute="SELECT 1" >/dev/null 2>&1
       interval: 5s
       timeout: 5s
       retries: 20
