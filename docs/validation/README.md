@@ -1,6 +1,6 @@
-# Validación final aislada (F12)
+# Validación aislada de ETL y MySQL
 
-Procedimiento ejecutado el 28/09/2026 desde un **clon nuevo de GitHub**, código funcional `aab89b9`, entorno virtual nuevo y MySQL nuevo. Los archivos de esta carpeta se copiaron desde la rama F12 al clon antes de ejecutar la validación; tras integrar F12 vendrán incluidos. [Resultados](../evidence/f12/README.md).
+Herramientas incluidas en el repositorio desde PR 7. La [validación v2](../evidence/f12/README.md) partió de un clon limpio el 28/09/2026; la [corrección v3](../evidence/f13/README.md) comparó dos bases nuevas el 29/09/2026. El procedimiento siguiente ejecuta el código de la rama elegida sobre fuentes originales.
 
 Esto es una comprobación de entrega, no una nueva arquitectura productiva. No usar la base del usuario para pytest. El Compose auxiliar reutiliza las imágenes y mock originales, cambia nombres/puertos y usa tmpfs para MySQL: no monta `mysql_data`. Requiere Compose >= 2.24.4 por `!override`; verificado con 2.38.2. Las contraseñas de abajo son exclusivamente demo del entorno temporal.
 
@@ -32,7 +32,19 @@ export MAKE_WEBHOOK_URL=
 .venv/bin/python docs/validation/verify_repeatability.py > /tmp/nortesur-repeatability.json
 ```
 
-El segundo migrate debe indicar que las cuatro migraciones ya están aplicadas. El script exige inicialmente `f12_real` vacía y Make desactivado; llama al ETL real dos veces, fija `as_of=2026-09-28`, comprueba FKs/contadores, igualdad de negocio y hashes del origen y recalcula importes con Decimal independientemente del SQL analítico. Publica un JSON de evidencia sin clientes ni configuración privada. No es una fixture sintética. Una vez ejecutado, no volver a lanzarlo sobre esa misma base ya cargada.
+El segundo migrate debe indicar que las cuatro migraciones ya están aplicadas. El script admite `f12_real` o `f13_real` y exige la base elegida inicialmente vacía y Make desactivado; llama al ETL real dos veces, fija `as_of=2026-09-28`, comprueba FKs/contadores, igualdad de negocio y hashes del origen y recalcula importes con Decimal independientemente del SQL analítico. Publica un JSON de evidencia sin clientes ni configuración privada. No es una fixture sintética. Una vez ejecutado, no volver a lanzarlo sobre esa misma base ya cargada. Para comparar una segunda versión como en F13, crear otra base en el contenedor temporal, sin borrar la anterior:
+
+```bash
+docker exec -i nortesur-f12-mysql mysql -uroot -prootpass <<'SQL'
+CREATE DATABASE f13_real CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+GRANT ALL PRIVILEGES ON f13_real.* TO 'etailers'@'%';
+SQL
+export DB_NAME=f13_real
+.venv/bin/python -m src.db migrate
+.venv/bin/python docs/validation/verify_repeatability.py > /tmp/nortesur-f13-repeatability.json
+```
+
+El reporte incluye commit, hashes, runs, métricas y contribución de los SKU revisados; no contiene clientes. Si se cambia la revisión de código, hacerlo entre las dos bases, conservando fecha y fuentes.
 
 ## Suite completa, de forma secuencial
 
@@ -51,7 +63,7 @@ F4_TEST_DB_PASSWORD=f12-test-only .venv/bin/python -m pytest -q
 .venv/bin/ruff format --check src tests docs/validation
 ```
 
-**No ejecutar pytest mientras esté ejecutándose el ETL** en esta instancia MySQL, aunque las bases tengan nombres distintos: el advisory lock es compartido por servidor. Validación secuencial: 397 pruebas aprobadas, ninguna omitida; aviso conocido de deprecación Starlette/TestClient por httpx.
+**No ejecutar pytest mientras esté ejecutándose el ETL** en esta instancia MySQL, aunque las bases tengan nombres distintos: el advisory lock es compartido por servidor. Reglas v3: 443 pruebas aprobadas, incluidas 51 MySQL, ninguna omitida; aviso conocido de deprecación Starlette/TestClient por httpx. La validación anterior v2 conservó sus 397 resultados históricos.
 
 ## Interfaz y limpieza del entorno temporal
 
@@ -68,4 +80,4 @@ docker compose -p nortesur-f12 -f docs/validation/compose.yml down
 unset DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD STOCK_API_URL STOCK_API_TOKEN MAKE_WEBHOOK_URL
 ```
 
-No borrar volúmenes de instalaciones ajenas. La evidencia final se guarda antes de retirar esta base. Make se acredita con las pruebas externas ya realizadas en F10; F12 no reenvía correos ni modifica el escenario.
+No borrar volúmenes de instalaciones ajenas. La evidencia final se guarda antes de retirar esta base. Make se acredita con las pruebas externas ya realizadas en F10; Este procedimiento no reenvía correos ni modifica el escenario.

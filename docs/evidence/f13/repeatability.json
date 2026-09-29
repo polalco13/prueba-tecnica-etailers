@@ -1,0 +1,314 @@
+{
+  "code_commit": "7fdaeac3c3118b21933d1012c6ff5bcf704a0be7",
+  "as_of": "2026-09-28",
+  "mysql_version": "8.0.46",
+  "inputs": {
+    "data/pedidos_historico.csv": "7819b3dc624de1bb6ec7a4dc80e207a5c5a7075c8d6295842aa3fcc7b42e11ac",
+    "data/proveedor_productos.csv": "ebe2a2079d02814b02b3094ef0e9c0d2c696b6a81c21172a8e0a2d2821d9159a",
+    "data/tarifas_proveedor.xml": "3922610e433d4b6e833a24f7e9db6d6c3c7858fbb8de4694d7fb005af511e3df",
+    "mock-api/stock.json": "4e0e4f2117766b5a2067d7a055406573afc23f12cb183be7d1944ff5ad72906d"
+  },
+  "runs": [
+    {
+      "run_id": "08577348-fc37-410a-b3ac-8e91c5e6533c",
+      "counters": {
+        "stock_api": {
+          "rows_read": 230,
+          "rows_accepted": 216,
+          "rows_rejected": 14,
+          "discarded_fields": 0,
+          "quality_warnings": 41,
+          "rows_deduplicated": 0
+        },
+        "orders_csv": {
+          "rows_read": 1142,
+          "orders_loaded": 358,
+          "rows_accepted": 1101,
+          "rows_rejected": 33,
+          "partial_orders": 30,
+          "discarded_fields": 0,
+          "quality_warnings": 75,
+          "rows_deduplicated": 8,
+          "historical_products_created": 39
+        },
+        "catalog_csv": {
+          "rows_read": 133,
+          "rows_accepted": 120,
+          "rows_rejected": 10,
+          "products_loaded": 120,
+          "discarded_fields": 7,
+          "quality_warnings": 7,
+          "rows_deduplicated": 3
+        }
+      },
+      "issues": 208,
+      "source_hashes": [
+        "ebe2a2079d02814b02b3094ef0e9c0d2c696b6a81c21172a8e0a2d2821d9159a",
+        "3922610e433d4b6e833a24f7e9db6d6c3c7858fbb8de4694d7fb005af511e3df",
+        "7819b3dc624de1bb6ec7a4dc80e207a5c5a7075c8d6295842aa3fcc7b42e11ac",
+        "08987b5f88455dc32034f60c331ed68ebbc94e4d3c33c312ae2f574e51b398bb"
+      ],
+      "business_hash": "aa5f25c83a5c489ab30a7d58ac6ab6f529df13eb78f860a84775eb6817a835c6",
+      "table_counts": {
+        "products": 159,
+        "stock_by_warehouse": 216,
+        "orders": 358,
+        "order_lines": 1101
+      }
+    },
+    {
+      "run_id": "d40e502b-f1b7-4887-b9ef-cfe649701421",
+      "counters": {
+        "stock_api": {
+          "rows_read": 230,
+          "rows_accepted": 216,
+          "rows_rejected": 14,
+          "discarded_fields": 0,
+          "quality_warnings": 41,
+          "rows_deduplicated": 0
+        },
+        "orders_csv": {
+          "rows_read": 1142,
+          "orders_loaded": 358,
+          "rows_accepted": 1101,
+          "rows_rejected": 33,
+          "partial_orders": 30,
+          "discarded_fields": 0,
+          "quality_warnings": 36,
+          "rows_deduplicated": 8,
+          "historical_products_created": 0
+        },
+        "catalog_csv": {
+          "rows_read": 133,
+          "rows_accepted": 120,
+          "rows_rejected": 10,
+          "products_loaded": 120,
+          "discarded_fields": 7,
+          "quality_warnings": 7,
+          "rows_deduplicated": 3
+        }
+      },
+      "issues": 169,
+      "source_hashes": [
+        "ebe2a2079d02814b02b3094ef0e9c0d2c696b6a81c21172a8e0a2d2821d9159a",
+        "3922610e433d4b6e833a24f7e9db6d6c3c7858fbb8de4694d7fb005af511e3df",
+        "7819b3dc624de1bb6ec7a4dc80e207a5c5a7075c8d6295842aa3fcc7b42e11ac",
+        "08987b5f88455dc32034f60c331ed68ebbc94e4d3c33c312ae2f574e51b398bb"
+      ],
+      "business_hash": "aa5f25c83a5c489ab30a7d58ac6ab6f529df13eb78f860a84775eb6817a835c6",
+      "table_counts": {
+        "products": 159,
+        "stock_by_warehouse": 216,
+        "orders": 358,
+        "order_lines": 1101
+      }
+    }
+  ],
+  "same_business": true,
+  "source_orders": 359,
+  "loaded_orders": 358,
+  "missing_order_reasons": {
+    "PED-2025-00122": [
+      "MISSING_ORDER_DATE"
+    ]
+  },
+  "sales": {
+    "revenue": "1381450.43",
+    "orders": 269,
+    "average_ticket": "5135.50",
+    "partial_orders": 23
+  },
+  "margin": {
+    "known_margin": "575355.92",
+    "known_revenue": "1319415.62",
+    "unknown_revenue": "62034.81",
+    "coverage": "0.9551"
+  },
+  "monthly": [
+    {
+      "month": "2025-04-01",
+      "revenue": "48833.79",
+      "units": 310,
+      "is_partial": false
+    },
+    {
+      "month": "2025-05-01",
+      "revenue": "44502.66",
+      "units": 149,
+      "is_partial": false
+    },
+    {
+      "month": "2025-06-01",
+      "revenue": "92326.22",
+      "units": 336,
+      "is_partial": false
+    },
+    {
+      "month": "2025-07-01",
+      "revenue": "106943.03",
+      "units": 295,
+      "is_partial": false
+    },
+    {
+      "month": "2025-08-01",
+      "revenue": "2682.07",
+      "units": 11,
+      "is_partial": false
+    },
+    {
+      "month": "2025-09-01",
+      "revenue": "60935.63",
+      "units": 301,
+      "is_partial": false
+    },
+    {
+      "month": "2025-10-01",
+      "revenue": "63837.15",
+      "units": 225,
+      "is_partial": false
+    },
+    {
+      "month": "2025-11-01",
+      "revenue": "147011.66",
+      "units": 700,
+      "is_partial": false
+    },
+    {
+      "month": "2025-12-01",
+      "revenue": "108500.13",
+      "units": 486,
+      "is_partial": false
+    },
+    {
+      "month": "2026-01-01",
+      "revenue": "42374.99",
+      "units": 194,
+      "is_partial": false
+    },
+    {
+      "month": "2026-02-01",
+      "revenue": "115021.51",
+      "units": 419,
+      "is_partial": false
+    },
+    {
+      "month": "2026-03-01",
+      "revenue": "61382.42",
+      "units": 284,
+      "is_partial": false
+    },
+    {
+      "month": "2026-04-01",
+      "revenue": "77097.77",
+      "units": 297,
+      "is_partial": false
+    },
+    {
+      "month": "2026-05-01",
+      "revenue": "87247.83",
+      "units": 395,
+      "is_partial": false
+    },
+    {
+      "month": "2026-06-01",
+      "revenue": "117742.49",
+      "units": 463,
+      "is_partial": false
+    },
+    {
+      "month": "2026-07-01",
+      "revenue": "91722.86",
+      "units": 396,
+      "is_partial": false
+    },
+    {
+      "month": "2026-08-01",
+      "revenue": "56696.84",
+      "units": 208,
+      "is_partial": false
+    },
+    {
+      "month": "2026-09-01",
+      "revenue": "56591.38",
+      "units": 231,
+      "is_partial": true
+    }
+  ],
+  "low_stock_count": 12,
+  "independent_recalculation": "passed",
+  "make_requests": 0,
+  "sku_review": [
+    {
+      "sku": "PRV-2013",
+      "base_cost": "318.5200",
+      "net_cost": "261.1864",
+      "pvp": "539.0000",
+      "price_origin": "base_with_discounts",
+      "revenue": "57875.08",
+      "known_margin": "27316.27"
+    },
+    {
+      "sku": "PRV-2024",
+      "base_cost": "60.5600",
+      "net_cost": "49.6592",
+      "pvp": "76.4100",
+      "price_origin": "base_with_discounts",
+      "revenue": "5387.14",
+      "known_margin": "1712.36"
+    },
+    {
+      "sku": "PRV-2047",
+      "base_cost": "41.9200",
+      "net_cost": "40.6624",
+      "pvp": "70.0300",
+      "price_origin": "base_with_discounts",
+      "revenue": "3954.91",
+      "known_margin": "1637.16"
+    },
+    {
+      "sku": "PRV-2061",
+      "base_cost": "23.4500",
+      "net_cost": "20.8705",
+      "pvp": "48.6600",
+      "price_origin": "base_with_discounts",
+      "revenue": "4408.13",
+      "known_margin": "2258.46"
+    },
+    {
+      "sku": "PRV-2070",
+      "base_cost": "291.3700",
+      "net_cost": "233.0960",
+      "pvp": "450.9700",
+      "price_origin": "base_with_discounts",
+      "revenue": "45949.82",
+      "known_margin": "20775.44"
+    },
+    {
+      "sku": "PRV-2093",
+      "base_cost": "223.0200",
+      "net_cost": "194.0274",
+      "pvp": "353.7900",
+      "price_origin": "base_with_discounts",
+      "revenue": "11268.99",
+      "known_margin": "4478.04"
+    },
+    {
+      "sku": "PRV-2104",
+      "base_cost": "49.8400",
+      "net_cost": "45.3544",
+      "pvp": "94.6200",
+      "price_origin": "base_with_discounts",
+      "revenue": "6565.29",
+      "known_margin": "3209.09"
+    },
+    {
+      "sku": "PRV-2116",
+      "base_cost": "283.8800",
+      "net_cost": "239.8786",
+      "pvp": "364.1700",
+      "price_origin": "base_with_discounts",
+      "revenue": "4592.65",
+      "known_margin": "1234.33"
+    }
+  ]
+}
