@@ -1,67 +1,69 @@
-# Reglas de datos aplicadas
+# Regles de dades aplicades
 
-Versión actual: **`catalog-stock-orders-v3`**, corrección final autorizada el 29/09/2026. El [README](README.md) exige decidir/documentar el tratamiento de datos sucios; estas son las decisiones del ejercicio, con los supuestos comerciales indicados al final. Implementación: [TECH_SPEC](TECH_SPEC.md); resultados: [SOLUCION](SOLUCION.md).
+Versió actual: **`catalog-stock-orders-v3`**. El [README](README.md) exigeix decidir i documentar el tractament de les dades brutes. Aquestes són les regles del projecte; els supòsits comercials pendents es recullen al final. El flux, l'esquema i els resultats s'expliquen a [SOLUCION](SOLUCION.md).
 
-## Acciones y procedencia
+## Accions i procedència
 
-Normalizar conserva significado; rechazar fila excluye entidad; descartar campo conserva entidad con NULL; deduplicar conserva una ocurrencia; avisar conserva el dato; fallar ejecución impide publicar. Todo descarte/corrección registrado conserva run, fuente, fila/localizador, entidad, motivo/campo, acción y extracto original limitado. No guardar secretos ni imprimir clientes/payloads sensibles. Desconocido significa NULL, nunca cero.
+Normalitzar conserva el significat; rebutjar una fila exclou l'entitat; descartar un camp conserva l'entitat amb NULL; deduplicar conserva una ocurrència; avisar conserva la dada; fallar una execució impedeix publicar-la. Cada descart o correcció registra execució, font, fila o localitzador, entitat, motiu i camp, acció i un extracte original limitat. No es guarden secrets ni s'imprimeixen clients o payloads sensibles. Una dada desconeguda és NULL, mai zero.
 
-## Catálogo y tarifas
+## Catàleg i tarifes
 
-Catálogo Latin-1 con `;`, lector CSV real y 11 columnas: SKU, EAN, nombre, marca, categoría, coste, PVP, IVA, peso, alta, descripción. Comillas y campos multilínea respetados. Cabecera/archivo ilegible → ejecución fallida; columnas incorrectas → fila rechazada. No desplazar campos ni modificar `data/`.
+El catàleg es llegeix en Latin-1, amb separador `;`, lector CSV i 11 columnes: SKU, EAN, nom, marca, categoria, cost, PVP, IVA, pes, data d'alta i descripció. Es respecten les cometes i els camps multilínia. Una capçalera o un fitxer il·legible fan fallar l'execució; un nombre incorrecte de columnes rebutja la fila. No es desplacen camps ni es modifica `data/`.
 
-| Caso | Regla |
+| Cas | Regla |
 | --- | --- |
-| Vacíos | Tras trim/casefold, solo tokens completos `N/D`, `NULL`, `-`, `n/a` o vacío son ausencia. SKU/nombre/marca/categoría/PVP son obligatorios; descripción y otros atributos opcionales admiten NULL. |
-| Texto/identificadores | NFC, trim y espacios; claves de marca/categoría comparan mayúsculas conservando tildes. SKU/ID en mayúsculas, sin quitar guiones/rellenar ceros, máximo 64 y sin controles. No truncar. |
-| Dinero | Decimal desde texto; coma/punto decimal, € o EUR y miles inequívocos. `1.234,56` → 1234.56; `1.234` aislado es ambiguo. Sin exponentes, no finitos, cero/negativos ni desbordamiento DECIMAL(18,4). |
-| Moneda degradada | Solo coste/PVP de este CSV: un único `?` final se admite si el resto pasa la gramática. `60,56?` → 60.56; incidencia `NORMALIZED_CURRENCY_SUFFIX`, acción normalize/info, original conservado. `?60,56`, `60?56`, `60,56??`, `?` se rechazan; `1.234?` sigue ambiguo. No relajar otros parsers. |
-| EAN | Limpiar espacios/comillas exteriores o apóstrofo Excel inicial; validar EAN-8/13 y checksum. Vacío → NULL; inválido/científico → campo descartado con motivo. No reconstruir dígitos/ceros perdidos. |
-| IVA/peso/alta | Opcionales: inválidos → NULL con incidencia. IVA usa ratio; peso decimal sin miles, cero válido, negativo inválido. Alta estricta sin fecha inventada. |
-| Coste CSV inválido | Candidato condicionado: solo una excepción XML válida puede proporcionar precio neto. Con excepción, auditar descarte del coste original; sin ella, rechazar fila. |
-| XML | UTF-8, secciones Descuentos/Excepciones identificables, sin DOCTYPE. Ilegible, regla general inválida o misma clave con tarifas contradictorias → falla ejecución. Regla repetida idéntica → deduplicación. |
-| Prioridad | Excepción SKU manda sin descuentos adicionales. Ausente: `coste × (1 − descuento categoría − descuento marca)`. Descuentos ausentes = 0; suma ≥1 o neto redondeado ≤0 rechaza producto. Excepción inválida o flag adicional distinto de false rechaza producto, sin fallback. |
-| Calidad de coste | Después del neto/redondeo, rechazar candidato con `net_cost > pvp`: `COST_EXCEEDS_PVP`, auditando neto/PVP/origen/fila. Igualdad permitida. Se comprueba también la excepción XML; no elegir otra tarifa para ocultar el problema. No prohíbe una venta real por debajo del coste. |
-| Duplicados SKU | Validar cada candidato antes de escoger. Entre válidos, primero del archivo; los demás quedan auditados. Exactamente iguales en las 11 celdas → EXACT_DUPLICATE; diferentes → CONFLICTING_PRODUCT_SKU, con fila conservada. Orden determinista, sin afirmar actualidad comercial. |
+| Valors buits | Després d'eliminar espais als extrems i aplicar casefold, només els tokens complets `N/D`, `NULL`, `-`, `n/a` o buit són absència. SKU, nom, marca, categoria i PVP són obligatoris; els atributs opcionals admeten NULL. |
+| Text i identificadors | NFC, normalització d'espais i extrems. Marca i categoria es comparen sense distingir majúscules, conservant accents. SKU i ID es passen a majúscules, sense treure guions ni afegir zeros; màxim 64 caràcters i sense controls. No es trunquen. |
+| Diners | Decimal des de text; coma o punt decimal, € o EUR i milers inequívocs. `1.234,56` → 1234.56; `1.234` aïllat és ambigu. Es rebutgen exponents, valors no finits, zero, negatius i desbordaments de DECIMAL(18,4). |
+| Sufix monetari degradat | Només en cost/PVP d'aquest CSV: s'admet un únic `?` final si la resta compleix la gramàtica monetària. `60,56?` → 60.56, amb `NORMALIZED_CURRENCY_SUFFIX`, acció normalize/info i original conservat. Es rebutgen `?60,56`, `60?56`, `60,56??` i `?`; `1.234?` continua sent ambigu. No es relaxen altres parsers. |
+| EAN | Es netegen espais, cometes exteriors o l'apòstrof inicial d'Excel, i es valida EAN-8/13 i checksum. Buit → NULL; invàlid o científic → camp descartat amb motiu. No es reconstrueixen dígits ni zeros perduts. |
+| IVA, pes i alta | Són opcionals: si són invàlids, queden a NULL amb incidència. IVA es tracta com a ràtio; el pes és decimal sense milers, amb zero vàlid i negatius invàlids. La data d'alta és estricta, sense dates inventades. |
+| Cost CSV invàlid | El candidat només es pot recuperar amb una excepció XML vàlida que proporcioni el preu net. Amb excepció, s'audita el descart del cost original; sense excepció, es rebutja la fila. |
+| XML | UTF-8, seccions Descuentos/Excepciones identificables, sense DOCTYPE. Un fitxer il·legible, una regla general invàlida o tarifes contradictòries per a la mateixa clau fan fallar l'execució. Una regla repetida idèntica es deduplica. |
+| Prioritat | L'excepció per SKU preval, sense descomptes addicionals. Si no existeix: `cost × (1 − descompte categoria − descompte marca)`. Un descompte absent és zero; suma ≥1 o net arrodonit ≤0 rebutgen el producte. Una excepció invàlida o un flag addicional diferent de false rebutgen el producte, sense alternativa. |
+| Qualitat del cost | Després de calcular i arrodonir el net, es rebutja el candidat amb `net_cost > pvp`: `COST_EXCEEDS_PVP`, conservant net, PVP, origen i fila. La igualtat és vàlida. També es valida l'excepció XML; no se'n tria una altra per ocultar el problema. Això no prohibeix una venda real per sota del cost. |
+| SKU duplicat | Es valida cada candidat abans de triar. Entre els vàlids, es conserva el primer del fitxer i s'auditen els altres. Les 11 cel·les idèntiques generen EXACT_DUPLICATE; les diferents, CONFLICTING_PRODUCT_SKU, amb referència a la fila conservada. L'ordre és determinista, però no acredita vigència comercial. |
 
-Los descuentos son aditivos por decisión del ejercicio: coste 100, 10% y 5% → 85 (secuenciales darían 85.5). No aplicar PorVolumen sin compras conocidas, portes ni plazo de pago; términos reconocidos con aviso. Excepción sin candidato de catálogo: aviso UNKNOWN_PRODUCT_SKU, sin crear producto.
+Els descomptes són additius per decisió de l'exercici: cost 100, 10% i 5% → 85; si fossin seqüencials donarien 85.5. No s'aplica PorVolumen sense compres conegudes, ni ports ni termini de pagament; els termes reconeguts generen un avís. Una excepció sense candidat al catàleg genera UNKNOWN_PRODUCT_SKU, sense crear un producte.
 
-La recuperación de `?` corresponde al patrón de símbolo monetario degradado observado: el archivo contiene ya ese carácter literal, cambiar la decodificación no reconstruye el original. La validación coste/PVP es conservadora bajo el supuesto de base fiscal comparable; no certifica un precio comercial.
+El `?` ja existeix literalment al fitxer. La seva posició final en imports que altrament són vàlids suggereix un símbol monetari degradat, però no confirma que originalment fos un €. Canviar la descodificació no recupera aquest original. La recuperació és una decisió local, limitada i auditada, pendent de confirmar amb el proveïdor.
 
-## Pedidos
+La comparació entre cost net i PVP és una validació conservadora sota el supòsit de base fiscal comparable, no una regla universal de rendibilitat. A `PRV-2104` hi ha costos 49,84 i 46,15 amb PVP 94,62: tots dos passen la validació. Es conserva el primer, 49,84, que dona net 45,3544. Les dues files tenen la mateixa data d'alta, que tampoc acredita una actualització del preu; caldria confirmar-ne la vigència amb el proveïdor.
 
-UTF-8 con BOM, separador coma, 9 columnas y lector con comillas: ID, fecha, cliente, canal, estado, SKU, cantidad, precio y descuento. Agrupar por ID normalizado. Fecha estricta acepta ISO, dd/mm/yyyy, dd-mm-yyyy, yyyy/mm/dd y hora si existe; agrupar por día. Hora y fecha sin hora del mismo día son compatibles.
+## Comandes
 
-Cabecera: vacíos heredan solo un valor inequívoco del mismo grupo con HEADER_VALUE_INHERITED. Cliente puede quedar NULL; comparar NFC/espacios/casefold y conservar primera grafía válida no vacía. Variantes de mayúsculas fueron confirmadas por el usuario; no unir tildes, puntuación o nombres parecidos. Valor no vacío inválido no se oculta mediante herencia. Conflicto real rechaza pedido/líneas; fecha sin día recuperable también. Una línea inválida no elimina hermanas: pedido parcial si quedan válidas; sin líneas no se carga. Archivo vacío/ilegible/sin pedidos válidos aborta publicación.
+UTF-8 amb BOM, separador coma, 9 columnes i lector amb cometes: ID, data, client, canal, estat, SKU, quantitat, preu i descompte. S'agrupa per ID normalitzat. Les dates accepten ISO, dd/mm/yyyy, dd-mm-yyyy, yyyy/mm/dd i hora si n'hi ha; s'agrupen per dia. Una data amb hora i una sense hora del mateix dia són compatibles.
 
-Estados canónicos: ENVIADO, COMPLETADO, PENDIENTE, CANCELADO, DEVUELTO. Canales: B2B, B2C, marketplace, sin distinguir mayúsculas. Desconocidos rechazan cabecera, sin correspondencias aproximadas. Cantidad entera exacta distinta de cero: `2,0`/`2.0` → 2; fracciones/desbordamiento se rechazan. Negativas solo en DEVUELTO, conservando signo. Precio unitario positivo obligatorio.
+A la capçalera, els buits només hereten un valor inequívoc del grup, amb HEADER_VALUE_INHERITED. El client pot quedar a NULL; es compara amb NFC, espais i casefold i es conserva la primera grafia vàlida no buida. Les variants de majúscules es van confirmar amb l'usuari; no s'uneixen accents, puntuació o noms semblants. Un valor no buit invàlid no s'oculta amb herència. Un conflicte real o una data sense dia recuperable rebutgen la comanda i les seves línies. Una línia invàlida no elimina les altres: la comanda queda parcial si té línies vàlides, i no es carrega si no en té cap. Un fitxer buit, il·legible o sense comandes vàlides impedeix publicar.
 
-Descuentos: `10%`, `10`, `0,1` → 0.10. Con `%`, dividir por 100; sin él, [0,1) es ratio y [1,100] puntos porcentuales (`1` → 1%). Ratio final [0,1], hasta seis decimales; vacío → cero con aviso. No reparar sufijos monetarios del catálogo en pedidos/XML, cantidades, descuentos o EAN.
+Estats canònics: ENVIADO, COMPLETADO, PENDIENTE, CANCELADO i DEVUELTO. Canals: B2B, B2C i marketplace, sense distingir majúscules. Un valor desconegut rebutja la capçalera, sense correspondències aproximades. La quantitat és un enter exacte diferent de zero: `2,0`/`2.0` → 2; es rebutgen fraccions i desbordaments. Només DEVUELTO admet negatius, conservant el signe. El preu unitari positiu és obligatori.
 
-Firma `order-line-v1`: SHA-256 de pedido/SKU/cantidad/precio/descuento canónicos, sin fila física. Repetidas por firma se deduplican y auditan; dos líneas legítimas iguales son indistinguibles sin ID ERP. La corrección de cliente produjo v2; las reglas de catálogo producen v3 sin cambiar firma ni estados elegibles.
+Descomptes: `10%`, `10` i `0,1` → 0.10. Amb `%`, es divideix per 100; sense, [0,1) és ràtio i [1,100] són punts percentuals (`1` → 1%). La ràtio final és [0,1], amb fins a sis decimals; un buit es converteix en zero amb avís. No es reparen sufixos monetaris del catàleg en comandes, XML, quantitats, descomptes o EAN.
 
-SKU válido de pedido sin catálogo aceptado crea/reutiliza histórico mínimo: comercial false, histórico true, costes/PVP/stock NULL. Conservar ventas/FKs. Registrar HISTORICAL_PRODUCT_CREATED solo al crear efectivamente; distinguir SKU ausente de catálogo rechazado. Si regresa al catálogo, promocionar mismo ID. Stock o líneas rechazadas no crean históricos. [ADR 002/003](docs/adr/README.md).
+La signatura `order-line-v1` és SHA-256 de comanda/SKU/quantitat/preu/descompte canònics, sense fila física. Les signatures repetides es dedupliquen i s'auditen; dues línies legítimes idèntiques són indistingibles sense ID del sistema ERP. La correcció de client va produir v2 i les regles de catàleg, v3, sense canviar signatura ni estats elegibles.
 
-## Stock
+Un SKU vàlid d'una comanda sense catàleg acceptat crea o reutilitza un històric mínim: comercial false, històric true i cost/PVP/estoc NULL. Es conserven vendes i FKs. HISTORICAL_PRODUCT_CREATED es registra només en crear-lo, distingint SKU absent i catàleg rebutjat. Si torna al catàleg, es promociona el mateix ID. Ni l'estoc ni les línies rebutjades creen històrics. [ADR 002/003](docs/adr/README.md).
 
-API completa, todas las páginas y reintentos acotados. Extracción incompleta → STOCK_FETCH_FAILED y ningún cambio publicado. Un SKU solo en API no crea producto; observación rechazada UNKNOWN_PRODUCT_SKU.
+## Estoc
 
-Cantidad/reserva: enteros exactos de 0 al máximo BIGINT firmado, sin booleanos/ausentes/fracciones. Fecha con zona, convertible a UTC/DATETIME; inválida rechaza observación. `reserved > quantity` avisa y conserva ambas; no se resta para calcular stock físico.
+S'extreu tota l'API, amb totes les pàgines i reintents acotats. Una extracció incompleta genera STOCK_FETCH_FAILED i no publica cap canvi. Un SKU present només a l'API no crea un producte; l'observació es rebutja amb UNKNOWN_PRODUCT_SKU.
 
-Clave SKU/almacén: repeticiones normalizadas iguales → EXACT_DUPLICATE; versiones antiguas → SUPERSEDED_STOCK, ambas deduplicadas. Elegir actualización más reciente. Valores contradictorios al mismo instante rechazan observaciones e invalidan el total del SKU, aunque haya otra versión posterior; no recuperar arbitrariamente una anterior.
+Quantitat i reserva són enters exactes entre zero i el màxim BIGINT amb signe, sense booleans, absències ni fraccions. La data ha de tenir zona i ser convertible a UTC/DATETIME; si és invàlida, es rebutja l'observació. `reserved > quantity` genera avís i conserva els dos valors; no es resta la reserva per calcular estoc físic.
 
-Conservar almacenes válidos aunque alguno falle; total/fecha NULL y estado invalid evita suma parcial. Sin observaciones: unknown y total NULL. Solo conjunto válido completo: known, suma quantity, incluido cero real. Suma desbordada: aviso NUMERIC_OUT_OF_RANGE y total inválido. `stock_as_of` es fecha máxima aceptada, no frescura común garantizada.
+Per clau SKU/magatzem, les repeticions normalitzades iguals generen EXACT_DUPLICATE i les versions antigues, SUPERSEDED_STOCK; es dedupliquen totes dues. Es tria l'actualització més recent. Valors contradictoris al mateix instant rebutgen les observacions i invaliden el total del SKU, encara que hi hagi una versió posterior; no es recupera arbitràriament una versió antiga.
 
-## Métricas, carga y conteos
+Es conserven els magatzems vàlids encara que algun falli; total/data NULL i estat invalid eviten una suma parcial. Sense observacions, l'estat és unknown i el total, NULL. Només un conjunt complet vàlid queda known i suma quantity, inclòs zero real. Una suma desbordada genera NUMERIC_OUT_OF_RANGE i total invàlid. `stock_as_of` és la data màxima acceptada, no una garantia de frescor comuna.
 
-Facturación operativa: ENVIADO/COMPLETADO, líneas positivas aceptadas, desde 01/04/2025 hasta `as_of` inclusivo. Excluir pendientes/cancelados/devueltos. Conservar devoluciones sin compensarlas automáticamente: falta vínculo con venta original. Parciales aportan solo líneas aceptadas.
+## Mètriques, càrrega i recomptes
 
-Neto unitario a cuatro decimales; importe y coste extendido de línea a dos con ROUND_HALF_UP antes de sumar. Importe = cantidad × precio pedido × (1−descuento). Margen conocido = importe − cantidad × neto actual redondeado. Coste NULL no es gratis: ventas sin coste aparte y cobertura = ventas con coste / total (NULL si total cero). Margen negativo legítimo se conserva. Ticket = ventas/pedidos distintos elegibles, NULL sin pedidos.
+La facturació operativa inclou ENVIADO/COMPLETADO i línies positives acceptades des de l'01/04/2025 fins a `as_of`, inclòs. Se n'exclouen pendents, cancel·lades i retornades. Es conserven devolucions sense compensar-les automàticament perquè falta la relació amb la venda original. Les comandes parcials aporten només les línies acceptades.
 
-Canales/categorías reconcilian con total; histórico sin categoría tiene grupo explícito. Top 10 por facturación descendente y SKU ascendente en empates. Completar todos los meses desde abril de 2025 con cero real; mes actual parcial. Bajo stock: vigente, físico conocido <5 y venta elegible en ventana inclusiva de tres meses naturales, ajustando día al último válido. Make usa mes anterior completo y esa misma consulta de bajo stock.
+El net unitari es calcula a quatre decimals; l'import i el cost estès de cada línia, a dos amb ROUND_HALF_UP abans de sumar. Import = quantitat × preu de comanda × (1−descompte). Marge conegut = import − quantitat × net actual arrodonit. Un cost NULL no és gratuït: les vendes sense cost s'informen separadament i cobertura = vendes amb cost / total, NULL si el total és zero. Es conserva un marge negatiu legítim. Tiquet mitjà = vendes/comandes elegibles diferents, NULL si no hi ha comandes.
 
-Publicar instantáneas completas atómicamente, con reconciliación y un escritor; no TRUNCATE ni FKs desactivadas. Fuente cambiada durante lectura, snapshot vacío, MySQL/fallo inesperado → abortar con motivo saneado. Mismo input/reglas conserva negocio; auditoría/timestamps crecen.
+Canals i categories reconcilien amb el total; els històrics sense categoria tenen un grup explícit. El top 10 s'ordena per facturació descendent i SKU ascendent en empats. Es completen tots els mesos des d'abril de 2025 amb zero real; el mes actual és parcial. Estoc baix: producte vigent, físic conegut <5 i venda elegible en una finestra inclusiva de tres mesos naturals, ajustant el dia a l'últim vàlid. Make usa el mes anterior complet i la mateixa consulta d'estoc baix.
 
-Por fuente completada: `leídas = aceptadas + rechazadas + deduplicadas`. Una fila rechazada cuenta una vez aunque tenga varios motivos; los motivos pueden sumar más que filas. Avisos, campos descartados y normalizaciones no inflan rechazos. Resumen Make solo para completed, persistido al publicar: alerta si filas rechazadas > umbral o hay bajo stock. Fallos completos siguen failed en auditoría local; no enviar ventas viejas con éxito ficticio.
+Es publiquen instantànies completes atòmicament, amb reconciliació i un sol escriptor; sense TRUNCATE ni FKs desactivades. Una font que canvia durant la lectura, una instantània buida o un error MySQL/inesperat impedeixen publicar, amb motiu sanejat. Les mateixes entrades i regles conserven el negoci; auditoria i timestamps creixen.
 
-Supuestos pendientes de confirmación comercial: EUR/base fiscal comparable, coste actual como estimación histórica, descuentos aditivos, stock físico sin reservas, Europe/Madrid y autoridad de futuras exportaciones/identidad de línea ERP. No son resultados de pruebas técnicas.
+Per font completada: `llegides = acceptades + rebutjades + deduplicades`. Una fila rebutjada compta una vegada encara que tingui diversos motius; els motius poden sumar més que les files. Avisos, camps descartats i normalitzacions no inflen els rebuigs. El resum Make només es genera per completed i es persisteix amb la publicació: alerta si les files rebutjades superen el llindar o hi ha estoc baix. Els errors complets queden failed a l'auditoria local; no s'envien vendes antigues com un èxit fictici.
+
+Supòsits pendents de confirmació comercial: EUR i base fiscal comparable, cost actual com a estimació històrica, descomptes additius, estoc físic sense restar reserves, Europe/Madrid i autoritat de futures exportacions/identitat de línia ERP. No són resultats de proves tècniques.

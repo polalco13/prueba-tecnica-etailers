@@ -4,7 +4,7 @@ Versión fijada: **4.5.1**, licencia MIT incluida en `Chart.js-LICENSE.md`.
 Se usa el bundle UMD para dibujar las series ya calculadas por SQL, sin Node,
 bundler ni peticiones externas desde el navegador. La biblioteca estándar no
 incluye un gráfico interactivo con ejes, leyenda y tooltips; esta es la única
-dependencia JavaScript añadida en F9, prevista en TECH_SPEC.
+dependencia JavaScript añadida en F9, documentada en [SOLUCION](../../../../SOLUCION.md).
 
 Origen: paquete oficial `https://registry.npmjs.org/chart.js/-/chart.js-4.5.1.tgz`,
 archivos `package/dist/chart.umd.min.js` y `package/LICENSE.md` sin modificaciones.

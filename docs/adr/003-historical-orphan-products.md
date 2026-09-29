@@ -1,26 +1,26 @@
-# 003 — Productos históricos mínimos para conservar relaciones
+# 003 — Productes històrics mínims per conservar les relacions
 
-## Estado
+## Estat
 
-Implementado en F6 y verificado en F7. Tras la corrección de capitalización de ADR 004, las cargas reales v2 conservan 44 históricos (35 ausentes del catálogo y 9 rechazados), relacionados con 118 líneas aceptadas, sin FKs huérfanas. Esas cifras son históricas de reglas v2: [evidencia F12](../evidence/f12/README.md). Con las reglas v3 se recuperan cinco comerciales y quedan 39 históricos, verificados en [F13](../evidence/f13/README.md). F8 verificó margen con coste desconocido separado y cobertura visible; F9 verifica su presentación, los históricos etiquetados en rankings y su exclusión del catálogo comercial.
+Implementat en F6 i verificat en F7. Després de corregir la capitalització amb l'ADR 004, les càrregues reals v2 conserven 44 històrics: 35 absents del catàleg i 9 rebutjats, relacionats amb 118 línies acceptades i sense FKs òrfenes. Aquestes xifres són històriques de v2: [evidència F12](../evidence/f12/README.md). Amb v3 es recuperen cinc comercials i queden 39 històrics, verificats en [F13](../evidence/f13/README.md). F8 va verificar marge amb cost desconegut separat i cobertura visible; F9 en verifica la presentació, els històrics etiquetats als rànquings i l'exclusió del catàleg comercial.
 
-## Contexto
+## Context
 
-El README exige FKs reales entre líneas y productos y advierte de SKU que ya no están en catálogo. Rechazar todas esas líneas reduciría la cobertura del análisis de ventas. El origen no proporciona nombre, categoría ni coste histórico recuperables para esos SKU.
+El README exigeix FKs reals entre línies i productes i adverteix de SKU que ja no són al catàleg. Rebutjar totes aquestes línies reduiria la cobertura de l'anàlisi de vendes. La font no proporciona nom, categoria ni cost històric recuperables per a aquests SKU.
 
-## Decisión
+## Decisió
 
-Crear/reutilizar un producto identificado por SKU para cada línea de pedido válida que no tenga producto comercial aceptado. Marcar `is_historical=true`, `in_catalog=false`; campos desconocidos a NULL, sin precio/stock inventados. La etiqueta visual de histórico no se atribuye al proveedor. Registrar procedencia al crear, incluyendo si el SKU estaba ausente o si su fila de catálogo fue rechazada. Reutilizarlo actualiza su referencia al run sin repetir `HISTORICAL_PRODUCT_CREATED`: es un evento de creación, no un conteo de históricos presentes.
+Crear o reutilitzar un producte identificat per SKU per a cada línia de comanda vàlida sense producte comercial acceptat. Marcar `is_historical=true`, `in_catalog=false`; els camps desconeguts queden a NULL, sense preu ni estoc inventats. L'etiqueta visual d'històric no s'atribueix al proveïdor. Registrar procedència en crear-lo, inclòs si el SKU era absent o si la fila de catàleg va ser rebutjada. Reutilitzar-lo actualitza la referència a l'execució sense repetir HISTORICAL_PRODUCT_CREATED: és un esdeveniment de creació, no un recompte d'històrics presents.
 
-Todas las líneas conservan una FK no nula. Históricos contribuyen a ventas; se agrupan como sin categoría si falta ese atributo. Coste desconocido no participa en margen conocido y su facturación queda visible mediante cobertura. No crear productos solo por recibir un SKU desconocido en stock. Si el SKU regresa al catálogo, promover el mismo ID.
+Totes les línies conserven una FK no nul·la. Els històrics contribueixen a vendes i s'agrupen com a sense categoria si falta aquest atribut. El cost desconegut no participa en el marge conegut i la seva facturació queda visible mitjançant cobertura. No es creen productes només perquè l'estoc contingui un SKU desconegut. Si el SKU torna al catàleg, es promociona el mateix ID.
 
-## Alternativas consideradas
+## Alternatives considerades
 
-- Rechazar líneas huérfanas: sencillo y válido si se declara, pero pierde histórico útil.
-- FK nullable: permite guardar línea, pero debilita el objetivo de relación real y complica estadísticas.
-- Un producto genérico para todos: pierde identidad por SKU y rankings.
-- Imputar nombre/coste/PVP desde otros productos: inventa información y distorsiona margen.
+- Rebutjar línies òrfenes: senzill i vàlid si es declara, però perd històric útil.
+- FK nullable: permet guardar la línia, però debilita l'objectiu de relació real i complica estadístiques.
+- Un producte genèric per a tots: perd la identitat per SKU i els rànquings.
+- Imputar nom, cost o PVP des d'altres productes: inventa informació i distorsiona el marge.
 
-## Consecuencias
+## Conseqüències
 
-Los campos que un producto comercial exige serán nullable para históricos con controles coherentes. UI y consultas deben mostrar la distinción, no convertir NULL a cero. El catálogo comercial excluye históricos por defecto; los análisis de pedidos los conservan. El margen es una estimación de la parte con coste actual conocido, no una afirmación sobre rentabilidad histórica completa.
+Els camps obligatoris per a un producte comercial són nullable per als històrics, amb controls coherents. La interfície i les consultes mostren la distinció i no converteixen NULL a zero. El catàleg comercial exclou històrics per defecte; les anàlisis de comandes els conserven. El marge és una estimació de la part amb cost actual conegut, no una afirmació de rendibilitat històrica completa.
