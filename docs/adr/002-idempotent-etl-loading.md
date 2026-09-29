@@ -1,33 +1,33 @@
-# 002 — Carga idempotente por instantáneas completas
+# 002 — Càrrega idempotent per instantànies completes
 
-## Estado
+## Estat
 
-Implementado en F4–F6 y verificado en F7 contra MySQL 8: repetición de cuatro fuentes, rollback y exclusión de escritores concurrentes. Evidencia final en [SOLUCION](../../SOLUCION.md#verificación-realizada). El usuario aclara que el CSV es el fichero recibido para la prueba: se procesa completo como dataset del ejercicio (decisión técnica), sin atribuirle un contrato confirmado sobre futuras exportaciones del ERP. La entrega a Make corresponde a F10.
+Implementada en F4–F6 i verificada en F7 contra MySQL 8: repetició de quatre fonts, rollback i exclusió d'escriptors concurrents. Evidència final a [SOLUCION](../../SOLUCION.md#verificación-realizada). L'usuari va aclarir que el CSV és el fitxer rebut per a la prova: es processa complet com a conjunt de l'exercici, sense atribuir-li un contracte confirmat sobre futures exportacions del sistema ERP. L'entrega a Make correspon a F10.
 
-## Contexto
+## Context
 
-El README exige repetir el ETL sin duplicar productos ni pedidos. Hay duplicados en origen y las líneas no tienen ID estable. Un simple INSERT duplica datos; un upsert de hash sin reconciliación acumularía versiones antiguas cuando una línea cambie. La API puede fallar después de algunas páginas.
+El README exigeix repetir l'ETL sense duplicar productes ni comandes. Hi ha duplicats d'origen i les línies no tenen ID estable. Un INSERT simple duplica dades; un upsert per hash sense reconciliació acumularia versions antigues quan una línia canviés. L'API pot fallar després d'algunes pàgines.
 
-## Decisión
+## Decisió
 
-Usar claves únicas naturales para SKU y pedido, y firma canónica versionada SHA-256 de pedido/SKU/cantidad/precio/descuento para líneas. Deduplicar firmas iguales con trazabilidad, declarando que no se distinguen dos líneas legítimas idénticas. Publicar instantáneas completas: upserts de entidades, eliminación explícita de líneas/pedidos que ya no pertenezcan al conjunto aceptado y actualización de stock por almacén. Productos ausentes pasan a históricos, no se borran.
+Usar claus naturals úniques per a SKU i comanda, i una signatura canònica versionada SHA-256 de comanda/SKU/quantitat/preu/descompte per a línies. Deduplicar signatures iguals amb traçabilitat, declarant que no es distingeixen dues línies legítimes idèntiques. Publicar instantànies completes: upserts d'entitats, eliminació explícita de línies i comandes que ja no pertanyen al conjunt acceptat i actualització d'estoc per magatzem. Els productes absents passen a històrics, no s'esborren.
 
-Extraer y validar antes de una transacción MySQL de negocio; snapshot ilegible, extracción incompleta o fichero inesperadamente vacío abortan. Publicar las cuatro fuentes de manera atómica. Solo una ejecución concurrente. Rechazos y runs fallidos quedan auditados separadamente; runs completados se confirman con el negocio. Enviar Make después del commit, con run_id reutilizable para reintento de entrega.
+Extreure i validar abans d'una transacció MySQL de negoci; una instantània il·legible, una extracció incompleta o un fitxer inesperadament buit impedeixen publicar. Les quatre fonts es publiquen atòmicament, amb una sola execució concurrent. Els rebuigs i les execucions fallides s'auditen separadament; les execucions completades es confirmen amb el negoci. Make s'envia després del commit, amb un run_id reutilitzable per reintentar l'entrega.
 
-Con entradas/reglas idénticas, el contenido de negocio permanece idéntico. Auditoría/timestamps/notificaciones por ejecución pueden aumentar. Comparar mediante valores y claves de negocio, excluyendo metadatos del run.
+Amb entrades i regles idèntiques, el contingut de negoci és idèntic. Auditoria, timestamps i notificacions per execució poden augmentar. La comparació usa valors i claus de negoci i exclou metadades de l'execució.
 
-## Alternativas consideradas
+## Alternatives considerades
 
-- INSERT ciego: incumple idempotencia.
-- Hash por línea sin borrar firmas antiguas: no gestiona correcciones.
-- Número físico de fila como identidad: cambia al reordenar o insertar filas en el CSV.
-- Conservar multiplicidad con índice de ocurrencia: preserva líneas legítimas iguales, pero también duplicados accidentales; alternativa si el proveedor confirma esa semántica.
-- ID de línea del ERP: preferible cuando exista, no está en la fuente actual.
-- TRUNCATE y recarga: dificulta FKs y publicación atómica; no usar ni borrar volumen para reiniciar.
-- Incremental desde el principio: exige watermark, bajas y reglas de reconciliación no necesarias para el primer objetivo; reservar a F11.
+- INSERT sense comprovacions: incompleix la idempotència.
+- Hash per línia sense esborrar signatures antigues: no gestiona correccions.
+- Número físic de fila com a identitat: canvia en reordenar o inserir files al CSV.
+- Conservar multiplicitat amb índex d'ocurrència: preserva línies legítimes iguals, però també duplicats accidentals; alternativa si el proveïdor confirma aquesta semàntica.
+- ID de línia del sistema ERP: preferible quan existeixi, però no és a la font actual.
+- TRUNCATE i recàrrega: dificulta FKs i publicació atòmica; no s'usa ni s'esborra el volum per reiniciar.
+- Incremental des del principi: exigeix marca de progrés, baixes i regles de reconciliació innecessàries per al primer objectiu; es va reservar a l'opcional F11.
 
-## Consecuencias
+## Conseqüències
 
-Para este ejercicio se mantiene la deduplicación: el README advierte de filas repetidas y, tras corregir la capitalización del cliente en ADR 004, las ocho líneas deduplicadas del CSV real coinciden en las nueve columnas originales. Se conserva una ocurrencia y se registran motivo, fila descartada y fila conservada. Esto apoya el criterio elegido, pero no demuestra que un ERP real nunca emita dos líneas legítimas idénticas; antes de aceptar exportaciones futuras habría que confirmar su semántica o pedir un ID estable de línea. No se añade multiplicidad ni carga incremental sin esa información.
+Es manté la deduplicació per a aquest exercici: el README adverteix de files repetides i, després de corregir la capitalització del client a l'ADR 004, les vuit línies deduplicades del CSV real coincideixen en les nou columnes originals. Es conserva una ocurrència i se'n registren motiu, fila descartada i fila conservada. Això dona suport al criteri, però no demostra que un ERP real mai emeti dues línies legítimes idèntiques. Abans d'acceptar futures exportacions caldria confirmar-ne la semàntica o demanar un ID estable de línia. Sense aquesta informació no s'afegeixen multiplicitat ni càrrega incremental.
 
-Se necesita reconciliar el conjunto aceptado, no solo escribir registros. Una fila que deja de ser válida no debe conservar silenciosamente el valor anterior en la versión actual. Tests cubren repetición, corrección, desaparición, fallo y concurrencia. La política de deduplicación y autoridad del snapshot es un supuesto de negocio relevante que debe confirmarse y permanecer visible. Para cinco millones de líneas se preferirán staging y procesamiento por lotes sin cambiar el contrato externo de publicación.
+Cal reconciliar el conjunt acceptat, no només escriure registres. Una fila que deixa de ser vàlida no conserva silenciosament el valor anterior en la versió actual. Els tests cobreixen repetició, correcció, desaparició, fallada i concurrència. La política de deduplicació i l'autoritat de la instantània són supòsits de negoci que s'han de confirmar i mantenir visibles. Per a cinc milions de línies es preferirien staging i lots sense canviar el contracte extern de publicació.

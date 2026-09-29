@@ -1,27 +1,27 @@
-# 004 — Cliente de cabecera sin distinguir mayúsculas
+# 004 — Client de capçalera sense distingir majúscules
 
-## Estado
+## Estat
 
-Aceptado por el usuario el 24/09/2026: las variantes de mayúsculas/minúsculas corresponden al mismo cliente. Implementado como corrección de F6–F7; evidencia final en [SOLUCION](../../SOLUCION.md#verificación-realizada). No introduce una tabla ni una identidad global de clientes.
+Acceptat per l'usuari el 24/09/2026: les variants de majúscules i minúscules corresponen al mateix client. Implementat com a correcció de F6–F7; evidència final a [SOLUCION](../../SOLUCION.md#verificación-realizada). No introdueix cap taula ni una identitat global de clients.
 
-## Contexto
+## Context
 
-F6 comparaba literalmente el cliente tras normalizar Unicode y espacios. F7 encontró 81 pedidos con diferencias solo de capitalización: se rechazaban sus 324 filas por `CONFLICTING_ORDER_HEADER`. La regla confundía variaciones de escritura con una contradicción en la cabecera. El usuario confirmó expresamente que representan al mismo cliente.
+F6 comparava literalment el client després de normalitzar Unicode i espais. F7 va trobar 81 comandes amb diferències només de capitalització: se'n rebutjaven les 324 files amb CONFLICTING_ORDER_HEADER. La regla confonia variants d'escriptura amb una contradicció de capçalera. L'usuari va confirmar expressament que representen el mateix client.
 
-## Decisión
+## Decisió
 
-Dentro de cada pedido, normalizar NFC, extremos/espacios y centinelas como hasta ahora; comparar el cliente no vacío mediante `casefold()`. Conservar como texto de presentación la primera grafía normalizada válida y no vacía, en orden del CSV. No aplicar `title()` ni inventar una capitalización.
+Dins de cada comanda, normalitzar NFC, extrems, espais i sentinelles com abans; comparar el client no buit amb `casefold()`. Conservar com a text de presentació la primera grafia normalitzada vàlida i no buida, en ordre del CSV. No aplicar `title()` ni inventar una capitalització.
 
-Los vacíos heredan esa etiqueta si hay una sola clave equivalente, con el aviso existente `HEADER_VALUE_INHERITED`. Todos vacíos mantienen `NULL`. Dos claves diferentes siguen rechazando la cabecera completa: no se eliminan tildes, puntuación ni palabras y no se hace comparación aproximada. Validar longitud antes de comparar; un valor inválido no se oculta por otra variante válida.
+Els buits hereten l'etiqueta si hi ha una sola clau equivalent, amb l'avís existent HEADER_VALUE_INHERITED. Si tots són buits, mantenen NULL. Dues claus diferents continuen rebutjant tota la capçalera: no s'eliminen accents, puntuació ni paraules, ni es fa comparació aproximada. Es valida la longitud abans de comparar; un valor invàlid no s'oculta amb una altra variant vàlida.
 
-Versionar el cambio de `catalog-stock-orders-v1` a `catalog-stock-orders-v2`. La firma `order-line-v1` no cambia: no incluye cliente. Repetir la validación completa y registrar sus nuevos contadores, conservando la evidencia anterior como histórica.
+Versionar el canvi de `catalog-stock-orders-v1` a `catalog-stock-orders-v2`. La signatura `order-line-v1` no canvia: no inclou client. Repetir la validació completa i registrar els nous recomptes, conservant l'evidència anterior com a històrica.
 
-## Alternativas consideradas
+## Alternatives considerades
 
-- Comparación literal: produjo rechazos de variantes equivalentes confirmadas.
-- Convertir todo a mayúsculas al persistir: innecesario para comparar y pierde la grafía de presentación.
-- Quitar tildes o usar similitud: podría unir clientes distintos y excede la confirmación recibida.
+- Comparació literal: rebutjava variants equivalents confirmades.
+- Convertir tot a majúscules en persistir: innecessari per comparar i perd la grafia de presentació.
+- Treure accents o usar similitud: podria unir clients diferents i excedeix la confirmació rebuda.
 
-## Consecuencias
+## Conseqüències
 
-Las líneas de esas cabeceras pasan a validarse individualmente; no se prometen 324 líneas nuevas, pues pueden existir otros errores o duplicados. Se conserva la política de pedidos parciales. El resultado es determinista con el mismo archivo; reordenar filas equivalentes puede cambiar la grafía mostrada, sin cambiar la firma de línea. La auditoría identifica la versión de reglas y sigue excluyendo nombres de clientes de extractos/logs.
+Les línies d'aquestes capçaleres es validen individualment; no es prometen 324 línies noves, perquè poden tenir altres errors o duplicats. Es conserva la política de comandes parcials. El resultat és determinista amb el mateix fitxer; reordenar files equivalents pot canviar la grafia mostrada sense canviar la signatura de línia. L'auditoria identifica la versió de regles i continua excloent noms de clients dels extractes i logs.

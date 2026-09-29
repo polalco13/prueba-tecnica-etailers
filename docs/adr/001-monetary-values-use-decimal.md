@@ -1,25 +1,25 @@
-# 001 — Dinero con Decimal y DECIMAL
+# 001 — Diners amb Decimal i DECIMAL
 
-## Estado
+## Estat
 
-Implementado para normalización/persistencia en F1–F7 y para métricas SQL en F8; las pruebas MySQL verifican redondeo de importes y costes por línea, incluido medio céntimo. EUR, IVA y comparabilidad comercial siguen pendientes de confirmación.
+Implementat per a normalització i persistència en F1–F7 i per a mètriques SQL en F8. Les proves MySQL verifiquen l'arrodoniment d'imports i costos per línia, inclòs mig cèntim. EUR, IVA i comparabilitat comercial continuen pendents de confirmació.
 
-## Contexto
+## Context
 
-El README exige precios netos, descuentos y métricas económicas. Las fuentes contienen comas, puntos y símbolos, y combinar descuentos introduce decimales. Una representación binaria aproximada y redondeos distintos entre ETL/web/SQL harían difícil reconciliar resultados.
+El README exigeix preus nets, descomptes i mètriques econòmiques. Les fonts contenen comes, punts i símbols, i combinar descomptes introdueix decimals. Una representació binària aproximada i arrodoniments diferents entre ETL, web i SQL dificultarien la reconciliació.
 
-## Decisión
+## Decisió
 
-Parsear texto directamente a `decimal.Decimal`; persistir importes unitarios en `DECIMAL(18,4)` y ratios en `DECIMAL(9,6)`. Calcular coste neto a cuatro decimales y extensión monetaria de cada línea a dos, con `ROUND_HALF_UP`, antes de sumar. Validar desbordamientos y valores no finitos. Serializar dinero como string decimal en JSON; Chart.js solo dibuja cifras ya calculadas y no recalcula KPIs.
+Llegir el text directament amb `decimal.Decimal`; persistir imports unitaris en `DECIMAL(18,4)` i ràtios en `DECIMAL(9,6)`. Calcular el cost net a quatre decimals i l'import estès de cada línia a dos, amb `ROUND_HALF_UP`, abans de sumar. Validar desbordaments i valors no finits. Serialitzar diners com a text decimal en JSON; Chart.js dibuixa xifres ja calculades i no recalcula els indicadors.
 
-Aplicar la gramática de DATA_RULES para no confundir miles con decimales. Mantener la misma política al calcular en MySQL y verificar equivalencia con casos independientes. EUR y base fiscal comparable son supuestos pendientes de confirmación, no conclusiones de este ADR.
+Aplicar la gramàtica de DATA_RULES per no confondre milers amb decimals. Mantenir la mateixa política a MySQL i verificar-ne l'equivalència amb casos independents. EUR i base fiscal comparable són supòsits pendents de confirmació, no conclusions d'aquest ADR.
 
-## Alternativas consideradas
+## Alternatives considerades
 
-- Float: simple, pero introduce aproximaciones innecesarias y contradice el encargo.
-- Enteros en céntimos: exactos para totales, menos cómodos para precios unitarios con cuatro decimales y porcentajes; requieren otra escala intermedia.
-- Redondear solo el total: reduce operaciones, pero difiere de sumar importes de línea redondeados. Se prefiere conciliación por línea explícita.
+- Float: simple, però introdueix aproximacions innecessàries i contradiu els criteris de precisió del projecte.
+- Enters en cèntims: exactes per als totals, menys còmodes per a preus unitaris amb quatre decimals i percentatges; necessiten una altra escala intermèdia.
+- Arrodonir només el total: redueix operacions, però difereix de sumar imports de línia arrodonits. Es prefereix una conciliació explícita per línia.
 
-## Consecuencias
+## Conseqüències
 
-Los tests deben cubrir límites y medios céntimos, y rechazar conversiones vía float. Se documenta el punto de redondeo; cambiarlo puede alterar métricas y exige revisión de reglas/tests. No resuelve por sí mismo IVA ni ausencia de coste histórico.
+Els tests cobreixen límits i mitjos cèntims i rebutgen conversions via float. Canviar el punt d'arrodoniment pot alterar les mètriques i exigeix revisar regles i tests. La decisió no resol per si sola l'IVA ni l'absència de cost històric.

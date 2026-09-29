@@ -1,9 +1,9 @@
-# Prueba técnica — Integración y Automatizaciones
+# Prova tècnica — Integració i automatitzacions
 
-Solución para integrar las cuatro fuentes en MySQL, con auditoría de datos, catálogo y panel de negocio. Incluye una automatización en Make que registra las ejecuciones completadas en Google Sheets y envía alertas por Gmail cuando corresponde.
+Solució per integrar les quatre fonts en MySQL, amb auditoria de dades, catàleg i panell de negoci. Inclou una automatització amb Make que registra les execucions completades a Google Sheets i envia alertes per Gmail quan correspon.
 
-- [SOLUCION.md](SOLUCION.md): arranque paso a paso, reglas aplicadas, verificación y límites de la solución.
-- [Make](make/README.md): blueprint exportado, configuración del escenario y evidencia de una ejecución correcta.
+- [SOLUCION.md](SOLUCION.md): arrencada pas a pas, regles aplicades, verificació i límits de la solució.
+- [Make](make/README.md): blueprint exportat, configuració de l'escenari i evidència d'una execució correcta.
 
 ---
 

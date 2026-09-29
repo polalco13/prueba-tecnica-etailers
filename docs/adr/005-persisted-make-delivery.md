@@ -1,29 +1,29 @@
-# 005 — Resumen persistido y entrega independiente a Make
+# 005 — Resum persistit i entrega independent a Make
 
-## Estado
+## Estat
 
-Implementada y verificada en F10, integrada en main mediante PR 5 (`ff53b1c`). Resumen, cliente y reenvío probados con MySQL temporal y HTTP simulado; ETL real distribuido a Sheets/Gmail, fila/marca y reenvío bloqueado acreditados. A09 satisfecho; blueprint saneado, capturas y guía disponibles. El usuario decidió terminar las pruebas manuales. Recuperación de destinos y configuración/ejecución de la copia importada no verificadas; importación del archivo confirmada textualmente. [Límites de cierre](../../make/README.md#cierre-y-límites-de-verificación).
+Implementat i verificat en F10, integrat a main amb PR 5 (`ff53b1c`). Resum, client i reenviament provats amb MySQL temporal i HTTP simulat; ETL real distribuït a Sheets/Gmail, amb fila, marca i bloqueig de reenviament acreditats. A09 satisfet; blueprint sanejat, captures i guia disponibles. L'usuari va decidir acabar les proves manuals. La recuperació de destinataris i la configuració/execució de la còpia importada no estan verificades; la importació del fitxer es va confirmar textualment. [Límits de tancament](../../make/README.md#cierre-y-límites-de-verificación).
 
-## Contexto
+## Context
 
-La carga confirmada debe sobrevivir a un fallo de Make. Un reenvío días después no debe mezclar los contadores del run anterior con ventas o stock actuales. Un HTTP 2xx puede confirmar solo que Make ha encolado el webhook, y un timeout puede ocurrir después de ejecutar un destino.
+La càrrega confirmada ha de sobreviure a un error de Make. Un reenviament dies després no ha de barrejar els recomptes de l'execució anterior amb vendes o estoc actuals. Un HTTP 2xx pot confirmar només que Make ha posat el webhook a la cua, i un timeout pot arribar després d'executar un destinatari.
 
-## Decisión
+## Decisió
 
-- Guardar `etl-summary-v1` en `etl_runs.make_summary` en la misma transacción que completa las cuatro fuentes. Se calcula antes del commit y bajo el lock del escritor; el POST siempre ocurre después. Conserva fecha analítica, zona, contadores, umbral y cifras como texto Decimal, sin clientes ni credenciales.
-- Solo los runs completados tienen resumen enviable en v1. Los fallos ETL conservan auditoría `failed` y salida 1; no se envían ventas viejas como si correspondieran al intento fallido. Alertar sobre fallos completos requeriría otro contrato explícito. La condición de calidad de una carga completada es `rows_rejected > threshold OR low_stock_count > 0`, con umbral inicial configurable 0. Duplicados y avisos no suman a rechazos.
-- Sin URL configurada se guarda el resumen y no se envía. Con URL, un POST por invocación, sin redirecciones ni proxies del entorno, con timeout por operación de red (10 s por defecto). No se hace un reintento automático de una operación con posibles efectos externos: el CLI permite reenvío explícito con el mismo `run_id` y JSON.
-- Estados de entrega: `not_applicable` (no configurada), `pending` (pendiente/intento iniciado), `accepted` (HTTP 2xx), `failed` (otro HTTP), `uncertain` (excepción de red). Intentos y fechas se confirman antes/después del HTTP. Una caída deja `pending` con intentos > 0; revisar Make antes de reenviar. Si falla la escritura de la respuesta HTTP, la carga ya publicada no se marca failed; el CLI informa salida 2.
-- Un lock MySQL por run impide envíos locales concurrentes. Un resumen accepted no vuelve a enviarse salvo `--force`, que se reserva para recuperar destinos después de revisar Make. Nunca se reconstruyen resúmenes de runs antiguos sin JSON guardado.
-- En Make, procesar webhooks secuencialmente y buscar el `run_id` en Sheets antes de añadir una fila. Email requiere una marca separada de entrega; la existencia de una fila de histórico no demuestra que se enviara el correo. Sigue existiendo una ventana de duplicación si Sheets o email completan el efecto pero se pierde la respuesta. No se promete exactamente una vez.
+- Guardar `etl-summary-v1` a `etl_runs.make_summary` en la mateixa transacció que completa les quatre fonts. Es calcula abans del commit i sota el bloqueig de l'escriptor; el POST sempre es fa després. Conserva data analítica, zona, recomptes, llindar i imports com a text Decimal, sense clients ni credencials.
+- Només les execucions completades tenen resum enviable en v1. Els errors de l'ETL conserven auditoria failed i sortida 1; no s'envien vendes antigues com si fossin de l'intent fallit. Alertar d'errors complets exigiria un altre contracte explícit. La condició de qualitat d'una càrrega completada és `rows_rejected > threshold OR low_stock_count > 0`, amb llindar inicial configurable 0. Duplicats i avisos no sumen als rebuigs.
+- Sense URL configurada es guarda el resum i no s'envia. Amb URL es fa un POST per invocació, sense redireccions ni proxies de l'entorn, amb timeout per operació de xarxa de 10 segons per defecte. No es reintenta automàticament una operació amb possibles efectes externs: el CLI permet reenviament explícit amb el mateix run_id i JSON.
+- Estats d'entrega: `not_applicable` (no configurada), `pending` (pendent o intent iniciat), `accepted` (HTTP 2xx), `failed` (altre HTTP) i `uncertain` (excepció de xarxa). Intents i dates es confirmen abans i després de l'HTTP. Una caiguda deixa pending amb intents >0; cal revisar Make abans de reenviar. Si falla l'escriptura de la resposta HTTP, la càrrega publicada no es marca failed; el CLI informa sortida 2.
+- Un bloqueig MySQL per execució impedeix enviaments locals concurrents. Un resum accepted no es torna a enviar sense `--force`, reservat per recuperar destinataris després de revisar Make. Mai es reconstrueixen resums d'execucions antigues sense JSON guardat.
+- A Make, processar webhooks seqüencialment i buscar run_id a Sheets abans d'afegir una fila. El correu necessita una marca separada d'entrega; l'existència de la fila d'històric no demostra que s'hagi enviat. Hi ha una finestra de duplicació si Sheets o el correu completen l'efecte però es perd la resposta. No es promet entrega exactament una vegada.
 
-## Alternativas consideradas
+## Alternatives considerades
 
-- Revertir MySQL si falla Make: invalidaría datos ya confirmados y no puede deshacer un correo.
-- Recalcular al reenviar: produciría un resumen diferente para el mismo run.
-- Reintentar POST automáticamente ante cualquier fallo: puede duplicar efectos externos antes de que el operador revise el escenario.
-- Construir un blueprint ficticio: no acredita módulos, conexiones ni ejecución real; se conserva la exportación real del usuario saneada, con la configuración corregida acreditada por el segundo archivo, sin inventar cambios aplicados en la cuenta.
+- Revertir MySQL si falla Make: invalidaria dades confirmades i no pot desfer un correu.
+- Recalcular en reenviar: produiria un resum diferent per al mateix run_id.
+- Reintentar POST automàticament davant qualsevol error: pot duplicar efectes externs abans que l'operador revisi l'escenari.
+- Construir un blueprint fictici: no acredita mòduls, connexions ni execució real. Es conserva l'exportació real de l'usuari sanejada, amb la configuració corregida acreditada pel segon fitxer, sense inventar canvis aplicats al compte.
 
-## Consecuencias
+## Conseqüències
 
-La migración `004_make_delivery` añade metadatos sin modificar tablas de negocio. Es necesario aplicarla explícitamente; no actualiza volúmenes por sí sola. Un resumen con problemas de generación hace rollback de la publicación completa, conservando la anterior. Un fallo de HTTP posterior conserva la nueva publicación. La aceptación HTTP se audita separada de la verificación de destinos. F10 acredita su ejecución real y se cierra con los límites externos documentados; no promete recuperación de destinos probada ni entrega exactamente una vez.
+La migració `004_make_delivery` afegeix metadades sense modificar taules de negoci. Cal aplicar-la explícitament: no actualitza volums per si sola. Un error en generar el resum fa rollback de tota la publicació i conserva l'anterior. Un error HTTP posterior conserva la nova publicació. L'acceptació HTTP s'audita separadament de la verificació de destinataris. F10 acredita l'execució real i es tanca amb els límits externs documentats; no promet recuperació de destinataris provada ni entrega exactament una vegada.
