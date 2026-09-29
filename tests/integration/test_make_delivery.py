@@ -175,7 +175,7 @@ def test_summary_error_rolls_back_business_and_prevents_http(
     prepare(settings, monkeypatch)
     runner.run_etl(settings, as_of=AS_OF)
     before = business_snapshot(settings)
-    _write(settings, [_row(precio_coste="200")])
+    _write(settings, [_row(precio_coste="110")])
 
     def fail(*args: object) -> dict:
         raise RuntimeError("Synthetic summary failure")

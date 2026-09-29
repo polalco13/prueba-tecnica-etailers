@@ -100,6 +100,12 @@ def test_money_rejects_single_ambiguous_separator(raw: str) -> None:
     assert error.value.code == ReasonCode.AMBIGUOUS_NUMBER
 
 
+@pytest.mark.parametrize("raw", ["60,56?", "291.37?"])
+def test_generic_money_remains_strict_for_orders_and_xml(raw: str) -> None:
+    with pytest.raises(NormalizationError):
+        parse_money(raw)
+
+
 @pytest.mark.parametrize("raw", ["12,34,56", "$10", "1e3", "1.2.3", "1,23456", "NaN"])
 def test_money_rejects_invalid_forms(raw: str) -> None:
     with pytest.raises(NormalizationError) as error:

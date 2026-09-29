@@ -113,14 +113,39 @@ def _issue(
     severity = (
         Severity.ERROR if action in {Action.REJECT_ROW, Action.FAIL_RUN} else Severity.WARNING
     )
-    if action == Action.DEDUPLICATE:
+    if action in {Action.DEDUPLICATE, Action.NORMALIZE}:
         severity = Severity.INFO
     return Issue(ref, code, action, severity, detail, field_name, _excerpt(row))
+
+
+def _catalog_money(
+    value: str, field_name: str, ref: SourceRef, row: list[str], issues: list[Issue]
+) -> Decimal | None:
+    """Recupera el sufijo de moneda degradado solo en precios de este CSV."""
+
+    raw = value.strip()
+    if raw.endswith("?") and raw.count("?") == 1:
+        amount = parse_money(raw[:-1])
+        if amount is None:
+            raise NormalizationError(ReasonCode.INVALID_PRICE)
+        issues.append(
+            _issue(
+                ref,
+                ReasonCode.NORMALIZED_CURRENCY_SUFFIX,
+                Action.NORMALIZE,
+                f"Sufijo monetario degradado normalizado a {amount}",
+                row,
+                field_name,
+            )
+        )
+        return amount
+    return parse_money(value)
 
 
 def _parse_row(row: list[str], ref: SourceRef) -> tuple[CatalogCandidate | None, list[Issue]]:
     fields = dict(zip(HEADER, row, strict=True))
     errors: list[Issue] = []
+    normalizations: list[Issue] = []
 
     def required_text(field_name: str) -> str | None:
         try:
@@ -144,7 +169,7 @@ def _parse_row(row: list[str], ref: SourceRef) -> tuple[CatalogCandidate | None,
     category = required_text("categoria")
 
     try:
-        pvp = parse_money(fields["pvp_recomendado"])
+        pvp = _catalog_money(fields["pvp_recomendado"], "pvp_recomendado", ref, row, normalizations)
         if pvp is None:
             raise NormalizationError(ReasonCode.MISSING_REQUIRED_FIELD, "pvp_recomendado")
     except NormalizationError as exc:
@@ -156,13 +181,13 @@ def _parse_row(row: list[str], ref: SourceRef) -> tuple[CatalogCandidate | None,
         pvp = None
 
     if errors:
-        return None, errors
+        return None, errors + normalizations
 
     assert sku is not None and name is not None and brand is not None
     assert category is not None and pvp is not None
 
     try:
-        base_cost = parse_money(fields["precio_coste"])
+        base_cost = _catalog_money(fields["precio_coste"], "precio_coste", ref, row, normalizations)
         cost_problem = ReasonCode.MISSING_REQUIRED_FIELD if base_cost is None else None
     except NormalizationError as exc:
         base_cost = None
@@ -226,7 +251,7 @@ def _parse_row(row: list[str], ref: SourceRef) -> tuple[CatalogCandidate | None,
         normalize_text(fields["descripcion"]),
     )
     candidate = CatalogCandidate(SourceRecord(ref, product), tuple(row), cost_problem)
-    return candidate, optional_issues
+    return candidate, normalizations + optional_issues
 
 
 def extract_catalog(path: Path) -> CatalogBatch:
@@ -287,11 +312,11 @@ def extract_catalog(path: Path) -> CatalogBatch:
 
 def select_catalog_candidates(
     batch: CatalogBatch,
-    price_issue_for: Callable[[CatalogCandidate], ReasonCode | None],
+    price_issue_for: Callable[[CatalogCandidate], ReasonCode | Issue | None],
 ) -> CatalogSelection:
     """Selecciona solo tras validar el coste neto de cada candidato (F3).
 
-    El callback devuelve None si el precio final es válido; si no, su motivo.
+    El callback devuelve None si el precio final es válido; si no, motivo o incidencia.
     Así una excepción XML válida puede rescatar un coste CSV inválido antes
     de escoger la primera fila válida del SKU.
     """
@@ -301,6 +326,9 @@ def select_catalog_candidates(
     for candidate in batch.candidates:
         ref = candidate.record.ref
         reason = price_issue_for(candidate)
+        if isinstance(reason, Issue):
+            issues.append(reason)
+            continue
         if reason is not None:
             issues.append(
                 _issue(

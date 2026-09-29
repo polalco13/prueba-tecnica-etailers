@@ -1,5 +1,6 @@
 """Tarifas XML y precio neto de compra, sin persistencia ni I/O de negocio."""
 
+import json
 import re
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -352,11 +353,23 @@ def price_catalog(batch: CatalogBatch, tariffs: Tariffs) -> PricedCatalog:
 
     quotes: dict[str, PriceQuote] = {}
 
-    def price_issue_for(candidate: CatalogCandidate) -> ReasonCode | None:
+    def price_issue_for(candidate: CatalogCandidate) -> ReasonCode | Issue | None:
         try:
-            quotes[candidate.record.ref.locator] = quote_candidate(candidate, tariffs)
+            quote = quote_candidate(candidate, tariffs)
         except PriceValidationError as exc:
             return exc.code
+        if quote.net_cost > candidate.record.payload.pvp:
+            return Issue(
+                candidate.record.ref,
+                ReasonCode.COST_EXCEEDS_PVP,
+                Action.REJECT_ROW,
+                Severity.ERROR,
+                f"Coste neto {quote.net_cost} > PVP {candidate.record.payload.pvp}; "
+                f"origen {quote.origin}",
+                "net_cost",
+                json.dumps(candidate.raw_cells, ensure_ascii=False)[:_EXCERPT_LIMIT],
+            )
+        quotes[candidate.record.ref.locator] = quote
         return None
 
     selection = select_catalog_candidates(batch, price_issue_for)

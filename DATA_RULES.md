@@ -6,6 +6,8 @@ Durante la planificación se inspeccionaron cabeceras y algunos registros de CSV
 
 ## Principios y acciones
 
+**Corrección final autorizada (29/09/2026), reglas `catalog-stock-orders-v3`:** antes de seleccionar la primera fila válida por SKU, rechazar todo candidato cuyo coste neto calculado supere su PVP (`COST_EXCEEDS_PVP`), conservando coste neto, PVP, origen y fila. La excepción XML mantiene prioridad, sin fallback; igualdad permitida. Es una validación de catálogo para este ejercicio, no una prohibición de margen negativo en ventas. Solo en coste/PVP del CSV de catálogo, un único `?` final se normaliza si el resto es un importe válido, con incidencia `NORMALIZED_CURRENCY_SUFFIX`, acción `normalize` y original conservado. No se relajan pedidos/XML ni se modifican las fuentes.
+
 - No inventar datos ni reconstruir identificadores perdidos.
 - Un valor desconocido es `NULL`, no `0`.
 - Dinero y descuentos se parsean desde texto a `Decimal`; nunca se calculan con `float`.

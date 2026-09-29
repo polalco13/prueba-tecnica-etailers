@@ -1,6 +1,7 @@
 """F4 contra MySQL 8 aislado; todos los CSV/XML de este módulo son sintéticos."""
 
 import csv
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
@@ -8,6 +9,7 @@ import pymysql
 import pytest
 
 from src import db
+from src.analytics.queries import AnalyticsQueries
 from src.config import Settings
 from src.etl import repository, runner
 from src.etl.catalog import HEADER
@@ -182,7 +184,7 @@ def test_forced_publish_failure_rolls_back_and_audits(
     _write(settings, [_row()])
     run_etl(settings)
     before = _business(settings)
-    _write(settings, [_row(precio_coste="200"), _row(sku="NEW-001")])
+    _write(settings, [_row(precio_coste="110"), _row(sku="NEW-001")])
 
     def fail(*_args: object) -> None:
         raise RuntimeError("fallo sintético después de escribir productos")
@@ -222,7 +224,7 @@ def test_conflicting_tariff_audited_without_publication(settings: Settings) -> N
     before = _business(settings)
     _write(
         settings,
-        [_row(precio_coste="200")],
+        [_row(precio_coste="110")],
         "<TarifasProveedor><Descuentos>"
         '<Descuento tipo="categoria" valor="Ejemplo"><PorcentajeBase>10%</PorcentajeBase></Descuento>'
         '<Descuento tipo="categoria" valor="Ejemplo"><PorcentajeBase>20%</PorcentajeBase></Descuento>'
@@ -272,3 +274,98 @@ def test_changed_source_aborts_before_publish(
     with db.connect(settings) as connection, connection.cursor() as cursor:
         cursor.execute("SELECT status, error_code FROM etl_runs ORDER BY started_at DESC LIMIT 1")
         assert cursor.fetchone() == ("failed", "SOURCE_CHANGED")
+
+
+def test_quality_costs_currency_repair_and_historical_sales(settings: Settings) -> None:
+    """Datos sintéticos: coste incoherente, alternativa, sufijo y margen negativo real."""
+    from etl_checks import assert_counters, assert_integrity, business_snapshot
+
+    from src.etl.orders import HEADER as ORDER_HEADER
+
+    _write(
+        settings,
+        [
+            _row(),
+            _row(sku="QUALITY", precio_coste="1000"),
+            _row(sku="QUALITY", precio_coste="80"),
+            _row(sku="RECOVER", precio_coste="60,56?", pvp_recomendado="76,41"),
+            _row(sku="NO-VALID", precio_coste="200"),
+        ],
+    )
+    with settings.orders_csv_path.open("w", encoding="utf-8-sig", newline="") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(ORDER_HEADER)
+        for sku, quantity, price in [
+            ("QUALITY", "2", "20"),
+            ("RECOVER", "1", "80"),
+            ("NO-VALID", "1", "25"),
+        ]:
+            writer.writerow(
+                [
+                    "QUALITY-ORDER",
+                    "2026-01-01",
+                    "Cliente sintético",
+                    "B2B",
+                    "COMPLETADO",
+                    sku,
+                    quantity,
+                    price,
+                    "0",
+                ]
+            )
+    first = run_etl(settings, as_of=date(2026, 9, 28))
+    assert_counters(settings, first.run_id)
+    assert_integrity(settings)
+    snapshot = business_snapshot(settings)
+    second = run_etl(settings, as_of=date(2026, 9, 28))
+    assert business_snapshot(settings) == snapshot
+    assert_counters(settings, second.run_id)
+    with db.connect(settings) as connection, connection.cursor() as cursor:
+        cursor.execute("SELECT net_cost FROM products WHERE sku='QUALITY'")
+        assert cursor.fetchone()[0] == Decimal("68.0000")
+        cursor.execute("SELECT net_cost FROM products WHERE sku='RECOVER'")
+        assert cursor.fetchone()[0] == Decimal("51.4760")
+        cursor.execute("SELECT is_historical, net_cost FROM products WHERE sku='NO-VALID'")
+        assert cursor.fetchone() == (1, None)
+        report = AnalyticsQueries(connection, date(2026, 9, 28))
+        assert report.sales_summary().revenue == Decimal("145.00")
+        margin = report.margin_summary()
+        assert (margin.known_margin, margin.known_revenue, margin.unknown_revenue) == (
+            Decimal("-67.48"),
+            Decimal("120.00"),
+            Decimal("25.00"),
+        )
+        cursor.execute(
+            "SELECT action, severity, field_name, raw_excerpt FROM rejections WHERE run_id=%s AND reason_code='NORMALIZED_CURRENCY_SUFFIX'",
+            (first.run_id,),
+        )
+        action, severity, field, raw = cursor.fetchone()
+        assert (action, severity, field) == ("normalize", "info", "precio_coste")
+        assert "60,56?" in raw
+        cursor.execute(
+            "SELECT record_locator, detail FROM rejections WHERE run_id=%s AND entity_key='QUALITY' AND reason_code='COST_EXCEEDS_PVP'",
+            (first.run_id,),
+        )
+        locator, detail = cursor.fetchone()
+        assert locator == "3" and "850.0000 > PVP 120" in detail
+    # Un histórico recuperado mantiene el ID y sus ventas.
+    with db.connect(settings) as connection, connection.cursor() as cursor:
+        cursor.execute("SELECT id FROM products WHERE sku='NO-VALID'")
+        historical_id = cursor.fetchone()[0]
+    _write(
+        settings,
+        [
+            _row(),
+            _row(sku="QUALITY", precio_coste="80"),
+            _row(sku="RECOVER", precio_coste="60,56?", pvp_recomendado="76,41"),
+            _row(sku="NO-VALID", precio_coste="20"),
+        ],
+    )
+    run_etl(settings, as_of=date(2026, 9, 28))
+    assert_integrity(settings)
+    with db.connect(settings) as connection, connection.cursor() as cursor:
+        cursor.execute("SELECT id, is_historical, net_cost FROM products WHERE sku='NO-VALID'")
+        assert cursor.fetchone() == (historical_id, 0, Decimal("17.0000"))
+        assert AnalyticsQueries(connection, date(2026, 9, 28)).sales_summary().revenue == Decimal(
+            "145.00"
+        )
