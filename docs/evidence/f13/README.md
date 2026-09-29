@@ -19,7 +19,7 @@ Muestra manual: PRV-2013 toma catálogo fila 109: `318.52 × (1−0.10−0.08) =
 
 **443 tests pasan (392 sin BD + 51 MySQL), ninguno omitido**, incluidos selección, normalización/auditoría, históricos/promoción, rollback e idempotencia. Ruff y formato correctos. Aviso de deprecación Starlette/TestClient conocido; no se añadió otro cliente HTTP para silenciarlo.
 
-Documentación propia: 9.989 palabras frente a 22.050, reducción del 54,70 %. SOLUCION queda en 905 palabras; enlaces locales y anclas comprobados. Conteo según la guía de fase, incluidos documentos nuevos.
+Documentación propia: 9.992 palabras frente a 22.050, reducción del 54,68 %. SOLUCION queda en 904 palabras; enlaces locales y anclas comprobados. Conteo según la guía de fase, incluidos documentos nuevos y el cierre documental tras integrar PR 8.
 
 Navegador (captura directa 1440×1200): margen/cobertura y aviso coherentes; gráfico, tabla mensual, filtros combinados, limpiar y paginación revisados con las fuentes reales mediante teclado; consola sin errores/avisos observados. [Captura actual](../dashboard.jpg). Esta comprobación no repite la auditoría responsive previa ni certifica accesibilidad completa.
 

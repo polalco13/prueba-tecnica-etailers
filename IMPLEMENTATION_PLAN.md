@@ -13,9 +13,9 @@ El [README](README.md) define la entrega. [SOLUCION](SOLUCION.md) contiene arran
 | F10 | Resumen persistido y destinos reales en Make. | `feature/make-integration`, PR 5, `ff53b1c` |
 | F10b | Mejora de lectura/navegación de la web. | `feature/ui-ux`, PR 6, `aab89b9`; [alcance](docs/phases/f10b-ui-ux.md) |
 | F12 | Arranque limpio, validación y documentación de entrega. | `feature/delivery-docs`, PR 7, `177ec37`; [evidencia histórica](docs/evidence/f12/README.md) |
-| F13 | Corrección de costes/importes y documentación condensada. | `feature/final-review`; [fase](docs/phases/f13-final-review.md), [evidencia](docs/evidence/f13/README.md) |
+| F13 | Corrección de costes/importes y documentación condensada. | `feature/final-review`, [PR 8](https://github.com/polalco13/prueba-tecnica-etailers/pull/8), `7e3575b`; [fase](docs/phases/f13-final-review.md), [evidencia](docs/evidence/f13/README.md) |
 
-Las PR 1–7 están integradas en main según el historial local. F13 está implementada y validada en su rama; integración pendiente. El correo de entrega no está acreditado. F11 (incremental, contenedor Python, comparativa anual) no fue elegido.
+Las PR 1–8 están integradas en main; F13 está implementada, validada e integrada. El correo de entrega no está acreditado. F11 (incremental, contenedor Python, comparativa anual) no fue elegido.
 
 ## Corrección final
 

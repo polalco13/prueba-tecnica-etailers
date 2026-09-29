@@ -1,6 +1,6 @@
 # F13 — Corrección final de datos y entrega
 
-Solicitada el 29/09/2026 a partir del veredicto; **implementada y validada en `feature/final-review`**, integración pendiente. [Resultados y límites](../evidence/f13/README.md). El [README](../../README.md) conserva los requisitos; [DATA_RULES](../../DATA_RULES.md) describe reglas v3. El plan previo completo puede consultarse en Git.
+Solicitada el 29/09/2026 a partir del veredicto; **implementada, validada e integrada en main mediante la [PR 8](https://github.com/polalco13/prueba-tecnica-etailers/pull/8)** (`7e3575b`). [Resultados y límites](../evidence/f13/README.md). El [README](../../README.md) conserva los requisitos; [DATA_RULES](../../DATA_RULES.md) describe reglas v3. El plan previo completo puede consultarse en Git.
 
 ## Problema y decisiones autorizadas
 
@@ -32,4 +32,4 @@ Sin dependencias nuevas, extras F11, cambios en facturación/cantidades negativa
 
 Revisión secundaria de Make: JSON 10/13/14 serializa tres campos distintos. No se modificó un escenario real sin verificar equivalencia; nombre genérico y posible consolidación quedan identificados como límite secundario. La evidencia del escenario original conserva su fecha; editar localmente una exportación no prueba aplicación en cuenta.
 
-Commit funcional de reglas/tests y commit documental/evidencia; PR breve de esta rama a main sin fabricar historial. Cierre técnico: costes corregidos, cinco productos recuperados, ventas conservadas, cifras explicables, pruebas aprobadas y reducción documental cumplida. Integración y envío se informan por separado.
+Commit funcional de reglas/tests y commit documental/evidencia integrados mediante PR 8. Cierre técnico: costes corregidos, cinco productos recuperados, ventas conservadas, cifras explicables, pruebas aprobadas y reducción documental cumplida. El envío del correo de entrega se acredita por separado.

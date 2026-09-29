@@ -80,4 +80,4 @@ Sin configuración MySQL se omiten las pruebas de BD. La [guía aislada](docs/va
 
 Con cinco millones de líneas, el primer límite previsible es memoria: sustituir materialización por streaming/staging y lotes con índices para cabeceras/firmas; publicar tras validar todo. Medir memoria, filas/s, locks y planes SQL antes de precalcular agregados. Sin benchmark ni SLA prometido; incremental exige contrato de cambios/bajas e ID ERP.
 
-Fuera: incremental, contenedor Python y comparativa anual. Codex ayudó a implementar/verificar; el autor confirmó decisiones y configuró destinos externos. HTTP simulado no se presenta como Make real. PR 7 documental ya integrada; corrección final en su rama/PR, integración pendiente. Correo de entrega no acreditado.
+Fuera: incremental, contenedor Python y comparativa anual. Codex ayudó a implementar/verificar; el autor confirmó decisiones y configuró destinos externos. HTTP simulado no se presenta como Make real. La corrección final está integrada en main mediante la [PR 8](https://github.com/polalco13/prueba-tecnica-etailers/pull/8). Correo de entrega no acreditado.
